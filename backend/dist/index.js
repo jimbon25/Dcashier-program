@@ -15,6 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const database_1 = require("./database");
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const SECRET_KEY = process.env.JWT_SECRET || 'supersecretjwtkey'; // Use environment variable in production
 const app = (0, express_1.default)();
 const port = 3001; // Using 3001 to avoid conflict with React's default 3000
 app.use((0, cors_1.default)()); // Enable CORS for all routes
@@ -61,6 +64,56 @@ const execAsync = (db, sql) => {
 app.get('/', (req, res) => {
     res.send('Hello from Backend!');
 });
+// User Authentication Endpoints
+app.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required.' });
+    }
+    try {
+        const db = (0, database_1.getDatabase)();
+        const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
+        yield runAsync(db, "INSERT INTO users (username, password) VALUES (?, ?)", [username, hashedPassword]);
+        res.status(201).json({ message: 'User registered successfully' });
+    }
+    catch (err) {
+        if (err.message.includes('UNIQUE constraint failed')) {
+            return res.status(409).json({ error: 'Username already exists.' });
+        }
+        console.error("Error registering user:", err.message);
+        res.status(500).json({ error: err.message });
+    }
+}));
+app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required.' });
+    }
+    try {
+        const db = (0, database_1.getDatabase)();
+        const user = yield new Promise((resolve, reject) => {
+            db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
+                if (err)
+                    reject(err);
+                else
+                    resolve(row);
+            });
+        });
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid username or password.' });
+        }
+        const isMatch = yield bcryptjs_1.default.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid username or password.' });
+        }
+        const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({ message: 'Logged in successfully', token });
+    }
+    catch (err) {
+        console.error("Error logging in user:", err.message);
+        res.status(500).json({ error: err.message });
+    }
+}));
 // Category Endpoints
 app.get('/categories', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
