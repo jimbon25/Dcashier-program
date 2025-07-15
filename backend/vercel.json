@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/index.ts": {
+      "runtime": "nodejs18.x" // You can also use "nodejs20.x"
+    }
+  }
+}
