@@ -1,17 +1,17 @@
-# Nama Proyek Anda
+# Your Project Name
 
-Sebuah deskripsi singkat tentang proyek Anda dan tujuannya.
+A brief description of your project and its purpose.
 
-## Fitur
+## Features
 
-*   Daftar fitur utama aplikasi Anda.
-*   Contoh: Manajemen Produk (Tambah, Edit, Hapus)
-*   Contoh: Sistem Kasir (Penjualan, Keranjang, Pembayaran)
-*   Contoh: Laporan Penjualan Harian/Bulanan
-*   Contoh: Mode Gelap (Dark Mode)
-*   Contoh: Navigasi Tab untuk kemudahan penggunaan
+*   List the main features of your application.
+*   Example: Product Management (Add, Edit, Delete)
+*   Example: Cashier System (Sales, Cart, Payment)
+*   Example: Daily/Monthly Sales Reports
+*   Example: Dark Mode
+*   Example: Tabbed navigation for ease of use
 
-## Teknologi yang Digunakan
+## Technologies Used
 
 *   **Frontend:**
     *   React.js
@@ -25,67 +25,64 @@ Sebuah deskripsi singkat tentang proyek Anda dan tujuannya.
     *   TypeScript
     *   SQLite3
 
-## Instalasi
+## Installation
 
-Ikuti langkah-langkah ini untuk menjalankan proyek secara lokal:
+Follow these steps to run the project locally:
 
-### Prasyarat
+### Prerequisites
 
-Pastikan Anda memiliki Node.js dan npm terinstal di sistem Anda.
+Make sure you have Node.js and npm installed on your system.
 
-*   [Node.js](https://nodejs.org/) (disarankan versi LTS)
+*   [Node.js](https://nodejs.org/) (LTS version recommended)
 
-### Langkah-langkah
+### Steps
 
-1.  **Clone repositori:**
+1.  **Clone the repository:**
     ```bash
     git clone https://github.com/jimbon25/Dcashier-program.git
     cd Dcashier-program
     ```
 
-2.  **Instal dependensi Backend:**
+2.  **Install Backend dependencies:**
     ```bash
     cd backend
     npm install
     ```
 
-3.  **Jalankan Backend:**
+3.  **Run Backend:**
     ```bash
     npm start
     ```
-    Backend akan berjalan di `http://localhost:3001`.
+    The backend will run on `http://localhost:3001`.
 
-4.  **Instal dependensi Frontend:**
-    Buka terminal baru, lalu:
+4.  **Install Frontend dependencies:**
+    Open a new terminal, then:
     ```bash
     cd ../frontend
     npm install
     ```
 
-5.  **Jalankan Frontend:**
+5.  **Run Frontend:**
     ```bash
     npm start
     ```
-    Aplikasi frontend akan terbuka di browser Anda, biasanya di `http://localhost:3000`.
+    The frontend application will open in your browser, usually at `http://localhost:3000`.
 
-## Penggunaan
+## Usage
 
-*   **Penjualan:** Gunakan tab "Penjualan" untuk melihat daftar produk, menambahkan ke keranjang, dan memproses pembayaran.
-*   **Manajemen Produk:** Gunakan tab "Manajemen Produk" untuk menambah, mengedit, atau menghapus produk.
-*   **Laporan:** Gunakan tab "Laporan" untuk melihat ringkasan penjualan, laporan harian, produk terlaris, dan riwayat transaksi.
-*   **Mode Gelap:** Klik ikon bulan/matahari di pojok kanan atas untuk beralih antara mode terang dan gelap.
+*   **Sales:** Use the "Sales" tab to view product listings, add to cart, and process payments.
+*   **Product Management:** Use the "Product Management" tab to add, edit, or delete products.
+*   **Reports:** Use the "Reports" tab to view sales summaries, daily reports, top products, and transaction history.
+*   **Dark Mode:** Click the moon/sun icon in the top right corner to switch between light and dark modes.
 
-## Kontribusi
+## Contributing
 
-Kontribusi sangat dihargai! Jika Anda ingin berkontribusi, silakan fork repositori ini dan buat Pull Request dengan fitur atau perbaikan Anda.
+Contributions are highly appreciated! If you'd like to contribute, please fork this repository and create a Pull Request with your features or bug fixes.
 
-## Lisensi
+## License
 
-Proyek ini dilisensikan di bawah Lisensi MIT. Lihat file [LICENSE](LICENSE) untuk detail lebih lanjut.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
-## Kontak
+## Contact
 
-Jika Anda memiliki pertanyaan, silakan hubungi:
-*   **Nama:** Dimas Luis Aditya
-*   **Email:** dimasluisaditya@gmail.com
 *   **GitHub:** [jimbon25](https://github.com/jimbon25)
