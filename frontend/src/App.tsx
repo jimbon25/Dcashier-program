@@ -88,7 +88,7 @@ function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
-    fetch('https://sembako-pos.vercel.app//transactions')
+    fetch('https://sembako-pos.vercel.app/api//transactions')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -122,7 +122,7 @@ function App() {
   const handleAddProduct = async () => {
     if (editingProduct) return; // Prevent adding if in edit mode
     try {
-      const response = await fetch('https://sembako-pos.vercel.app//products', {
+      const response = await fetch('https://sembako-pos.vercel.app/api//products', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ function App() {
       const data = await response.json();
       showNotification(data.message, 'success');
       // Refresh product list
-      fetch('https://sembako-pos.vercel.app//products')
+      fetch('https://sembako-pos.vercel.app/api//products')
         .then(res => res.json())
         .then(setProducts);
       // Clear form
@@ -157,7 +157,7 @@ function App() {
   const handleUpdateProduct = async () => {
     if (!editingProduct) return; // Only update if in edit mode
     try {
-      const response = await fetch(`https://sembako-pos.vercel.app//products/${editingProduct.id}`, {
+      const response = await fetch(`https://sembako-pos.vercel.app/api//products/${editingProduct.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ function App() {
       const data = await response.json();
       showNotification(data.message, 'success');
       // Refresh product list
-      fetch('https://sembako-pos.vercel.app//products')
+      fetch('https://sembako-pos.vercel.app/api//products')
         .then(res => res.json())
         .then(setProducts);
       // Clear form and exit edit mode
@@ -188,7 +188,7 @@ function App() {
   const handleDeleteProduct = async (productId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
       try {
-        const response = await fetch(`https://sembako-pos.vercel.app//products/${productId}`, {
+        const response = await fetch(`https://sembako-pos.vercel.app/api//products/${productId}`, {
           method: 'DELETE',
         });
         if (!response.ok) {
@@ -197,7 +197,7 @@ function App() {
         const data = await response.json();
         showNotification(data.message, 'success');
         // Refresh product list
-        fetch('https://sembako-pos.vercel.app//products')
+        fetch('https://sembako-pos.vercel.app/api//products')
           .then(res => res.json())
           .then(setProducts);
       } catch (error: any) {
@@ -218,7 +218,7 @@ function App() {
 
     try {
       // 1. Record the transaction
-      const transactionResponse = await fetch('https://sembako-pos.vercel.app//transactions', {
+      const transactionResponse = await fetch('https://sembako-pos.vercel.app/api//transactions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -239,7 +239,7 @@ function App() {
 
       // 2. Update product stock for each item in the cart
       for (const item of cart) {
-        const stockUpdateResponse = await fetch(`https://sembako-pos.vercel.app//products/${item.id}/stock`, {
+        const stockUpdateResponse = await fetch(`https://sembako-pos.vercel.app/api//products/${item.id}/stock`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -278,12 +278,12 @@ function App() {
       setShowReceiptModal(true); // Show the receipt modal
 
       // Refresh product list to show updated stock
-      fetch('https://sembako-pos.vercel.app//products')
+      fetch('https://sembako-pos.vercel.app/api//products')
         .then(res => res.json())
         .then(setProducts);
 
       // Refresh transaction history
-      fetch('https://sembako-pos.vercel.app//transactions')
+      fetch('https://sembako-pos.vercel.app/api//transactions')
         .then(res => res.json())
         .then(setTransactions);
 
@@ -310,7 +310,7 @@ function App() {
   };
 
   useEffect(() => {
-    fetch('https://sembako-pos.vercel.app//products')
+    fetch('https://sembako-pos.vercel.app/api//products')
       .then(response => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
