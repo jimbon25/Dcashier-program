@@ -1,18 +1,30 @@
 import express from 'express';
 import cors from 'cors';
-import { initializeDatabase, getDatabase } from './database';
+import { initializeDatabase, getDatabase } from '../src/database';
 
 const app = express();
-const port = 3001; // Using 3001 to avoid conflict with React's default 3000
 
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Enable JSON body parsing
 
+// Initialize database once on cold start
+let isDbInitialized = false;
+initializeDatabase().then(() => {
+  isDbInitialized = true;
+  console.log('Database initialized for Vercel function.');
+}).catch(err => {
+  console.error('Failed to initialize database for Vercel function:', err);
+});
+
 app.get('/', (req, res) => {
-  res.send('Hello from Backend!');
+  res.send('Hello from Vercel Backend!');
 });
 
 app.get('/products', (req, res) => {
+  if (!isDbInitialized) {
+    res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
+    return;
+  }
   const db = getDatabase();
   db.all("SELECT * FROM products", [], (err, rows) => {
     if (err) {
@@ -24,6 +36,10 @@ app.get('/products', (req, res) => {
 });
 
 app.post('/products', (req, res) => {
+  if (!isDbInitialized) {
+    res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
+    return;
+  }
   const { id, name, price, stock } = req.body;
   if (!id || !name || !price || !stock) {
     return res.status(400).json({ error: 'All fields (id, name, price, stock) are required.' });
@@ -40,6 +56,10 @@ app.post('/products', (req, res) => {
 });
 
 app.get('/products/:id', (req, res) => {
+  if (!isDbInitialized) {
+    res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
+    return;
+  }
   const { id } = req.params;
   const db = getDatabase();
   db.get("SELECT * FROM products WHERE id = ?", [id], (err, row) => {
@@ -56,6 +76,10 @@ app.get('/products/:id', (req, res) => {
 });
 
 app.put('/products/:id', (req, res) => {
+  if (!isDbInitialized) {
+    res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
+    return;
+  }
   const { id } = req.params;
   const { name, price, stock } = req.body;
   if (!name || !price || !stock) {
@@ -77,6 +101,10 @@ app.put('/products/:id', (req, res) => {
 });
 
 app.delete('/products/:id', (req, res) => {
+  if (!isDbInitialized) {
+    res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
+    return;
+  }
   const { id } = req.params;
   const db = getDatabase();
   db.run("DELETE FROM products WHERE id = ?", [id], function(err) {
@@ -93,6 +121,10 @@ app.delete('/products/:id', (req, res) => {
 });
 
 app.post('/transactions', (req, res) => {
+  if (!isDbInitialized) {
+    res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
+    return;
+  }
   const { total_amount, payment_amount, change_amount, cartItems } = req.body;
   const db = getDatabase();
   const transactionId = `TRX-${Date.now()}`;
@@ -130,7 +162,7 @@ app.post('/transactions', (req, res) => {
               res.status(500).json({ error: commitErr.message });
               return;
             }
-            res.json({ message: 'Transaction recorded successfully', transactionId });
+            res.status(201).json({ message: 'Transaction recorded successfully', transactionId });
           });
         });
       }
@@ -139,6 +171,10 @@ app.post('/transactions', (req, res) => {
 });
 
 app.put('/products/:id/stock', (req, res) => {
+  if (!isDbInitialized) {
+    res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
+    return;
+  }
   const { id } = req.params;
   const { quantity } = req.body;
   if (typeof quantity !== 'number' || quantity < 0) {
@@ -160,6 +196,10 @@ app.put('/products/:id/stock', (req, res) => {
 });
 
 app.get('/transactions', (req, res) => {
+  if (!isDbInitialized) {
+    res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
+    return;
+  }
   const db = getDatabase();
   db.all("SELECT * FROM transactions ORDER BY timestamp DESC", [], (err, transactions: any[]) => {
     if (err) {
@@ -192,10 +232,4 @@ app.get('/transactions', (req, res) => {
   });
 });
 
-initializeDatabase().then(() => {
-  app.listen(port, () => {
-    console.log(`Backend server listening at http://localhost:${port}`);
-  });
-}).catch(err => {
-  console.error('Failed to initialize database and start server:', err);
-});
+export default app;
