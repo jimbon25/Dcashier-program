@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { initializeDatabase, getDatabase } from '../src/database';
+import { initializeDatabase, getPool } from '../src/database';
 
 const app = express();
 
@@ -20,22 +20,21 @@ app.get('/', (req, res) => {
   res.send('Hello from Vercel Backend!');
 });
 
-app.get('/products', (req, res) => {
+app.get('/products', async (req, res) => {
   if (!isDbInitialized) {
     res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
     return;
   }
-  const db = getDatabase();
-  db.all("SELECT * FROM products", [], (err, rows) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json(rows);
-  });
+  try {
+    const pool = getPool();
+    const result = await pool.query("SELECT * FROM products");
+    res.json(result.rows);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post('/products', (req, res) => {
+app.post('/products', async (req, res) => {
   if (!isDbInitialized) {
     res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
     return;
@@ -45,37 +44,35 @@ app.post('/products', (req, res) => {
     return res.status(400).json({ error: 'All fields (id, name, price, stock) are required.' });
   }
 
-  const db = getDatabase();
-  db.run("INSERT INTO products (id, name, price, stock) VALUES (?, ?, ?, ?)", [id, name, price, stock], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.status(201).json({ message: 'Product added successfully', id: this.lastID });
-  });
+  try {
+    const pool = getPool();
+    await pool.query("INSERT INTO products (id, name, price, stock) VALUES ($1, $2, $3, $4)", [id, name, price, stock]);
+    res.status(201).json({ message: 'Product added successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/products/:id', (req, res) => {
+app.get('/products/:id', async (req, res) => {
   if (!isDbInitialized) {
     res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
     return;
   }
   const { id } = req.params;
-  const db = getDatabase();
-  db.get("SELECT * FROM products WHERE id = ?", [id], (err, row) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (!row) {
+  try {
+    const pool = getPool();
+    const result = await pool.query("SELECT * FROM products WHERE id = $1", [id]);
+    if (result.rows.length === 0) {
       res.status(404).json({ error: 'Product not found.' });
       return;
     }
-    res.json(row);
-  });
+    res.json(result.rows[0]);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.put('/products/:id', (req, res) => {
+app.put('/products/:id', async (req, res) => {
   if (!isDbInitialized) {
     res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
     return;
@@ -86,91 +83,77 @@ app.put('/products/:id', (req, res) => {
     return res.status(400).json({ error: 'All fields (name, price, stock) are required.' });
   }
 
-  const db = getDatabase();
-  db.run("UPDATE products SET name = ?, price = ?, stock = ? WHERE id = ?", [name, price, stock, id], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (this.changes === 0) {
+  try {
+    const pool = getPool();
+    const result = await pool.query("UPDATE products SET name = $1, price = $2, stock = $3 WHERE id = $4", [name, price, stock, id]);
+    if (result.rowCount === 0) {
       res.status(404).json({ error: 'Product not found or no changes made.' });
       return;
     }
     res.json({ message: 'Product updated successfully' });
-  });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.delete('/products/:id', (req, res) => {
+app.delete('/products/:id', async (req, res) => {
   if (!isDbInitialized) {
     res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
     return;
   }
   const { id } = req.params;
-  const db = getDatabase();
-  db.run("DELETE FROM products WHERE id = ?", [id], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (this.changes === 0) {
+  try {
+    const pool = getPool();
+    const result = await pool.query("DELETE FROM products WHERE id = $1", [id]);
+    if (result.rowCount === 0) {
       res.status(404).json({ error: 'Product not found.' });
       return;
     }
     res.json({ message: 'Product deleted successfully' });
-  });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post('/transactions', (req, res) => {
+app.post('/transactions', async (req, res) => {
   if (!isDbInitialized) {
     res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
     return;
   }
   const { total_amount, payment_amount, change_amount, cartItems } = req.body;
-  const db = getDatabase();
+  const pool = getPool();
   const transactionId = `TRX-${Date.now()}`;
   const timestamp = Date.now();
 
-  db.serialize(() => {
-    db.run("BEGIN TRANSACTION");
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
 
     // Insert into transactions table
-    db.run(
-      "INSERT INTO transactions (id, timestamp, total_amount, payment_amount, change_amount) VALUES (?, ?, ?, ?, ?)",
-      [transactionId, timestamp, total_amount, payment_amount, change_amount],
-      function(err) {
-        if (err) {
-          db.run("ROLLBACK");
-          res.status(500).json({ error: err.message });
-          return;
-        }
-
-        // Insert into transaction_items table
-        const stmt = db.prepare(
-          "INSERT INTO transaction_items (transaction_id, product_id, product_name, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?)"
-        );
-        cartItems.forEach((item: any) => {
-          stmt.run(transactionId, item.id, item.name, item.price, item.quantity);
-        });
-        stmt.finalize(function(err) {
-          if (err) {
-            db.run("ROLLBACK");
-            res.status(500).json({ error: err.message });
-            return;
-          }
-          db.run("COMMIT", (commitErr) => {
-            if (commitErr) {
-              res.status(500).json({ error: commitErr.message });
-              return;
-            }
-            res.status(201).json({ message: 'Transaction recorded successfully', transactionId });
-          });
-        });
-      }
+    await client.query(
+      "INSERT INTO transactions (id, timestamp, total_amount, payment_amount, change_amount) VALUES ($1, $2, $3, $4, $5)",
+      [transactionId, timestamp, total_amount, payment_amount, change_amount]
     );
-  });
+
+    // Insert into transaction_items table
+    for (const item of cartItems) {
+      await client.query(
+        "INSERT INTO transaction_items (transaction_id, product_id, product_name, price_at_sale, quantity) VALUES ($1, $2, $3, $4, $5)",
+        [transactionId, item.id, item.name, item.price, item.quantity]
+      );
+    }
+
+    await client.query("COMMIT");
+    res.status(201).json({ message: 'Transaction recorded successfully', transactionId });
+  } catch (err: any) {
+    await client.query("ROLLBACK");
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
 });
 
-app.put('/products/:id/stock', (req, res) => {
+app.put('/products/:id/stock', async (req, res) => {
   if (!isDbInitialized) {
     res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
     return;
@@ -181,31 +164,28 @@ app.put('/products/:id/stock', (req, res) => {
     return res.status(400).json({ error: 'Quantity must be a non-negative number.' });
   }
 
-  const db = getDatabase();
-  db.run("UPDATE products SET stock = stock - ? WHERE id = ?", [quantity, id], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (this.changes === 0) {
+  try {
+    const pool = getPool();
+    const result = await pool.query("UPDATE products SET stock = stock - $1 WHERE id = $2", [quantity, id]);
+    if (result.rowCount === 0) {
       res.status(404).json({ error: 'Product not found or stock not updated.' });
       return;
     }
     res.json({ message: 'Product stock updated successfully' });
-  });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/transactions', (req, res) => {
+app.get('/transactions', async (req, res) => {
   if (!isDbInitialized) {
     res.status(503).json({ error: 'Database not yet initialized. Please try again in a moment.' });
     return;
   }
-  const db = getDatabase();
-  db.all("SELECT * FROM transactions ORDER BY timestamp DESC", [], (err, transactions: any[]) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
+  try {
+    const pool = getPool();
+    const transactionsResult = await pool.query("SELECT * FROM transactions ORDER BY timestamp DESC");
+    const transactions = transactionsResult.rows;
 
     if (transactions.length === 0) {
       res.json([]);
@@ -213,23 +193,15 @@ app.get('/transactions', (req, res) => {
     }
 
     const transactionsWithItems: any[] = [];
-    let completedQueries = 0;
+    for (const transaction of transactions) {
+      const itemsResult = await pool.query("SELECT * FROM transaction_items WHERE transaction_id = $1", [transaction.id]);
+      transactionsWithItems.push({ ...transaction, items: itemsResult.rows });
+    }
 
-    transactions.forEach((transaction, index) => {
-      db.all("SELECT * FROM transaction_items WHERE transaction_id = ?", [transaction.id], (err, items) => {
-        if (err) {
-          res.status(500).json({ error: err.message });
-          return;
-        }
-        transactionsWithItems[index] = { ...transaction, items };
-        completedQueries++;
-
-        if (completedQueries === transactions.length) {
-          res.json(transactionsWithItems);
-        }
-      });
-    });
-  });
+    res.json(transactionsWithItems);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default app;
