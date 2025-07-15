@@ -4,12 +4,12 @@ A brief description of your project and its purpose.
 
 ## Features
 
-*   List the main features of your application.
-*   Example: Product Management (Add, Edit, Delete)
-*   Example: Cashier System (Sales, Cart, Payment)
-*   Example: Daily/Monthly Sales Reports
-*   Example: Dark Mode
-*   Example: Tabbed navigation for ease of use
+*   Enhanced User Interface (UI) and User Experience (UX) for intuitive navigation and modern look.
+*   Product Management (Add, Edit, Delete, Inline Editing)
+*   Cashier System (Sales, Cart, Payment, Barcode Scanning)
+*   Comprehensive Sales Reports (Daily Sales, Top Products, Transaction History)
+*   Dark Mode Toggle for comfortable viewing.
+*   Tabbed navigation for easy access to different functionalities.
 
 ## Technologies Used
 
