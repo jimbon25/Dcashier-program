@@ -5,7 +5,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceiptModal from './ReceiptModal';
 import ProductSkeleton from './ProductSkeleton';
-import { CartPlus, PencilSquare, Trash, SunFill, MoonFill } from 'react-bootstrap-icons'; // Import ikon dan ikon tema
+import { CartPlus, PencilSquare, Trash, SunFill, MoonFill, BoxArrowRight } from 'react-bootstrap-icons'; // Import ikon dan ikon tema
+import AuthPage from './AuthPage';
 
 interface Product {
   id: string;
@@ -62,6 +63,24 @@ function App() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [cartAnimationTrigger, setCartAnimationTrigger] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('sales');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLogin = (token: string) => {
+    localStorage.setItem('token', token);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    toast.info('Logged out successfully.');
+  };
   const [theme, setTheme] = useState<string>(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -588,17 +607,26 @@ function App() {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto">
-              <Button variant="outline-light" onClick={toggleTheme} className="rounded-circle p-2">
+              <Button variant="outline-light" onClick={toggleTheme} className="rounded-circle p-2 me-2">
                 {theme === 'light' ? <MoonFill size={20} /> : <SunFill size={20} />}
               </Button>
+              {isLoggedIn && (
+                <Button variant="outline-light" onClick={handleLogout} className="rounded-circle p-2">
+                  <BoxArrowRight size={20} />
+                </Button>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <div className="d-flex justify-content-between align-items-center mb-5 pb-2 border-bottom">
-        <h1 className="mb-0 text-primary">Daftar Produk Toko Dyka Akbar</h1>
-      </div>
-      <Tab.Container activeKey={activeTab} onSelect={(k: string | null) => setActiveTab(k || 'sales')}>
+      {!isLoggedIn ? (
+        <AuthPage onLogin={handleLogin} />
+      ) : (
+        <>
+          <div className="d-flex justify-content-between align-items-center mb-5 pb-2 border-bottom">
+            <h1 className="mb-0 text-primary">Daftar Produk Toko Dyka Akbar</h1>
+          </div>
+          <Tab.Container activeKey={activeTab} onSelect={(k: string | null) => setActiveTab(k || 'sales')}>
         <Nav variant="tabs" className="mb-4 border-bottom-0">
           <Nav.Item>
             <Nav.Link eventKey="dashboard" className="fw-semibold">Dashboard</Nav.Link>
@@ -1227,7 +1255,8 @@ function App() {
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
-
+        </>
+      )}
       <ReceiptModal
         show={showReceiptModal}
         onHide={() => setShowReceiptModal(false)}
