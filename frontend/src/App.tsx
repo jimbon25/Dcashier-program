@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Container, Row, Col, Card, Button, Nav, Tab } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Nav, Tab, Spinner } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceiptModal from './ReceiptModal';
@@ -521,6 +521,12 @@ function App() {
   if (loading) {
     return (
       <Container className="mt-5">
+        <div className="text-center my-5">
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading products...</span>
+          </Spinner>
+          <p className="mt-2">Memuat produk...</p>
+        </div>
         <h1 className="mb-4">Daftar Produk Toko Dyka Akbar</h1>
         <div className="mb-3">
           <input
@@ -549,41 +555,41 @@ function App() {
   const total = totalBeforeDiscount - (totalBeforeDiscount * (discount / 100));
 
   return (
-    <Container className="mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="mb-0">Daftar Produk Toko Dyka Akbar</h1>
-        <Button variant="outline-secondary" onClick={toggleTheme}>
-          {theme === 'light' ? <MoonFill /> : <SunFill />}
+    <Container className="mt-5 py-4">
+      <div className="d-flex justify-content-between align-items-center mb-5 pb-2 border-bottom">
+        <h1 className="mb-0 text-primary">Daftar Produk Toko Dyka Akbar</h1>
+        <Button variant="outline-secondary" onClick={toggleTheme} className="rounded-circle p-2">
+          {theme === 'light' ? <MoonFill size={20} /> : <SunFill size={20} />}
         </Button>
       </div>
       <Tab.Container activeKey={activeTab} onSelect={(k: string | null) => setActiveTab(k || 'sales')}>
-        <Nav variant="tabs" className="mb-4">
+        <Nav variant="tabs" className="mb-4 border-bottom-0">
           <Nav.Item>
-            <Nav.Link eventKey="sales">Penjualan</Nav.Link>
+            <Nav.Link eventKey="sales" className="fw-semibold">Penjualan</Nav.Link>
           </Nav.Item>
           <Nav.Item>
-            <Nav.Link eventKey="product-management">Manajemen Produk</Nav.Link>
+            <Nav.Link eventKey="product-management" className="fw-semibold">Manajemen Produk</Nav.Link>
           </Nav.Item>
           <Nav.Item>
-            <Nav.Link eventKey="reports">Laporan</Nav.Link>
+            <Nav.Link eventKey="reports" className="fw-semibold">Laporan</Nav.Link>
           </Nav.Item>
         </Nav>
 
         <Tab.Content>
-          <Tab.Pane eventKey="sales">
-            <div className="mb-3">
+          <Tab.Pane eventKey="sales" className="p-3 border rounded">
+            <div className="mb-4">
               <input
                 type="text"
-                className="form-control"
+                className="form-control form-control-lg"
                 placeholder="Cari produk berdasarkan nama atau ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="mb-3">
+            <div className="mb-4">
               <input
                 type="text"
-                className="form-control"
+                className="form-control form-control-lg"
                 placeholder="Scan Barcode atau Masukkan Barcode..."
                 value={barcodeInput}
                 onChange={(e) => setBarcodeInput(e.target.value)}
@@ -604,10 +610,12 @@ function App() {
                 }}
               />
             </div>
-            <Row>
+            <Row className="g-4 mb-5"> {/* Add gutter spacing and bottom margin */}
               {loading ? (
                 Array.from({ length: 8 }).map((_, index) => (
-                  <ProductSkeleton key={index} />
+                  <Col key={index} sm={6} md={4} lg={3}>
+                    <ProductSkeleton />
+                  </Col>
                 ))
               ) : (
                 products
@@ -616,15 +624,16 @@ function App() {
                     product.id.toLowerCase().includes(searchTerm.toLowerCase())
                   )
                   .map(product => (
-                    <Col key={product.id} sm={6} md={4} lg={3} className="mb-4">
-                      <Card className={product.stock <= LOW_STOCK_THRESHOLD ? 'border border-danger' : ''}>
+                    <Col key={product.id} sm={6} md={4} lg={3}>
+                      <Card className={product.stock <= LOW_STOCK_THRESHOLD ? 'border border-danger shadow-sm' : 'shadow-sm'}> {/* Add shadow */}
                         <Card.Body>
                           {product.stock <= LOW_STOCK_THRESHOLD && (
-                            <div className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 rounded-bottom-left">
+                            <div className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 rounded-bottom-left small fw-semibold">
                               Stok Rendah!
                             </div>
                           )}
                           <Card.Title
+                            className="fw-bold text-primary"
                             onDoubleClick={() => {
                               setEditingProductId(product.id);
                               setEditingField('name');
@@ -647,13 +656,14 @@ function App() {
                                   }
                                 }}
                                 autoFocus
+                                className="form-control form-control-sm"
                               />
                             ) : (
                               product.name
                             )}
                           </Card.Title>
-                          <Card.Text>
-                            Harga: Rp
+                          <Card.Text className="mb-1">
+                            <span className="fw-semibold">Harga:</span> Rp
                             {editingProductId === product.id && editingField === 'price' ? (
                               <input
                                 type="number"
@@ -671,12 +681,14 @@ function App() {
                                   }
                                 }}
                                 autoFocus
+                                className="form-control form-control-sm d-inline-block w-50"
                               />
                             ) : (
                               product.price.toLocaleString()
                             )}
-                            <br />
-                            Stok:
+                          </Card.Text>
+                          <Card.Text className="mb-1">
+                            <span className="fw-semibold">Stok:</span>
                             {editingProductId === product.id && editingField === 'stock' ? (
                               <input
                                 type="number"
@@ -694,9 +706,13 @@ function App() {
                                   }
                                 }}
                                 autoFocus
+                                className="form-control form-control-sm d-inline-block w-25"
                               />
                             ) : (
                               product.stock
+                            )}
+                            {product.stock <= LOW_STOCK_THRESHOLD && (
+                              <span className="ms-2 badge bg-danger">Stok Rendah!</span>
                             )}
                           </Card.Text>
                           <div className="d-flex justify-content-between mt-3">
@@ -713,14 +729,14 @@ function App() {
               )}
             </Row>
 
-            <h2 className="mt-5 mb-3">Keranjang Belanja</h2>
-            <div className={`cart-section ${cartAnimationTrigger ? 'animate-cart' : ''}`}>
+            <h2 className="mt-5 mb-3 text-primary">Keranjang Belanja</h2>
+            <div className={`cart-section p-3 border rounded ${cartAnimationTrigger ? 'animate-cart' : ''}`}> {/* Add padding, border, and rounded corners */}
               {cart.length === 0 ? (
-                <p className="fade-in">Keranjang kosong.</p>
+                <p className="fade-in text-muted">Keranjang kosong. Tambahkan produk untuk memulai transaksi.</p>
               ) : (
                 <Row className="fade-in">
                   <Col>
-                    <table className="table table-striped">
+                    <table className="table table-striped table-hover align-middle"> {/* Add table-hover and align-middle */}
                       <thead>
                         <tr>
                           <th>Produk</th>
@@ -753,7 +769,7 @@ function App() {
                                     );
                                   }
                                 }}
-                                className="form-control d-inline-block mx-2 text-center" style={{ width: '70px' }}
+                                className="form-control d-inline-block mx-2 text-center" style={{ width: '60px' }}
                               />
                               <Button variant="outline-primary" size="sm" onClick={() => increaseQuantity(item.id)}>+</Button>
                             </td>
@@ -761,16 +777,16 @@ function App() {
                         ))}
                       </tbody>
                     </table>
-                    <div className="d-flex justify-content-between align-items-center mt-3">
+                    <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                       <Button variant="outline-danger" onClick={() => setCart([])}>Bersihkan Keranjang</Button>
-                      <h4>Total: Rp{total.toLocaleString()}</h4>
+                      <h3>Total: <span className="text-success">Rp{total.toLocaleString()}</span></h3>
                     </div>
-                    <div className="d-flex justify-content-end mt-2">
-                      <label htmlFor="discountInput" className="form-label me-2">Diskon (%):</label>
+                    <div className="d-flex justify-content-end mt-3">
+                      <label htmlFor="discountInput" className="form-label me-2 fw-semibold">Diskon (%):</label>
                       <input
                         type="number"
                         id="discountInput"
-                        className="form-control w-25"
+                        className="form-control w-25 me-3"
                         value={discount}
                         onChange={(e) => setDiscount(Number(e.target.value))}
                         min="0"
@@ -795,7 +811,7 @@ function App() {
                         value={paymentAmount === 0 ? '' : paymentAmount}
                         onChange={(e) => setPaymentAmount(Number(e.target.value))}
                       />
-                      <Button variant="success" onClick={handlePayment}>Bayar</Button>
+                      <Button variant="success" onClick={handlePayment} disabled={cart.length === 0 || paymentAmount < total}>Bayar</Button>
                     </div>
                     {change !== null && (
                       <h4 className="text-end mt-3 text-success">Kembalian: Rp{change.toLocaleString()}</h4>
@@ -805,13 +821,13 @@ function App() {
               )}
             </div>
 
-            <h2 className="mt-5 mb-3">Produk Stok Rendah</h2>
+            <h2 className="mt-5 mb-3 text-primary">Produk Stok Rendah</h2>
             {lowStockProducts.length === 0 ? (
-              <p>Tidak ada produk dengan stok rendah.</p>
+              <p className="text-muted">Tidak ada produk dengan stok rendah.</p>
             ) : (
               <Row>
                 <Col>
-                  <table className="table table-striped table-danger">
+                  <table className="table table-striped table-danger table-hover align-middle">
                     <thead>
                       <tr>
                         <th>ID Produk</th>
@@ -834,41 +850,41 @@ function App() {
             )}
           </Tab.Pane>
 
-          <Tab.Pane eventKey="product-management">
-            <h2 className="mt-5 mb-3">Manajemen Produk</h2>
+          <Tab.Pane eventKey="product-management" className="p-3 border rounded">
+            <h2 className="mt-3 mb-4 text-primary">Manajemen Produk</h2>
             <Row className="mb-4">
               <Col>
-                <Card>
+                <Card className="shadow-sm">
                   <Card.Body>
-                    <Card.Title>Tambah Produk Baru</Card.Title>
+                    <Card.Title className="mb-4 fw-bold">Tambah/Edit Produk</Card.Title>
                     <div className="mb-3">
-                      <label htmlFor="productId" className="form-label">ID Produk</label>
+                      <label htmlFor="productId" className="form-label fw-semibold">ID Produk</label>
                       <input type="text" className={`form-control ${formErrors.newProductId ? 'is-invalid' : ''}`} id="productId" value={newProductId} onChange={(e) => {setNewProductId(e.target.value); setFormErrors(prev => { const { newProductId, ...rest } = prev; return rest; });}} placeholder="Contoh: P006" disabled={!!editingProduct} />
                       {formErrors.newProductId && <div className="invalid-feedback">{formErrors.newProductId}</div>}
                     </div>
                     <div className="mb-3">
-                      <label htmlFor="productName" className="form-label">Nama Produk</label>
+                      <label htmlFor="productName" className="form-label fw-semibold">Nama Produk</label>
                       <input type="text" className={`form-control ${formErrors.newProductName ? 'is-invalid' : ''}`} id="productName" value={newProductName} onChange={(e) => {setNewProductName(e.target.value); setFormErrors(prev => { const { newProductName, ...rest } = prev; return rest; });}} placeholder="Contoh: Sabun Mandi" />
                       {formErrors.newProductName && <div className="invalid-feedback">{formErrors.newProductName}</div>}
                     </div>
                     <div className="mb-3">
-                      <label htmlFor="productPrice" className="form-label">Harga</label>
+                      <label htmlFor="productPrice" className="form-label fw-semibold">Harga</label>
                       <input type="number" className={`form-control ${formErrors.newProductPrice ? 'is-invalid' : ''}`} id="productPrice" value={newProductPrice === 0 ? '' : newProductPrice} onChange={(e) => {setNewProductPrice(Number(e.target.value)); setFormErrors(prev => { const { newProductPrice, ...rest } = prev; return rest; });}} placeholder="Contoh: 5000" />
                       {formErrors.newProductPrice && <div className="invalid-feedback">{formErrors.newProductPrice}</div>}
                     </div>
                     <div className="mb-3">
-                      <label htmlFor="productStock" className="form-label">Stok</label>
+                      <label htmlFor="productStock" className="form-label fw-semibold">Stok</label>
                       <input type="number" className={`form-control ${formErrors.newProductStock ? 'is-invalid' : ''}`} id="productStock" value={newProductStock === 0 ? '' : newProductStock} onChange={(e) => {setNewProductStock(Number(e.target.value)); setFormErrors(prev => { const { newProductStock, ...rest } = prev; return rest; });}} placeholder="Contoh: 100" />
                       {formErrors.newProductStock && <div className="invalid-feedback">{formErrors.newProductStock}</div>}
                     </div>
-                    <div className="mb-3">
-                      <label htmlFor="productBarcode" className="form-label">Barcode (Opsional)</label>
+                    <div className="mb-4">
+                      <label htmlFor="productBarcode" className="form-label fw-semibold">Barcode (Opsional)</label>
                       <input type="text" className="form-control" id="productBarcode" value={newProductBarcode} onChange={(e) => setNewProductBarcode(e.target.value)} placeholder="Contoh: 1234567890" />
                     </div>
                     {editingProduct ? (
                       <>
-                        <Button variant="warning" onClick={handleUpdateProduct}>Update Produk</Button>
-                        <Button variant="secondary" className="ms-2" onClick={handleCancelEdit}>Batal Edit</Button>
+                        <Button variant="warning" onClick={handleUpdateProduct} className="me-2">Update Produk</Button>
+                        <Button variant="secondary" onClick={handleCancelEdit}>Batal Edit</Button>
                       </>
                     ) : (
                       <Button variant="success" onClick={handleAddProduct}>Tambah Produk</Button>
@@ -879,24 +895,24 @@ function App() {
             </Row>
           </Tab.Pane>
 
-          <Tab.Pane eventKey="reports">
-            <h2 className="mt-5 mb-3">Laporan Penjualan</h2>
+          <Tab.Pane eventKey="reports" className="p-3 border rounded">
+            <h2 className="mt-3 mb-4 text-primary">Laporan Penjualan</h2>
             <Row className="mb-4">
               <Col>
-                <Card>
+                <Card className="shadow-sm">
                   <Card.Body>
-                    <Card.Title>Ringkasan Penjualan</Card.Title>
-                    <p>Total Pendapatan: Rp{transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString()}</p>
+                    <Card.Title className="mb-3 fw-bold">Ringkasan Penjualan</Card.Title>
+                    <p className="lead">Total Pendapatan: <span className="fw-bold text-success">Rp{transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString()}</span></p>
                     <Button variant="danger" onClick={handleResetTransactions}>Reset Laporan</Button>
                   </Card.Body>
                 </Card>
               </Col>
             </Row>
 
-            <h2 className="mt-5 mb-3">Laporan Penjualan Harian</h2>
-            <Row className="mb-3">
+            <h2 className="mt-5 mb-4 text-primary">Laporan Penjualan Harian</h2>
+            <Row className="mb-4 align-items-end">
               <Col md={4}>
-                <label htmlFor="reportDate">Pilih Tanggal:</label>
+                <label htmlFor="reportDate" className="form-label fw-semibold">Pilih Tanggal:</label>
                 <input
                   type="date"
                   id="reportDate"
@@ -905,21 +921,21 @@ function App() {
                   onChange={(e) => setReportDate(e.target.value)}
                 />
               </Col>
-              <Col md={4} className="d-flex align-items-end">
-                <Button onClick={fetchDailySales}>Lihat Laporan Harian</Button>
+              <Col md={4}>
+                <Button onClick={fetchDailySales} className="w-100">Lihat Laporan Harian</Button>
               </Col>
             </Row>
             {dailySalesLoading ? (
               <div className="text-center my-3">
                 <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
+                  <span className="visually-hidden">Memuat...</span>
                 </div>
-                <p className="mt-2">Memuat laporan harian...</p>
+                <p className="mt-2 text-muted">Memuat laporan harian...</p>
               </div>
             ) : (dailySales.length > 0 ? (
               <Row>
                 <Col>
-                  <table className="table table-striped">
+                  <table className="table table-striped table-hover align-middle">
                     <thead>
                       <tr>
                         <th>Tanggal</th>
@@ -938,13 +954,13 @@ function App() {
                 </Col>
               </Row>
             ) : (
-              <p>Tidak ada data penjualan harian untuk tanggal ini.</p>
+              <p className="text-muted">Tidak ada data penjualan harian untuk tanggal ini.</p>
             ))}
 
-            <h2 className="mt-5 mb-3">Produk Terlaris</h2>
-            <Row className="mb-3">
+            <h2 className="mt-5 mb-4 text-primary">Produk Terlaris</h2>
+            <Row className="mb-4 align-items-end">
               <Col md={4}>
-                <label htmlFor="topProductsLimit">Jumlah Produk:</label>
+                <label htmlFor="topProductsLimit" className="form-label fw-semibold">Jumlah Produk:</label>
                 <input
                   type="number"
                   id="topProductsLimit"
@@ -954,21 +970,21 @@ function App() {
                   min="1"
                 />
               </Col>
-              <Col md={4} className="d-flex align-items-end">
-                <Button onClick={fetchTopProducts}>Lihat Produk Terlaris</Button>
+              <Col md={4}>
+                <Button onClick={fetchTopProducts} className="w-100">Lihat Produk Terlaris</Button>
               </Col>
             </Row>
             {topProductsLoading ? (
               <div className="text-center my-3">
                 <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
+                  <span className="visually-hidden">Memuat...</span>
                 </div>
-                <p className="mt-2">Memuat produk terlaris...</p>
+                <p className="mt-2 text-muted">Memuat produk terlaris...</p>
               </div>
             ) : (topProducts.length > 0 ? (
               <Row>
                 <Col>
-                  <table className="table table-striped">
+                  <table className="table table-striped table-hover align-middle">
                     <thead>
                       <tr>
                         <th>Nama Produk</th>
@@ -989,13 +1005,13 @@ function App() {
                 </Col>
               </Row>
             ) : (
-              <p>Tidak ada data produk terlaris.</p>
+              <p className="text-muted">Tidak ada data produk terlaris.</p>
             ))}
 
-            <h2 className="mt-5 mb-3">Riwayat Transaksi</h2>
-            <Row className="mb-3">
+            <h2 className="mt-5 mb-4 text-primary">Riwayat Transaksi</h2>
+            <Row className="mb-4 align-items-end">
               <Col md={4}>
-                <label htmlFor="startDate">Tanggal Mulai:</label>
+                <label htmlFor="startDate" className="form-label fw-semibold">Tanggal Mulai:</label>
                 <input
                   type="date"
                   id="startDate"
@@ -1005,7 +1021,7 @@ function App() {
                 />
               </Col>
               <Col md={4}>
-                <label htmlFor="endDate">Tanggal Akhir:</label>
+                <label htmlFor="endDate" className="form-label fw-semibold">Tanggal Akhir:</label>
                 <input
                   type="date"
                   id="endDate"
@@ -1014,23 +1030,23 @@ function App() {
                   onChange={(e) => setFilterEndDate(e.target.value)}
                 />
               </Col>
-              <Col md={4} className="d-flex align-items-end">
-                <Button onClick={fetchTransactions} disabled={loading}>Filter Transaksi</Button>
+              <Col md={4}>
+                <Button onClick={fetchTransactions} disabled={loading} className="w-100">Filter Transaksi</Button>
               </Col>
             </Row>
             {loading ? (
               <div className="text-center my-5">
                 <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
+                  <span className="visually-hidden">Memuat...</span>
                 </div>
-                <p className="mt-2">Memuat transaksi...</p>
+                <p className="mt-2 text-muted">Memuat transaksi...</p>
               </div>
             ) : transactions.length === 0 ? (
-              <p>Belum ada transaksi.</p>
+              <p className="text-muted">Belum ada transaksi.</p>
             ) : (
               <Row>
                 <Col>
-                  <table className="table table-striped">
+                  <table className="table table-striped table-hover align-middle">
                     <thead>
                       <tr>
                         <th>ID Transaksi</th>

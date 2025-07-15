@@ -5,6 +5,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 16px; /* Base font size */
+  line-height: 1.6; /* Base line height */
 }
 
 code {
@@ -79,12 +81,13 @@ code {
 
 /* Product Card Hover Effect */
 .card {
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border-radius: 10px;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* Fade-in Transition */

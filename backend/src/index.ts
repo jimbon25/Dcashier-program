@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import sqlite3 from 'sqlite3';
 import { initializeDatabase, getDatabase } from './database';
 
 const app = express();
@@ -8,195 +9,219 @@ const port = 3001; // Using 3001 to avoid conflict with React's default 3000
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Enable JSON body parsing
 
+// Helper function to promisify db.run
+const runAsync = (db: sqlite3.Database, sql: string, params: any[] = []): Promise<sqlite3.RunResult> => {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function(err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(this); // 'this' contains lastID, changes
+      }
+    });
+  });
+};
+
+// Helper function to promisify db.all
+const allAsync = (db: sqlite3.Database, sql: string, params: any[] = []): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
+
+// Helper function to promisify db.exec
+const execAsync = (db: sqlite3.Database, sql: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    db.exec(sql, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+};
+
 app.get('/', (req, res) => {
   res.send('Hello from Backend!');
 });
 
-app.get('/products', (req, res) => {
-  const db = getDatabase();
-  db.all("SELECT * FROM products", [], (err, rows) => {
-    if (err) {
-      console.error("Error fetching products:", err.message);
-      res.status(500).json({ error: err.message });
-      return;
-    }
+app.get('/products', async (req, res) => {
+  try {
+    const db = getDatabase();
+    const rows = await allAsync(db, "SELECT * FROM products");
     console.log("Products fetched:", rows);
     res.json(rows);
-  });
+  } catch (err: any) {
+    console.error("Error fetching products:", err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post('/products', (req, res) => {
+app.post('/products', async (req, res) => {
   const { id, name, price, stock, barcode } = req.body;
   if (!id || !name || !price || !stock) {
     return res.status(400).json({ error: 'All fields (id, name, price, stock) are required.' });
   }
 
-  const db = getDatabase();
-  db.run("INSERT INTO products (id, name, price, stock, barcode) VALUES (?, ?, ?, ?, ?)", [id, name, price, stock, barcode], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.status(201).json({ message: 'Product added successfully', id: this.lastID });
-  });
+  try {
+    const db = getDatabase();
+    const result = await runAsync(db, "INSERT INTO products (id, name, price, stock, barcode) VALUES (?, ?, ?, ?, ?)", [id, name, price, stock, barcode]);
+    res.status(201).json({ message: 'Product added successfully', id: result.lastID });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/products/:id', (req, res) => {
+app.get('/products/:id', async (req, res) => {
   const { id } = req.params;
-  const db = getDatabase();
-  db.get("SELECT * FROM products WHERE id = ?", [id], (err, row) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
+  try {
+    const db = getDatabase();
+    const row = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM products WHERE id = ?", [id], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
     if (!row) {
       res.status(404).json({ error: 'Product not found.' });
       return;
     }
     res.json(row);
-  });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/products/barcode/:barcode', (req, res) => {
+app.get('/products/barcode/:barcode', async (req, res) => {
   const { barcode } = req.params;
-  const db = getDatabase();
-  db.get("SELECT * FROM products WHERE barcode = ?", [barcode], (err, row) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
+  try {
+    const db = getDatabase();
+    const row = await new Promise((resolve, reject) => {
+      db.get("SELECT * FROM products WHERE barcode = ?", [barcode], (err, row) => {
+        if (err) reject(err);
+        else resolve(row);
+      });
+    });
+
     if (!row) {
       res.status(404).json({ error: 'Product not found.' });
       return;
     }
     res.json(row);
-  });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.put('/products/:id', (req, res) => {
+app.put('/products/:id', async (req, res) => {
   const { id } = req.params;
   const { name, price, stock, barcode } = req.body;
   if (!name || !price || !stock) {
     return res.status(400).json({ error: 'All fields (name, price, stock) are required.' });
   }
 
-  const db = getDatabase();
-  db.run("UPDATE products SET name = ?, price = ?, stock = ?, barcode = ? WHERE id = ?", [name, price, stock, barcode, id], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (this.changes === 0) {
+  try {
+    const db = getDatabase();
+    const result = await runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ? WHERE id = ?", [name, price, stock, barcode, id]);
+    if (result.changes === 0) {
       res.status(404).json({ error: 'Product not found or no changes made.' });
       return;
     }
     res.json({ message: 'Product updated successfully' });
-  });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.delete('/products/:id', (req, res) => {
+app.delete('/products/:id', async (req, res) => {
   const { id } = req.params;
-  const db = getDatabase();
-  db.run("DELETE FROM products WHERE id = ?", [id], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (this.changes === 0) {
+  try {
+    const db = getDatabase();
+    const result = await runAsync(db, "DELETE FROM products WHERE id = ?", [id]);
+    if (result.changes === 0) {
       res.status(404).json({ error: 'Product not found.' });
       return;
     }
     res.json({ message: 'Product deleted successfully' });
-  });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post('/reset-transactions', (req, res) => {
+app.post('/reset-transactions', async (req, res) => {
   const db = getDatabase();
-  db.serialize(() => {
-    db.run("DELETE FROM transaction_items", function(err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-    });
-    db.run("DELETE FROM transactions", function(err) {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json({ message: 'All transactions have been reset.' });
-    });
-  });
+  try {
+    await runAsync(db, "DELETE FROM transaction_items");
+    await runAsync(db, "DELETE FROM transactions");
+    res.json({ message: 'All transactions have been reset.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.post('/transactions', (req, res) => {
+app.post('/transactions', async (req, res) => {
   const { total_amount, payment_amount, change_amount, cartItems, payment_method } = req.body;
   const db = getDatabase();
   const transactionId = `TRX-${Date.now()}`;
   const timestamp = Date.now();
 
-  db.serialize(() => {
-    db.run("BEGIN TRANSACTION");
+  try {
+    await execAsync(db, "BEGIN TRANSACTION");
 
     // Insert into transactions table
-    db.run(
+    await runAsync(
+      db,
       "INSERT INTO transactions (id, timestamp, total_amount, payment_amount, change_amount, payment_method) VALUES (?, ?, ?, ?, ?, ?)",
-      [transactionId, timestamp, total_amount, payment_amount, change_amount, payment_method || 'Cash'],
-      function(err) {
-        if (err) {
-          db.run("ROLLBACK");
-          res.status(500).json({ error: err.message });
-          return;
-        }
-
-        // Insert into transaction_items table
-        const stmt = db.prepare(
-          "INSERT INTO transaction_items (transaction_id, product_id, product_name, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?)"
-        );
-        cartItems.forEach((item: any) => {
-          stmt.run(transactionId, item.id, item.name, item.price, item.quantity);
-        });
-        stmt.finalize(function(err) {
-          if (err) {
-            db.run("ROLLBACK");
-            res.status(500).json({ error: err.message });
-            return;
-          }
-          db.run("COMMIT", (commitErr) => {
-            if (commitErr) {
-              res.status(500).json({ error: commitErr.message });
-              return;
-            }
-            res.status(201).json({ message: 'Transaction recorded successfully', transactionId });
-          });
-        });
-      }
+      [transactionId, timestamp, total_amount, payment_amount, change_amount, payment_method || 'Cash']
     );
-  });
+
+    // Insert into transaction_items table
+    for (const item of cartItems) {
+      await runAsync(
+        db,
+        "INSERT INTO transaction_items (transaction_id, product_id, product_name, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?)",
+        [transactionId, item.id, item.name, item.price, item.quantity]
+      );
+    }
+
+    await execAsync(db, "COMMIT");
+    res.status(201).json({ message: 'Transaction recorded successfully', transactionId });
+  } catch (err: any) {
+    await execAsync(db, "ROLLBACK");
+    console.error("Error recording transaction:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.put('/products/:id/stock', (req, res) => {
+app.put('/products/:id/stock', async (req, res) => {
   const { id } = req.params;
   const { quantity } = req.body;
   if (typeof quantity !== 'number' || quantity < 0) {
     return res.status(400).json({ error: 'Quantity must be a non-negative number.' });
   }
 
-  const db = getDatabase();
-  db.run("UPDATE products SET stock = stock - ? WHERE id = ?", [quantity, id], function(err) {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    if (this.changes === 0) {
+  try {
+    const db = getDatabase();
+    const result = await runAsync(db, "UPDATE products SET stock = stock - ? WHERE id = ?", [quantity, id]);
+    if (result.changes === 0) {
       res.status(404).json({ error: 'Product not found or stock not updated.' });
       return;
     }
     res.json({ message: 'Product stock updated successfully' });
-  });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/transactions', (req, res) => {
+app.get('/transactions', async (req, res) => {
   const db = getDatabase();
   const { startDate, endDate } = req.query;
   let query = "SELECT * FROM transactions";
@@ -216,38 +241,28 @@ app.get('/transactions', (req, res) => {
 
   query += " ORDER BY timestamp DESC";
 
-  db.all(query, params, (err, transactions: any[]) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
+  try {
+    const transactions = await allAsync(db, query, params);
 
     if (transactions.length === 0) {
       res.json([]);
       return;
     }
 
-    const transactionsWithItems: any[] = [];
-    let completedQueries = 0;
+    const transactionsWithItems: any[] = await Promise.all(
+      transactions.map(async (transaction: any) => {
+        const items = await allAsync(db, "SELECT * FROM transaction_items WHERE transaction_id = ?", [transaction.id]);
+        return { ...transaction, items };
+      })
+    );
 
-    transactions.forEach((transaction, index) => {
-      db.all("SELECT * FROM transaction_items WHERE transaction_id = ?", [transaction.id], (err, items) => {
-        if (err) {
-          res.status(500).json({ error: err.message });
-          return;
-        }
-        transactionsWithItems[index] = { ...transaction, items };
-        completedQueries++;
-
-        if (completedQueries === transactions.length) {
-          res.json(transactionsWithItems);
-        }
-      });
-    });
-  });
+    res.json(transactionsWithItems);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/reports/daily-sales', (req, res) => {
+app.get('/reports/daily-sales', async (req, res) => {
   const db = getDatabase();
   const { date } = req.query; // Format YYYY-MM-DD
 
@@ -258,31 +273,32 @@ app.get('/reports/daily-sales', (req, res) => {
   const startOfDay = new Date(date as string).setHours(0, 0, 0, 0);
   const endOfDay = new Date(date as string).setHours(23, 59, 59, 999);
 
-  db.all(
-    `SELECT
+  try {
+    const rows = await allAsync(
+      db,
+      `SELECT
        strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch', 'localtime') AS sale_date,
        SUM(total_amount) AS total_sales
      FROM transactions
      WHERE timestamp >= ? AND timestamp <= ?
      GROUP BY sale_date
      ORDER BY sale_date DESC`,
-    [startOfDay, endOfDay],
-    (err, rows) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json(rows);
-    }
-  );
+      [startOfDay, endOfDay]
+    );
+    res.json(rows);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-app.get('/reports/top-products', (req, res) => {
+app.get('/reports/top-products', async (req, res) => {
   const db = getDatabase();
   const { limit = 5 } = req.query; // Default limit to 5
 
-  db.all(
-    `SELECT
+  try {
+    const rows = await allAsync(
+      db,
+      `SELECT
        product_name,
        SUM(quantity) AS total_quantity_sold,
        SUM(price_at_sale * quantity) AS total_revenue
@@ -290,15 +306,12 @@ app.get('/reports/top-products', (req, res) => {
      GROUP BY product_name
      ORDER BY total_quantity_sold DESC
      LIMIT ?`,
-    [limit],
-    (err, rows) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      res.json(rows);
-    }
-  );
+      [limit]
+    );
+    res.json(rows);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 

@@ -1,0 +1,16 @@
+{
+  "name": "sembako-pos-monorepo",
+  "version": "1.0.0",
+  "description": "Sembako POS application with separate backend and frontend",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm start --prefix backend\" \"npm start --prefix frontend\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
