@@ -52,10 +52,70 @@ app.get('/', (req, res) => {
   res.send('Hello from Backend!');
 });
 
+// Category Endpoints
+app.get('/categories', async (req, res) => {
+  try {
+    const db = getDatabase();
+    const rows = await allAsync(db, "SELECT * FROM categories");
+    res.json(rows);
+  } catch (err: any) {
+    console.error("Error fetching categories:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/categories', async (req, res) => {
+  const { id, name } = req.body;
+  if (!id || !name) {
+    return res.status(400).json({ error: 'Category ID and name are required.' });
+  }
+  try {
+    const db = getDatabase();
+    await runAsync(db, "INSERT INTO categories (id, name) VALUES (?, ?)", [id, name]);
+    res.status(201).json({ message: 'Category added successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/categories/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  if (!name) {
+    return res.status(400).json({ error: 'Category name is required.' });
+  }
+  try {
+    const db = getDatabase();
+    const result = await runAsync(db, "UPDATE categories SET name = ? WHERE id = ?", [name, id]);
+    if (result.changes === 0) {
+      res.status(404).json({ error: 'Category not found or no changes made.' });
+      return;
+    }
+    res.json({ message: 'Category updated successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/categories/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = getDatabase();
+    const result = await runAsync(db, "DELETE FROM categories WHERE id = ?", [id]);
+    if (result.changes === 0) {
+      res.status(404).json({ error: 'Category not found.' });
+      return;
+    }
+    res.json({ message: 'Category deleted successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/products', async (req, res) => {
   try {
     const db = getDatabase();
-    const rows = await allAsync(db, "SELECT * FROM products");
+    const rows = await allAsync(db, "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id");
     console.log("Products fetched:", rows);
     res.json(rows);
   } catch (err: any) {
@@ -65,14 +125,14 @@ app.get('/products', async (req, res) => {
 });
 
 app.post('/products', async (req, res) => {
-  const { id, name, price, stock, barcode } = req.body;
+  const { id, name, price, stock, barcode, category_id } = req.body;
   if (!id || !name || !price || !stock) {
     return res.status(400).json({ error: 'All fields (id, name, price, stock) are required.' });
   }
 
   try {
     const db = getDatabase();
-    const result = await runAsync(db, "INSERT INTO products (id, name, price, stock, barcode) VALUES (?, ?, ?, ?, ?)", [id, name, price, stock, barcode]);
+    const result = await runAsync(db, "INSERT INTO products (id, name, price, stock, barcode, category_id) VALUES (?, ?, ?, ?, ?, ?)", [id, name, price, stock, barcode, category_id]);
     res.status(201).json({ message: 'Product added successfully', id: result.lastID });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -84,7 +144,7 @@ app.get('/products/:id', async (req, res) => {
   try {
     const db = getDatabase();
     const row = await new Promise((resolve, reject) => {
-      db.get("SELECT * FROM products WHERE id = ?", [id], (err, row) => {
+      db.get("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?", [id], (err, row) => {
         if (err) reject(err);
         else resolve(row);
       });
@@ -105,7 +165,7 @@ app.get('/products/barcode/:barcode', async (req, res) => {
   try {
     const db = getDatabase();
     const row = await new Promise((resolve, reject) => {
-      db.get("SELECT * FROM products WHERE barcode = ?", [barcode], (err, row) => {
+      db.get("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.barcode = ?", [barcode], (err, row) => {
         if (err) reject(err);
         else resolve(row);
       });
@@ -123,14 +183,14 @@ app.get('/products/barcode/:barcode', async (req, res) => {
 
 app.put('/products/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, price, stock, barcode } = req.body;
+  const { name, price, stock, barcode, category_id } = req.body;
   if (!name || !price || !stock) {
     return res.status(400).json({ error: 'All fields (name, price, stock) are required.' });
   }
 
   try {
     const db = getDatabase();
-    const result = await runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ? WHERE id = ?", [name, price, stock, barcode, id]);
+    const result = await runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ?, category_id = ? WHERE id = ?", [name, price, stock, barcode, category_id, id]);
     if (result.changes === 0) {
       res.status(404).json({ error: 'Product not found or no changes made.' });
       return;

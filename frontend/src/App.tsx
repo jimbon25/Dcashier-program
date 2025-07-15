@@ -1,5 +1,6 @@
+// Created by dla 9196
 import React, { useEffect, useState, useCallback } from 'react';
-import { Container, Row, Col, Card, Button, Nav, Tab, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Nav, Tab, Spinner, Navbar } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceiptModal from './ReceiptModal';
@@ -12,6 +13,13 @@ interface Product {
   price: number;
   stock: number;
   barcode?: string; // Tambahkan properti barcode opsional
+  category_id?: string;
+  category_name?: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
 }
 
 interface CartItem extends Product {
@@ -51,6 +59,7 @@ function App() {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>('Cash'); // State untuk metode pembayaran
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [cartAnimationTrigger, setCartAnimationTrigger] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('sales');
   const [theme, setTheme] = useState<string>(() => {
@@ -81,6 +90,7 @@ function App() {
   const [newProductPrice, setNewProductPrice] = useState<number>(0);
   const [newProductStock, setNewProductStock] = useState<number>(0);
   const [newProductBarcode, setNewProductBarcode] = useState<string>('');
+  const [newProductCategory, setNewProductCategory] = useState<string>('');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -221,6 +231,7 @@ function App() {
     setNewProductPrice(product.price);
     setNewProductStock(product.stock);
     setNewProductBarcode(product.barcode || '');
+    setNewProductCategory(product.category_id || '');
   };
 
   const handleCancelEdit = () => {
@@ -230,6 +241,7 @@ function App() {
     setNewProductPrice(0);
     setNewProductStock(0);
     setNewProductBarcode('');
+    setNewProductCategory('');
   };
 
   const handleAddProduct = async () => {
@@ -268,6 +280,7 @@ function App() {
           price: newProductPrice,
           stock: newProductStock,
           barcode: newProductBarcode || null, // Kirim barcode, atau null jika kosong
+          category_id: newProductCategory || null,
         }),
       });
       if (!response.ok) {
@@ -322,6 +335,7 @@ function App() {
           price: newProductPrice,
           stock: newProductStock,
           barcode: newProductBarcode || null,
+          category_id: newProductCategory || null,
         }),
       });
       if (!response.ok) {
@@ -497,25 +511,37 @@ function App() {
   };
 
   useEffect(() => {
-    fetch('http://localhost:3001/products')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+    const fetchProductsAndCategories = async () => {
+      try {
+        const [productsResponse, categoriesResponse] = await Promise.all([
+          fetch('http://localhost:3001/products'),
+          fetch('http://localhost:3001/categories')
+        ]);
+
+        if (!productsResponse.ok) {
+          throw new Error(`HTTP error! status: ${productsResponse.status}`);
         }
-        return response.json();
-      })
-      .then(data => {
-        setProducts(data);
+        if (!categoriesResponse.ok) {
+          throw new Error(`HTTP error! status: ${categoriesResponse.status}`);
+        }
+
+        const productsData = await productsResponse.json();
+        const categoriesData = await categoriesResponse.json();
+
+        setProducts(productsData);
+        setCategories(categoriesData);
         setLoading(false);
-        // Identify low stock products
-        const lowStock = data.filter((p: Product) => p.stock <= LOW_STOCK_THRESHOLD);
+
+        const lowStock = productsData.filter((p: Product) => p.stock <= LOW_STOCK_THRESHOLD);
         setLowStockProducts(lowStock);
-      })
-      .catch(error => {
-        console.error("Error fetching products:", error);
+      } catch (error: any) {
+        console.error("Error fetching data:", error);
         setError(error.message);
         setLoading(false);
-      });
+      }
+    };
+
+    fetchProductsAndCategories();
   }, []);
 
   if (loading) {
@@ -556,14 +582,27 @@ function App() {
 
   return (
     <Container className="mt-5 py-4">
+      <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+        <Container>
+          <Navbar.Brand href="#home">Dcashier Program</Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="ms-auto">
+              <Button variant="outline-light" onClick={toggleTheme} className="rounded-circle p-2">
+                {theme === 'light' ? <MoonFill size={20} /> : <SunFill size={20} />}
+              </Button>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
       <div className="d-flex justify-content-between align-items-center mb-5 pb-2 border-bottom">
         <h1 className="mb-0 text-primary">Daftar Produk Toko Dyka Akbar</h1>
-        <Button variant="outline-secondary" onClick={toggleTheme} className="rounded-circle p-2">
-          {theme === 'light' ? <MoonFill size={20} /> : <SunFill size={20} />}
-        </Button>
       </div>
       <Tab.Container activeKey={activeTab} onSelect={(k: string | null) => setActiveTab(k || 'sales')}>
         <Nav variant="tabs" className="mb-4 border-bottom-0">
+          <Nav.Item>
+            <Nav.Link eventKey="dashboard" className="fw-semibold">Dashboard</Nav.Link>
+          </Nav.Item>
           <Nav.Item>
             <Nav.Link eventKey="sales" className="fw-semibold">Penjualan</Nav.Link>
           </Nav.Item>
@@ -576,7 +615,136 @@ function App() {
         </Nav>
 
         <Tab.Content>
-          <Tab.Pane eventKey="sales" className="p-3 border rounded">
+          <Tab.Pane eventKey="dashboard" className="p-3 border rounded fade">
+            <h2 className="mt-3 mb-4 text-primary">Dashboard</h2>
+            <p className="text-muted">Selamat datang di Dashboard! Bagian ini akan menampilkan ringkasan penjualan, stok, dan informasi penting lainnya.</p>
+            <Row className="g-4">
+              <Col md={3}>
+                <Card className="shadow-sm">
+                  <Card.Body>
+                    <Card.Title className="fw-bold">Total Pendapatan</Card.Title>
+                    <Card.Text className="fs-3 text-success">Rp{transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString()}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="shadow-sm">
+                  <Card.Body>
+                    <Card.Title className="fw-bold">Jumlah Produk</Card.Title>
+                    <Card.Text className="fs-3 text-info">{products.length}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="shadow-sm">
+                  <Card.Body>
+                    <Card.Title className="fw-bold">Jumlah Transaksi</Card.Title>
+                    <Card.Text className="fs-3 text-warning">{transactions.length}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={3}>
+                <Card className="shadow-sm">
+                  <Card.Body>
+                    <Card.Title className="fw-bold">Total Penjualan Hari Ini</Card.Title>
+                    <Card.Text className="fs-3 text-primary">Rp{dailySales.reduce((acc, item) => acc + item.total_revenue, 0).toLocaleString()}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+
+            <div className="mt-5 mb-3 d-flex justify-content-start">
+              <Button variant="success" className="me-2" onClick={() => setActiveTab('product-management')}>Tambah Produk Baru</Button>
+              <Button variant="info" onClick={() => setActiveTab('reports')}>Lihat Semua Transaksi</Button>
+            </div>
+
+            <h3 className="mt-5 mb-3 text-primary">Produk Stok Rendah</h3>
+            {lowStockProducts.length === 0 ? (
+              <p className="text-muted">Tidak ada produk dengan stok rendah.</p>
+            ) : (
+              <Row>
+                <Col>
+                  <table className="table table-striped table-danger table-hover align-middle">
+                    <thead>
+                      <tr>
+                        <th>ID Produk</th>
+                        <th>Nama Produk</th>
+                        <th>Stok</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lowStockProducts.map(product => (
+                        <tr key={product.id}>
+                          <td>{product.id}</td>
+                          <td>{product.name}</td>
+                          <td>{product.stock}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </Col>
+              </Row>
+            )}
+
+            <h3 className="mt-5 mb-3 text-primary">Penjualan Harian ({new Date(reportDate).toLocaleDateString()})</h3>
+            {dailySalesLoading ? (
+              <Spinner animation="border" size="sm" />
+            ) : (
+              dailySales.length > 0 ? (
+                <table className="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Produk</th>
+                      <th>Kuantitas Terjual</th>
+                      <th>Total Pendapatan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailySales.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.product_name}</td>
+                        <td>{item.total_quantity_sold}</td>
+                        <td>Rp{item.total_revenue.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-muted">Tidak ada penjualan untuk hari ini.</p>
+              )
+            )}
+
+            <h3 className="mt-5 mb-3 text-primary">Transaksi Terbaru</h3>
+            {loading ? (
+              <Spinner animation="border" size="sm" />
+            ) : (
+              transactions.length > 0 ? (
+                <table className="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>ID Transaksi</th>
+                      <th>Tanggal</th>
+                      <th>Total</th>
+                      <th>Metode Pembayaran</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.slice(0, 5).map(transaction => (
+                      <tr key={transaction.id}>
+                        <td>{transaction.id}</td>
+                        <td>{new Date(transaction.timestamp).toLocaleString()}</td>
+                        <td>Rp{transaction.total_amount.toLocaleString()}</td>
+                        <td>{transaction.payment_method}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-muted">Tidak ada transaksi terbaru.</p>
+              )
+            )}
+          </Tab.Pane>
+          <Tab.Pane eventKey="sales" className="p-3 border rounded fade">
             <div className="mb-4">
               <input
                 type="text"
@@ -662,6 +830,9 @@ function App() {
                               product.name
                             )}
                           </Card.Title>
+                          <Card.Text className="mb-1">
+                            <span className="fw-semibold">Kategori:</span> {product.category_name || '-'}
+                          </Card.Text>
                           <Card.Text className="mb-1">
                             <span className="fw-semibold">Harga:</span> Rp
                             {editingProductId === product.id && editingField === 'price' ? (
@@ -850,7 +1021,7 @@ function App() {
             )}
           </Tab.Pane>
 
-          <Tab.Pane eventKey="product-management" className="p-3 border rounded">
+          <Tab.Pane eventKey="product-management" className="p-3 border rounded fade">
             <h2 className="mt-3 mb-4 text-primary">Manajemen Produk</h2>
             <Row className="mb-4">
               <Col>
@@ -877,9 +1048,23 @@ function App() {
                       <input type="number" className={`form-control ${formErrors.newProductStock ? 'is-invalid' : ''}`} id="productStock" value={newProductStock === 0 ? '' : newProductStock} onChange={(e) => {setNewProductStock(Number(e.target.value)); setFormErrors(prev => { const { newProductStock, ...rest } = prev; return rest; });}} placeholder="Contoh: 100" />
                       {formErrors.newProductStock && <div className="invalid-feedback">{formErrors.newProductStock}</div>}
                     </div>
-                    <div className="mb-4">
+                    <div className="mb-3">
                       <label htmlFor="productBarcode" className="form-label fw-semibold">Barcode (Opsional)</label>
                       <input type="text" className="form-control" id="productBarcode" value={newProductBarcode} onChange={(e) => setNewProductBarcode(e.target.value)} placeholder="Contoh: 1234567890" />
+                    </div>
+                    <div className="mb-4">
+                      <label htmlFor="productCategory" className="form-label fw-semibold">Kategori</label>
+                      <select
+                        id="productCategory"
+                        className="form-select"
+                        value={newProductCategory}
+                        onChange={(e) => setNewProductCategory(e.target.value)}
+                      >
+                        <option value="">Pilih Kategori</option>
+                        {categories.map(category => (
+                          <option key={category.id} value={category.id}>{category.name}</option>
+                        ))}
+                      </select>
                     </div>
                     {editingProduct ? (
                       <>
@@ -895,123 +1080,89 @@ function App() {
             </Row>
           </Tab.Pane>
 
-          <Tab.Pane eventKey="reports" className="p-3 border rounded">
+          <Tab.Pane eventKey="reports" className="p-3 border rounded fade">
             <h2 className="mt-3 mb-4 text-primary">Laporan Penjualan</h2>
-            <Row className="mb-4">
-              <Col>
-                <Card className="shadow-sm">
-                  <Card.Body>
-                    <Card.Title className="mb-3 fw-bold">Ringkasan Penjualan</Card.Title>
-                    <p className="lead">Total Pendapatan: <span className="fw-bold text-success">Rp{transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString()}</span></p>
-                    <Button variant="danger" onClick={handleResetTransactions}>Reset Laporan</Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
+            <p className="text-muted">Bagian ini akan menampilkan laporan penjualan harian, produk terlaris, dan riwayat transaksi.</p>
 
-            <h2 className="mt-5 mb-4 text-primary">Laporan Penjualan Harian</h2>
-            <Row className="mb-4 align-items-end">
-              <Col md={4}>
-                <label htmlFor="reportDate" className="form-label fw-semibold">Pilih Tanggal:</label>
-                <input
-                  type="date"
-                  id="reportDate"
-                  className="form-control"
-                  value={reportDate}
-                  onChange={(e) => setReportDate(e.target.value)}
-                />
-              </Col>
-              <Col md={4}>
-                <Button onClick={fetchDailySales} className="w-100">Lihat Laporan Harian</Button>
-              </Col>
-            </Row>
+            <h3 className="mt-4 mb-3">Laporan Penjualan Harian</h3>
+            <div className="mb-3">
+              <label htmlFor="reportDate" className="form-label fw-semibold">Pilih Tanggal:</label>
+              <input
+                type="date"
+                id="reportDate"
+                className="form-control w-25"
+                value={reportDate}
+                onChange={(e) => setReportDate(e.target.value)}
+              />
+            </div>
             {dailySalesLoading ? (
-              <div className="text-center my-3">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Memuat...</span>
-                </div>
-                <p className="mt-2 text-muted">Memuat laporan harian...</p>
-              </div>
-            ) : (dailySales.length > 0 ? (
-              <Row>
-                <Col>
-                  <table className="table table-striped table-hover align-middle">
-                    <thead>
-                      <tr>
-                        <th>Tanggal</th>
-                        <th>Total Penjualan</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dailySales.map((report, index) => (
-                        <tr key={index}>
-                          <td>{report.sale_date}</td>
-                          <td>Rp{report.total_sales.toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Col>
-              </Row>
+              <Spinner animation="border" size="sm" />
             ) : (
-              <p className="text-muted">Tidak ada data penjualan harian untuk tanggal ini.</p>
-            ))}
+              dailySales.length > 0 ? (
+                <table className="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Produk</th>
+                      <th>Kuantitas Terjual</th>
+                      <th>Total Pendapatan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dailySales.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.product_name}</td>
+                        <td>{item.total_quantity_sold}</td>
+                        <td>Rp{item.total_revenue.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-muted">Tidak ada penjualan untuk tanggal ini.</p>
+              )
+            )}
 
-            <h2 className="mt-5 mb-4 text-primary">Produk Terlaris</h2>
-            <Row className="mb-4 align-items-end">
-              <Col md={4}>
-                <label htmlFor="topProductsLimit" className="form-label fw-semibold">Jumlah Produk:</label>
-                <input
-                  type="number"
-                  id="topProductsLimit"
-                  className="form-control"
-                  value={topProductsLimit}
-                  onChange={(e) => setTopProductsLimit(Number(e.target.value))}
-                  min="1"
-                />
-              </Col>
-              <Col md={4}>
-                <Button onClick={fetchTopProducts} className="w-100">Lihat Produk Terlaris</Button>
-              </Col>
-            </Row>
+            <h3 className="mt-4 mb-3">Produk Terlaris</h3>
+            <div className="mb-3">
+              <label htmlFor="topProductsLimit" className="form-label fw-semibold">Jumlah Produk:</label>
+              <input
+                type="number"
+                id="topProductsLimit"
+                className="form-control w-25"
+                value={topProductsLimit}
+                onChange={(e) => setTopProductsLimit(Number(e.target.value))}
+                min="1"
+              />
+            </div>
             {topProductsLoading ? (
-              <div className="text-center my-3">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Memuat...</span>
-                </div>
-                <p className="mt-2 text-muted">Memuat produk terlaris...</p>
-              </div>
-            ) : (topProducts.length > 0 ? (
-              <Row>
-                <Col>
-                  <table className="table table-striped table-hover align-middle">
-                    <thead>
-                      <tr>
-                        <th>Nama Produk</th>
-                        <th>Total Kuantitas Terjual</th>
-                        <th>Total Pendapatan</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {topProducts.map((product, index) => (
-                        <tr key={index}>
-                          <td>{product.product_name}</td>
-                          <td>{product.total_quantity_sold}</td>
-                          <td>Rp{product.total_revenue.toLocaleString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Col>
-              </Row>
+              <Spinner animation="border" size="sm" />
             ) : (
-              <p className="text-muted">Tidak ada data produk terlaris.</p>
-            ))}
+              topProducts.length > 0 ? (
+                <table className="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Produk</th>
+                      <th>Total Kuantitas Terjual</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topProducts.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.product_name}</td>
+                        <td>{item.total_quantity_sold}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-muted">Tidak ada produk terlaris untuk ditampilkan.</p>
+              )
+            )}
 
-            <h2 className="mt-5 mb-4 text-primary">Riwayat Transaksi</h2>
-            <Row className="mb-4 align-items-end">
-              <Col md={4}>
-                <label htmlFor="startDate" className="form-label fw-semibold">Tanggal Mulai:</label>
+            <h3 className="mt-4 mb-3">Riwayat Transaksi</h3>
+            <div className="mb-3 d-flex">
+              <div className="me-2">
+                <label htmlFor="startDate" className="form-label fw-semibold">Dari Tanggal:</label>
                 <input
                   type="date"
                   id="startDate"
@@ -1019,9 +1170,9 @@ function App() {
                   value={filterStartDate}
                   onChange={(e) => setFilterStartDate(e.target.value)}
                 />
-              </Col>
-              <Col md={4}>
-                <label htmlFor="endDate" className="form-label fw-semibold">Tanggal Akhir:</label>
+              </div>
+              <div>
+                <label htmlFor="endDate" className="form-label fw-semibold">Sampai Tanggal:</label>
                 <input
                   type="date"
                   id="endDate"
@@ -1029,60 +1180,50 @@ function App() {
                   value={filterEndDate}
                   onChange={(e) => setFilterEndDate(e.target.value)}
                 />
-              </Col>
-              <Col md={4}>
-                <Button onClick={fetchTransactions} disabled={loading} className="w-100">Filter Transaksi</Button>
-              </Col>
-            </Row>
-            {loading ? (
-              <div className="text-center my-5">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Memuat...</span>
-                </div>
-                <p className="mt-2 text-muted">Memuat transaksi...</p>
               </div>
-            ) : transactions.length === 0 ? (
-              <p className="text-muted">Belum ada transaksi.</p>
+              <Button variant="primary" className="ms-2 align-self-end" onClick={fetchTransactions}>Filter</Button>
+            </div>
+            {loading ? (
+              <Spinner animation="border" size="sm" />
             ) : (
-              <Row>
-                <Col>
-                  <table className="table table-striped table-hover align-middle">
-                    <thead>
-                      <tr>
-                        <th>ID Transaksi</th>
-                        <th>Waktu</th>
-                        <th>Total</th>
-                        <th>Dibayar</th>
-                        <th>Kembalian</th>
-                        <th>Metode Pembayaran</th>
-                        <th>Detail</th>
+              transactions.length > 0 ? (
+                <table className="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>ID Transaksi</th>
+                      <th>Tanggal</th>
+                      <th>Total</th>
+                      <th>Dibayar</th>
+                      <th>Kembalian</th>
+                      <th>Metode Pembayaran</th>
+                      <th>Detail</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map(transaction => (
+                      <tr key={transaction.id}>
+                        <td>{transaction.id}</td>
+                        <td>{new Date(transaction.timestamp).toLocaleString()}</td>
+                        <td>Rp{transaction.total_amount.toLocaleString()}</td>
+                        <td>Rp{transaction.payment_amount.toLocaleString()}</td>
+                        <td>Rp{transaction.change_amount.toLocaleString()}</td>
+                        <td>{transaction.payment_method}</td>
+                        <td>
+                          <ul>
+                            {transaction.items.map((item, idx) => (
+                              <li key={idx}>{item.product_name} ({item.quantity} x Rp{item.price_at_sale.toLocaleString()})</li>
+                            ))}
+                          </ul>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {transactions.map(transaction => (
-                        <tr key={transaction.id}>
-                          <td>{transaction.id}</td>
-                          <td>{new Date(transaction.timestamp).toLocaleString()}</td>
-                          <td>Rp{transaction.total_amount.toLocaleString()}</td>
-                          <td>Rp{transaction.payment_amount.toLocaleString()}</td>
-                          <td>Rp{transaction.change_amount.toLocaleString()}</td>
-                          <td>{transaction.payment_method}</td>
-                          <td>
-                            <ul>
-                              {transaction.items.map(item => (
-                                <li key={item.id}>
-                                  {item.product_name} ({item.quantity} x Rp{item.price_at_sale.toLocaleString()})
-                                </li>
-                              ))}
-                            </ul>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Col>
-              </Row>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-muted">Tidak ada transaksi untuk ditampilkan.</p>
+              )
             )}
+            <Button variant="danger" className="mt-3" onClick={handleResetTransactions}>Reset Semua Transaksi</Button>
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>
@@ -1093,6 +1234,9 @@ function App() {
         transaction={currentTransaction}
       />
       <ToastContainer />
+      <footer className="text-center mt-5 py-3 text-muted border-top">
+        <p className="mb-0">Created by dla 9196</p>
+      </footer>
     </Container>
   );
 }
