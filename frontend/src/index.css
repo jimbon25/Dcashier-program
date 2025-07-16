@@ -44,3 +44,40 @@ code {
   position: sticky;
   top: 20px;
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    height: auto;
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .main-content {
+    height: auto;
+    width: 100%;
+    padding: 1rem;
+  }
+
+  .d-flex.flex-column.bg-secondary.vh-100 {
+    height: auto !important;
+  }
+
+  .col-md-2, .col-md-10 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .sticky-cart-container {
+    position: relative;
+    top: 0;
+  }
+}
+
+/* Sidebar Navigation Link */
+.sidebar-nav-link {
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}

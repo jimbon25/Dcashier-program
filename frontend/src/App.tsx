@@ -1,10 +1,10 @@
 // Created by dla 9196
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Container, Row, Col, Card, Button, Nav, Spinner, Navbar } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceiptModal from './ReceiptModal';
-import { SunFill, MoonFill, BoxArrowRight, CartPlusFill } from 'react-bootstrap-icons';
+import { CartPlusFill, PencilSquare, TrashFill } from 'react-bootstrap-icons';
 import AuthPage from './AuthPage';
 import Sidebar from './Sidebar';
 
@@ -85,6 +85,7 @@ function App() {
     return savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   });
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [barcodeSearchTerm, setBarcodeSearchTerm] = useState<string>('');
   const [newProductId, setNewProductId] = useState<string>('');
   const [newProductName, setNewProductName] = useState<string>('');
   const [newProductPrice, setNewProductPrice] = useState<number>(0);
@@ -106,6 +107,14 @@ function App() {
   const LOW_STOCK_THRESHOLD = 10;
   const [filterStartDate, setFilterStartDate] = useState<string>('');
   const [filterEndDate, setFilterEndDate] = useState<string>('');
+
+  // Category Management States
+  const [newCategoryId, setNewCategoryId] = useState<string>('');
+  const [newCategoryName, setNewCategoryName] = useState<string>('');
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+  const productFormRef = useRef<HTMLDivElement>(null);
+  const categoryFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
@@ -131,6 +140,24 @@ function App() {
 
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
+  const handleBarcodeScan = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && barcodeSearchTerm.trim() !== '') {
+      try {
+        const response = await fetch(`http://localhost:3001/products/barcode/${barcodeSearchTerm}`);
+        if (!response.ok) {
+          toast.error('Produk dengan barcode tersebut tidak ditemukan.');
+          return;
+        }
+        const product: Product = await response.json();
+        addToCart(product);
+        setBarcodeSearchTerm(''); // Clear the barcode input after successful scan
+      } catch (error: any) {
+        console.error("Error fetching product by barcode:", error);
+        toast.error(`Gagal mencari produk: ${error.message}`);
+      }
+    }
   };
 
   const addToCart = (product: Product) => {
@@ -254,6 +281,21 @@ function App() {
     fetchProfitLossReport();
     fetchTransactions();
   }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions]);
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setNewProductId(product.id);
+    setNewProductName(product.name);
+    setNewProductPrice(product.price);
+    setNewProductCostPrice(product.cost_price || 0);
+    setNewProductStock(product.stock);
+    setNewProductBarcode(product.barcode || '');
+    setNewProductCategory(product.category_id || '');
+    setNewProductImagePreview(product.image_url ? `http://localhost:3001${product.image_url}` : null);
+    if (productFormRef.current) {
+      productFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   const handleCancelEdit = () => {
     setEditingProduct(null);
@@ -490,35 +532,139 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    const fetchProductsAndCategories = async () => {
+  const handleCancelEditCategory = () => {
+    setEditingCategory(null);
+    setNewCategoryId('');
+    setNewCategoryName('');
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryId.trim() || !newCategoryName.trim()) {
+      toast.error('ID Kategori dan Nama Kategori tidak boleh kosong.');
+      return;
+    }
+    try {
+      const response = await fetch('http://localhost:3001/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: newCategoryId, name: newCategoryName }),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      toast.success(data.message);
+      fetch('http://localhost:3001/categories').then(res => res.json()).then(setCategories);
+      setNewCategoryId('');
+      setNewCategoryName('');
+    } catch (error: any) {
+      console.error("Error adding category:", error);
+      toast.error(`Failed to add category: ${error.message}`);
+    }
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setNewCategoryId(category.id);
+    setNewCategoryName(category.name);
+    if (categoryFormRef.current) {
+      categoryFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleUpdateCategory = async () => {
+    if (!editingCategory) return;
+    if (!newCategoryName.trim()) {
+      toast.error('Nama Kategori tidak boleh kosong.');
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:3001/categories/${editingCategory.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCategoryName }),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      toast.success(data.message);
+      fetch('http://localhost:3001/categories').then(res => res.json()).then(setCategories);
+      handleCancelEditCategory();
+    } catch (error: any) {
+      console.error("Error updating category:", error);
+      toast.error(`Failed to update category: ${error.message}`);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini? Produk yang terkait mungkin terpengaruh.')) {
       try {
-        const [productsResponse, categoriesResponse] = await Promise.all([
-          fetch('http://localhost:3001/products'),
-          fetch('http://localhost:3001/categories')
-        ]);
-
-        if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
-        if (!categoriesResponse.ok) throw new Error(`HTTP error! status: ${categoriesResponse.status}`);
-
-        const productsData = await productsResponse.json();
-        const categoriesData = await categoriesResponse.json();
-
-        setProducts(productsData);
-        setCategories(categoriesData);
-        setLoading(false);
-
-        const lowStock = productsData.filter((p: Product) => p.stock <= LOW_STOCK_THRESHOLD);
-        setLowStockProducts(lowStock);
+        const response = await fetch(`http://localhost:3001/categories/${categoryId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        toast.success(data.message);
+        fetch('http://localhost:3001/categories').then(res => res.json()).then(setCategories);
       } catch (error: any) {
-        console.error("Error fetching data:", error);
-        setError(error.message);
-        setLoading(false);
+        console.error("Error deleting category:", error);
+        toast.error(`Failed to delete category: ${error.message}`);
       }
-    };
+    }
+  };
 
-    fetchProductsAndCategories();
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:3001/categories');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setCategories(data);
+    } catch (error: any) {
+      console.error("Error fetching categories:", error);
+      toast.error(`Failed to fetch categories: ${error.message}`);
+    }
   }, []);
+
+  
+
+  const fetchProductsAndCategories = useCallback(async () => {
+    try {
+      const productsResponse = await fetch('http://localhost:3001/products');
+
+      if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
+
+      const productsData = await productsResponse.json();
+
+      setProducts(productsData);
+      setLoading(false);
+
+      const lowStock = productsData.filter((p: Product) => p.stock <= LOW_STOCK_THRESHOLD);
+      setLowStockProducts(lowStock);
+    } catch (error: any) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProductsAndCategories();
+    fetchCategories();
+  }, [fetchProductsAndCategories, fetchCategories]);
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+      try {
+        const response = await fetch(`http://localhost:3001/products/${productId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        toast.success(data.message);
+        fetchProductsAndCategories(); // Refresh product list
+      } catch (error: any) {
+        console.error("Error deleting product:", error);
+        toast.error(`Failed to delete product: ${error.message}`);
+      }
+    }
+  };
 
   const totalBeforeDiscount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const calculatedDiscount = discountType === 'percentage' ? (totalBeforeDiscount * discount) / 100 : discount;
@@ -665,8 +811,16 @@ function App() {
               <div className="mb-4">
                 <input
                   type="text"
+                  className="form-control form-control-lg mb-3"
+                  placeholder="Scan Barcode atau masukkan barcode..."
+                  value={barcodeSearchTerm}
+                  onChange={(e) => setBarcodeSearchTerm(e.target.value)}
+                  onKeyDown={handleBarcodeScan}
+                />
+                <input
+                  type="text"
                   className="form-control form-control-lg"
-                  placeholder="Cari produk..."
+                  placeholder="Cari produk berdasarkan nama..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -674,7 +828,7 @@ function App() {
               <Row className="g-4 mb-5">
                 {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
                   <Col key={product.id} sm={6} md={4} lg={4}>
-                    <Card onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
+                    <Card className="rounded" onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
                       {product.image_url && (
                         <Card.Img variant="top" src={`http://localhost:3001${product.image_url}`} alt={product.name} style={{ height: '150px', objectFit: 'contain', padding: '10px' }} />
                       )}
@@ -789,9 +943,9 @@ function App() {
             <h2 className="mt-3 mb-4 text-primary">Manajemen Produk</h2>
             <Row className="mb-4">
               <Col>
-                <Card className="shadow-sm">
+                <Card className="shadow-sm" ref={productFormRef}>
                   <Card.Body>
-                    <Card.Title className="mb-4 fw-bold">Tambah/Edit Produk</Card.Title>
+                    <Card.Title className="mb-4 fw-bold">Tambah Produk</Card.Title>
                     <div className="mb-3">
                       <label htmlFor="productId" className="form-label fw-semibold">ID Produk</label>
                       <input type="text" className={`form-control ${formErrors.newProductId ? 'is-invalid' : ''}`} id="productId" value={newProductId} onChange={(e) => {setNewProductId(e.target.value); setFormErrors(prev => { const { newProductId, ...rest } = prev; return rest; });}} placeholder="Contoh: P006" disabled={!!editingProduct} />
@@ -855,6 +1009,48 @@ function App() {
                 </Card>
               </Col>
             </Row>
+            <h3 className="mt-4 mb-3">Daftar Produk</h3>
+            {products.length === 0 ? (
+              <p className="text-muted">Tidak ada produk untuk ditampilkan.</p>
+            ) : (
+              <table className="table table-striped table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>Harga Jual</th>
+                    <th>Harga Beli</th>
+                    <th>Stok</th>
+                    <th>Barcode</th>
+                    <th>Kategori</th>
+                    <th>Gambar</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map(product => (
+                    <tr key={product.id}>
+                      <td>{product.id}</td>
+                      <td>{product.name}</td>
+                      <td>Rp{product.price.toLocaleString()}</td>
+                      <td>Rp{(product.cost_price || 0).toLocaleString()}</td>
+                      <td>{product.stock}</td>
+                      <td>{product.barcode || '-'}</td>
+                      <td>{product.category_name || '-'}</td>
+                      <td>
+                        {product.image_url && (
+                          <img src={`http://localhost:3001${product.image_url}`} alt={product.name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                        )}
+                      </td>
+                      <td>
+                        <Button variant="info" size="sm" className="me-2" onClick={() => handleEditProduct(product)}><PencilSquare /></Button>
+                        <Button variant="danger" size="sm" onClick={() => handleDeleteProduct(product.id)}><TrashFill /></Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         );
       case 'reports':
@@ -1076,6 +1272,63 @@ function App() {
             )}
           </div>
         );
+      case 'category-management':
+        return (
+          <div>
+            <h2 className="mt-3 mb-4 text-primary">Manajemen Kategori</h2>
+            <Row className="mb-4">
+              <Col>
+                <Card className="shadow-sm" ref={categoryFormRef}>
+                  <Card.Body>
+                    <Card.Title className="mb-4 fw-bold">Tambah/Edit Kategori</Card.Title>
+                    <div className="mb-3">
+                      <label htmlFor="categoryId" className="form-label fw-semibold">ID Kategori</label>
+                      <input type="text" className="form-control" id="categoryId" value={newCategoryId} onChange={(e) => setNewCategoryId(e.target.value)} placeholder="Contoh: CAT005" disabled={!!editingCategory} />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="categoryName" className="form-label fw-semibold">Nama Kategori</label>
+                      <input type="text" className="form-control" id="categoryName" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Contoh: Kebersihan" />
+                    </div>
+                    {editingCategory ? (
+                      <>
+                        <Button variant="warning" onClick={handleUpdateCategory} className="me-2">Update Kategori</Button>
+                        <Button variant="secondary" onClick={handleCancelEditCategory}>Batal Edit</Button>
+                      </>
+                    ) : (
+                      <Button variant="success" onClick={handleAddCategory}>Tambah Kategori</Button>
+                    )}
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+            <h3 className="mt-4 mb-3">Daftar Kategori</h3>
+            {categories.length === 0 ? (
+              <p className="text-muted">Tidak ada kategori untuk ditampilkan.</p>
+            ) : (
+              <table className="table table-striped table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nama</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map(category => (
+                    <tr key={category.id}>
+                      <td>{category.id}</td>
+                      <td>{category.name}</td>
+                      <td>
+                        <Button variant="info" size="sm" className="me-2" onClick={() => handleEditCategory(category)}><PencilSquare /></Button>
+                        <Button variant="danger" size="sm" onClick={() => handleDeleteCategory(category.id)}><TrashFill /></Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        );
       default:
         return null;
     }
@@ -1091,23 +1344,15 @@ function App() {
       ) : (
         <>
           <Col md={2} className="p-0">
-            <Sidebar activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'dashboard')} />
+            <Sidebar activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'dashboard')} theme={theme} toggleTheme={toggleTheme} isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
           </Col>
           <Col md={10} className="main-content p-4">
             <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
               <Container>
-                <Navbar.Brand href="#home">Dcashier Program</Navbar.Brand>
+                
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
                   <Nav className="ms-auto">
-                    <Button variant="outline-light" onClick={toggleTheme} className="rounded-circle p-2 me-2">
-                      {theme === 'light' ? <MoonFill size={20} /> : <SunFill size={20} />}
-                    </Button>
-                    {isLoggedIn && (
-                      <Button variant="outline-light" onClick={handleLogout} className="rounded-circle p-2">
-                        <BoxArrowRight size={20} />
-                      </Button>
-                    )}
                   </Nav>
                 </Navbar.Collapse>
               </Container>

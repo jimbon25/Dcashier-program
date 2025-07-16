@@ -46,3 +46,49 @@
     background-position: -200% 0;
   }
 }
+
+/* Product Card Enhancements */
+.card {
+  border-radius: 15px; /* More rounded corners */
+  border: 1px solid var(--bs-primary); /* Primary color border */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth transition for hover effects */
+}
+
+.card:hover {
+  transform: translateY(-5px); /* Lift effect on hover */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
+
+.card-title {
+  font-size: 0.9rem; /* Smaller font size for product names */
+}
+
+/* Cart Animation */
+.animate-cart {
+  animation: pulse 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Sidebar Active Link */
+.nav-link.active {
+  background-color: var(--bs-primary) !important; /* Highlight active link with primary color */
+  color: var(--bs-white) !important; /* White text for active link */
+  border-radius: 8px; /* Rounded corners for the highlight */
+  transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out; /* Smooth transition */
+}
+
+/* Sidebar Inactive Link */
+.nav-link {
+  color: #f8f9fa; /* Light color for inactive links */
+}
