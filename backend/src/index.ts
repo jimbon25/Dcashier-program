@@ -4,14 +4,29 @@ import sqlite3 from 'sqlite3';
 import { initializeDatabase, getDatabase } from './database';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import path from 'path';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'supersecretjwtkey'; // Use environment variable in production
 
 const app = express();
 const port = 3001; // Using 3001 to avoid conflict with React's default 3000
 
+// Multer storage configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Append timestamp to filename
+  }
+});
+
+const upload = multer({ storage: storage });
+
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Enable JSON body parsing
+app.use('/uploads', express.static(path.join(__dirname, '../uploads'))); // Serve static files from the uploads directory
 
 // Helper function to promisify db.run
 const runAsync = (db: sqlite3.Database, sql: string, params: any[] = []): Promise<sqlite3.RunResult> => {
@@ -54,6 +69,13 @@ const execAsync = (db: sqlite3.Database, sql: string): Promise<void> => {
 
 app.get('/', (req, res) => {
   res.send('Hello from Backend!');
+});
+
+app.post('/upload/image', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded.' });
+  }
+  res.json({ imageUrl: `/uploads/images/${req.file.filename}` });
 });
 
 // User Authentication Endpoints
@@ -181,14 +203,14 @@ app.get('/products', async (req, res) => {
 });
 
 app.post('/products', async (req, res) => {
-  const { id, name, price, stock, barcode, category_id, cost_price } = req.body;
+  const { id, name, price, stock, barcode, category_id, cost_price, image_url } = req.body;
   if (!id || !name || !price || !stock || cost_price === undefined) {
     return res.status(400).json({ error: 'All fields (id, name, price, stock, cost_price) are required.' });
   }
 
   try {
     const db = getDatabase();
-    const result = await runAsync(db, "INSERT INTO products (id, name, price, stock, barcode, category_id, cost_price) VALUES (?, ?, ?, ?, ?, ?, ?)", [id, name, price, stock, barcode, category_id, cost_price]);
+    const result = await runAsync(db, "INSERT INTO products (id, name, price, stock, barcode, category_id, cost_price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [id, name, price, stock, barcode, category_id, cost_price, image_url || null]);
     res.status(201).json({ message: 'Product added successfully', id: result.lastID });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -239,14 +261,14 @@ app.get('/products/barcode/:barcode', async (req, res) => {
 
 app.put('/products/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, price, stock, barcode, category_id, cost_price } = req.body;
+  const { name, price, stock, barcode, category_id, cost_price, image_url } = req.body;
   if (!name || !price || !stock || cost_price === undefined) {
     return res.status(400).json({ error: 'All fields (name, price, stock, cost_price) are required.' });
   }
 
   try {
     const db = getDatabase();
-    const result = await runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ?, category_id = ?, cost_price = ? WHERE id = ?", [name, price, stock, barcode, category_id, cost_price, id]);
+    const result = await runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ?, category_id = ?, cost_price = ?, image_url = ? WHERE id = ?", [name, price, stock, barcode, category_id, cost_price, image_url || null, id]);
     if (result.changes === 0) {
       res.status(404).json({ error: 'Product not found or no changes made.' });
       return;

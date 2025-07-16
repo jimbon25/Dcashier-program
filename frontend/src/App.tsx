@@ -1,22 +1,23 @@
 // Created by dla 9196
 import React, { useEffect, useState, useCallback } from 'react';
-import { Container, Row, Col, Card, Button, Nav, Tab, Spinner, Navbar } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Nav, Spinner, Navbar } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceiptModal from './ReceiptModal';
-import ProductSkeleton from './ProductSkeleton';
-import { CartPlus, SunFill, MoonFill, BoxArrowRight } from 'react-bootstrap-icons'; // Import ikon dan ikon tema
+import { SunFill, MoonFill, BoxArrowRight, CartPlusFill } from 'react-bootstrap-icons';
 import AuthPage from './AuthPage';
+import Sidebar from './Sidebar';
 
 interface Product {
   id: string;
   name: string;
   price: number;
-  cost_price?: number; // Tambahkan properti cost_price opsional
+  cost_price?: number;
   stock: number;
-  barcode?: string; // Tambahkan properti barcode opsional
+  barcode?: string;
   category_id?: string;
   category_name?: string;
+  image_url?: string;
 }
 
 interface Category {
@@ -34,7 +35,7 @@ interface TransactionItem {
   product_id: string;
   product_name: string;
   price_at_sale: number;
-  cost_price_at_sale?: number; // Tambahkan properti cost_price_at_sale opsional
+  cost_price_at_sale?: number;
   quantity: number;
 }
 
@@ -44,8 +45,9 @@ interface Transaction {
   total_amount: number;
   payment_amount: number;
   change_amount: number;
+  discount?: number;
   items: TransactionItem[];
-  payment_method: string; // Tambahkan properti payment_method
+  payment_method: string;
 }
 
 interface ProfitLossReportItem {
@@ -63,31 +65,58 @@ function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
-  const [change, setChange] = useState<number | null>(null);
   const [discount, setDiscount] = useState<number>(0);
+  const [discountType, setDiscountType] = useState<'percentage'>('percentage');
   const [showReceiptModal, setShowReceiptModal] = useState<boolean>(false);
   const [currentTransaction, setCurrentTransaction] = useState<Transaction | null>(null);
-  const [editingProductId, setEditingProductId] = useState<string | null>(null);
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<string>('Cash'); // State untuk metode pembayaran
+  const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cartAnimationTrigger, setCartAnimationTrigger] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>('sales');
+  const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-  // Profit/Loss Report States
   const [profitLossReport, setProfitLossReport] = useState<ProfitLossReportItem[]>([]);
   const [profitLossLoading, setProfitLossLoading] = useState<boolean>(false);
   const [profitFilterStartDate, setProfitFilterStartDate] = useState<string>('');
   const [profitFilterEndDate, setProfitFilterEndDate] = useState<string>('');
   const [profitFilterCategory, setProfitFilterCategory] = useState<string>('');
+  const [theme, setTheme] = useState<string>(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  });
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [newProductId, setNewProductId] = useState<string>('');
+  const [newProductName, setNewProductName] = useState<string>('');
+  const [newProductPrice, setNewProductPrice] = useState<number>(0);
+  const [newProductCostPrice, setNewProductCostPrice] = useState<number>(0);
+  const [newProductStock, setNewProductStock] = useState<number>(0);
+  const [newProductBarcode, setNewProductBarcode] = useState<string>('');
+  const [newProductCategory, setNewProductCategory] = useState<string>('');
+  const [newProductImage, setNewProductImage] = useState<File | null>(null);
+  const [newProductImagePreview, setNewProductImagePreview] = useState<string | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [reportDate, setReportDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [dailySales, setDailySales] = useState<any[]>([]);
+  const [dailySalesLoading, setDailySalesLoading] = useState<boolean>(false);
+  const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [topProductsLimit, setTopProductsLimit] = useState<number>(5);
+  const [topProductsLoading, setTopProductsLoading] = useState<boolean>(false);
+  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
+  const LOW_STOCK_THRESHOLD = 10;
+  const [filterStartDate, setFilterStartDate] = useState<string>('');
+  const [filterEndDate, setFilterEndDate] = useState<string>('');
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
       setIsLoggedIn(true);
     }
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-bs-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   const handleLogin = (token: string) => {
     localStorage.setItem('token', token);
@@ -99,50 +128,10 @@ function App() {
     setIsLoggedIn(false);
     toast.info('Logged out successfully.');
   };
-  const [theme, setTheme] = useState<string>(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      return savedTheme;
-    } else {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-bs-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
 
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
-
-  // Product Search State
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [barcodeInput, setBarcodeInput] = useState<string>('');
-
-  // Product Management States
-  const [newProductId, setNewProductId] = useState<string>('');
-  const [newProductName, setNewProductName] = useState<string>('');
-  const [newProductPrice, setNewProductPrice] = useState<number>(0);
-  const [newProductCostPrice, setNewProductCostPrice] = useState<number>(0); // New state for cost price
-  const [newProductStock, setNewProductStock] = useState<number>(0);
-  const [newProductBarcode, setNewProductBarcode] = useState<string>('');
-  const [newProductCategory, setNewProductCategory] = useState<string>('');
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
-  // Report States
-  const [reportDate, setReportDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [dailySales, setDailySales] = useState<any[]>([]);
-  const [dailySalesLoading, setDailySalesLoading] = useState<boolean>(false);
-  const [topProducts, setTopProducts] = useState<any[]>([]);
-  const [topProductsLimit, setTopProductsLimit] = useState<number>(5);
-  const [topProductsLoading, setTopProductsLoading] = useState<boolean>(false);
-
-  // Low Stock Products State
-  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
-  const LOW_STOCK_THRESHOLD = 10; // Define your low stock threshold here
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
@@ -160,9 +149,7 @@ function App() {
 
   useEffect(() => {
     if (cartAnimationTrigger) {
-      const timer = setTimeout(() => {
-        setCartAnimationTrigger(false);
-      }, 300); // Durasi animasi
+      const timer = setTimeout(() => setCartAnimationTrigger(false), 300);
       return () => clearTimeout(timer);
     }
   }, [cartAnimationTrigger]);
@@ -178,41 +165,27 @@ function App() {
   const decreaseQuantity = (productId: string) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === productId);
-      if (existingItem) {
-        if (existingItem.quantity > 1) {
-          return prevCart.map(item =>
-            item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
-          );
-        } else {
-          return prevCart.filter(item => item.id !== productId);
-        }
+      if (existingItem && existingItem.quantity > 1) {
+        return prevCart.map(item =>
+          item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+        );
+      } else {
+        return prevCart.filter(item => item.id !== productId);
       }
-      return prevCart; // Should not happen if button is only shown for existing items
     });
   };
-
-  const [filterStartDate, setFilterStartDate] = useState<string>('');
-  const [filterEndDate, setFilterEndDate] = useState<string>('');
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
       let url = 'http://localhost:3001/transactions';
       const params = new URLSearchParams();
-      if (filterStartDate) {
-        params.append('startDate', String(new Date(filterStartDate).getTime()));
-      }
-      if (filterEndDate) {
-        params.append('endDate', String(new Date(filterEndDate).getTime()));
-      }
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
+      if (filterStartDate) params.append('startDate', String(new Date(filterStartDate).getTime()));
+      if (filterEndDate) params.append('endDate', String(new Date(filterEndDate).getTime()));
+      if (params.toString()) url += `?${params.toString()}`;
 
       const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setTransactions(data);
     } catch (error: any) {
@@ -227,9 +200,7 @@ function App() {
     setDailySalesLoading(true);
     try {
       const response = await fetch(`http://localhost:3001/reports/daily-sales?date=${reportDate}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setDailySales(data);
     } catch (error: any) {
@@ -244,9 +215,7 @@ function App() {
     setTopProductsLoading(true);
     try {
       const response = await fetch(`http://localhost:3001/reports/top-products?limit=${topProductsLimit}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setTopProducts(data);
     } catch (error: any) {
@@ -262,23 +231,13 @@ function App() {
     try {
       let url = 'http://localhost:3001/reports/profit-loss';
       const params = new URLSearchParams();
-      if (profitFilterStartDate) {
-        params.append('startDate', String(new Date(profitFilterStartDate).getTime()));
-      }
-      if (profitFilterEndDate) {
-        params.append('endDate', String(new Date(profitFilterEndDate).getTime()));
-      }
-      if (profitFilterCategory) {
-        params.append('categoryId', profitFilterCategory);
-      }
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
+      if (profitFilterStartDate) params.append('startDate', String(new Date(profitFilterStartDate).getTime()));
+      if (profitFilterEndDate) params.append('endDate', String(new Date(profitFilterEndDate).getTime()));
+      if (profitFilterCategory) params.append('categoryId', profitFilterCategory);
+      if (params.toString()) url += `?${params.toString()}`;
 
       const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setProfitLossReport(data);
     } catch (error: any) {
@@ -296,76 +255,88 @@ function App() {
     fetchTransactions();
   }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions]);
 
-  
-
   const handleCancelEdit = () => {
     setEditingProduct(null);
     setNewProductId('');
     setNewProductName('');
     setNewProductPrice(0);
-    setNewProductCostPrice(0); // Reset cost_price
+    setNewProductCostPrice(0);
     setNewProductStock(0);
     setNewProductBarcode('');
     setNewProductCategory('');
+    setNewProductImage(null);
+    setNewProductImagePreview(null);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setNewProductImage(file);
+      setNewProductImagePreview(URL.createObjectURL(file));
+    }
   };
 
   const handleAddProduct = async () => {
-    if (editingProduct) return; // Prevent adding if in edit mode
+    if (editingProduct) return;
 
     const errors: { [key: string]: string } = {};
-    if (!newProductId.trim()) {
-      errors.newProductId = 'ID Produk tidak boleh kosong.';
-    }
-    if (!newProductName.trim()) {
-      errors.newProductName = 'Nama Produk tidak boleh kosong.';
-    }
-    if (newProductPrice <= 0) {
-      errors.newProductPrice = 'Harga jual harus lebih besar dari 0.';
-    }
-    if (newProductCostPrice < 0) {
-      errors.newProductCostPrice = 'Harga beli tidak boleh negatif.';
-    }
-    if (newProductStock < 0) {
-      errors.newProductStock = 'Stok tidak boleh negatif.';
-    }
+    if (!newProductId.trim()) errors.newProductId = 'ID Produk tidak boleh kosong.';
+    if (!newProductName.trim()) errors.newProductName = 'Nama Produk tidak boleh kosong.';
+    if (newProductPrice <= 0) errors.newProductPrice = 'Harga jual harus lebih besar dari 0.';
+    if (newProductCostPrice < 0) errors.newProductCostPrice = 'Harga beli tidak boleh negatif.';
+    if (newProductStock < 0) errors.newProductStock = 'Stok tidak boleh negatif.';
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
 
-    setFormErrors({}); // Clear errors if validation passes
+    setFormErrors({});
+
+    let imageUrl = null;
+    if (newProductImage) {
+      const formData = new FormData();
+      formData.append('image', newProductImage);
+      try {
+        const uploadResponse = await fetch('http://localhost:3001/upload/image', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!uploadResponse.ok) throw new Error(`HTTP error! status: ${uploadResponse.status}`);
+        const uploadData = await uploadResponse.json();
+        imageUrl = uploadData.imageUrl;
+      } catch (uploadError: any) {
+        console.error("Error uploading image:", uploadError);
+        toast.error(`Failed to upload image: ${uploadError.message}`);
+        return;
+      }
+    }
 
     try {
       const response = await fetch('http://localhost:3001/products', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: newProductId,
           name: newProductName,
           price: newProductPrice,
-          cost_price: newProductCostPrice, // Kirim cost_price
+          cost_price: newProductCostPrice,
           stock: newProductStock,
-          barcode: newProductBarcode || null, // Kirim barcode, atau null jika kosong
+          barcode: newProductBarcode || null,
           category_id: newProductCategory || null,
+          image_url: imageUrl, // Pass the image URL
         }),
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      // Refresh product list
-      fetch('http://localhost:3001/products')
-        .then(res => res.json())
-        .then(setProducts);
-      // Clear form
+      fetch('http://localhost:3001/products').then(res => res.json()).then(setProducts);
       setNewProductId('');
       setNewProductName('');
       setNewProductPrice(0);
       setNewProductStock(0);
+      setNewProductImage(null);
+      setNewProductImagePreview(null);
     } catch (error: any) {
       console.error("Error adding product:", error);
       toast.error(`Failed to add product: ${error.message}`);
@@ -373,54 +344,58 @@ function App() {
   };
 
   const handleUpdateProduct = async () => {
-    if (!editingProduct) return; // Only update if in edit mode
+    if (!editingProduct) return;
 
     const errors: { [key: string]: string } = {};
-    if (!newProductName.trim()) {
-      errors.newProductName = 'Nama Produk tidak boleh kosong.';
-    }
-    if (newProductPrice <= 0) {
-      errors.newProductPrice = 'Harga jual harus lebih besar dari 0.';
-    }
-    if (newProductCostPrice < 0) {
-      errors.newProductCostPrice = 'Harga beli tidak boleh negatif.';
-    }
-    if (newProductStock < 0) {
-      errors.newProductStock = 'Stok tidak boleh negatif.';
-    }
+    if (!newProductName.trim()) errors.newProductName = 'Nama Produk tidak boleh kosong.';
+    if (newProductPrice <= 0) errors.newProductPrice = 'Harga jual harus lebih besar dari 0.';
+    if (newProductCostPrice < 0) errors.newProductCostPrice = 'Harga beli tidak boleh negatif.';
+    if (newProductStock < 0) errors.newProductStock = 'Stok tidak boleh negatif.';
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
     }
 
-    setFormErrors({}); // Clear errors if validation passes
+    setFormErrors({});
+
+    let imageUrl = editingProduct.image_url; // Keep existing image URL by default
+    if (newProductImage) {
+      const formData = new FormData();
+      formData.append('image', newProductImage);
+      try {
+        const uploadResponse = await fetch('http://localhost:3001/upload/image', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!uploadResponse.ok) throw new Error(`HTTP error! status: ${uploadResponse.status}`);
+        const uploadData = await uploadResponse.json();
+        imageUrl = uploadData.imageUrl;
+      } catch (uploadError: any) {
+        console.error("Error uploading image:", uploadError);
+        toast.error(`Failed to upload image: ${uploadError.message}`);
+        return;
+      }
+    }
 
     try {
       const response = await fetch(`http://localhost:3001/products/${editingProduct.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newProductName,
           price: newProductPrice,
-          cost_price: newProductCostPrice, // Kirim cost_price
+          cost_price: newProductCostPrice,
           stock: newProductStock,
           barcode: newProductBarcode || null,
           category_id: newProductCategory || null,
+          image_url: imageUrl, // Pass the image URL
         }),
       });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      // Refresh product list
-      fetch('http://localhost:3001/products')
-        .then(res => res.json())
-        .then(setProducts);
-      // Clear form and exit edit mode
+      fetch('http://localhost:3001/products').then(res => res.json()).then(setProducts);
       handleCancelEdit();
     } catch (error: any) {
       console.error("Error updating product:", error);
@@ -428,113 +403,70 @@ function App() {
     }
   };
 
-  const handleInlineUpdateProduct = async (productId: string, field: string, value: string | number) => {
-    try {
-      const payload: { [key: string]: string | number } = { [field]: value };
-      const response = await fetch(`http://localhost:3001/products/${productId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      toast.success(data.message);
-      setEditingProductId(null);
-      setEditingField(null);
-      // Refresh product list
-      fetch('http://localhost:3001/products')
-        .then(res => res.json())
-        .then(setProducts);
-    } catch (error: any) {
-      console.error("Error updating product inline:", error);
-      toast.error(`Failed to update product: ${error.message}`);
-      setEditingProductId(null);
-      setEditingField(null);
-    }
-  };
-
   
 
   const handlePayment = async () => {
-    if (paymentAmount < total) {
-      toast.error(`Pembayaran Gagal! Uang yang dibayarkan kurang Rp${(total - paymentAmount).toLocaleString()}`);
+    const totalAfterDiscount = Math.max(0, totalBeforeDiscount - calculatedDiscount);
+    const calculatedChange = paymentAmount - totalAfterDiscount;
+
+    if (paymentAmount < totalAfterDiscount) {
+      toast.error(`Pembayaran Gagal! Uang yang dibayarkan kurang Rp${(totalAfterDiscount - paymentAmount).toLocaleString()}`);
       return;
     }
 
     try {
-      // 1. Record the transaction
       const transactionResponse = await fetch('http://localhost:3001/transactions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          total_amount: total,
+          total_amount: totalAfterDiscount,
           payment_amount: paymentAmount,
-          change_amount: paymentAmount - total,
+          change_amount: calculatedChange,
           cartItems: cart,
-          payment_method: paymentMethod, // Kirim metode pembayaran
+          payment_method: paymentMethod,
+          discount: calculatedDiscount,
         }),
       });
 
-      if (!transactionResponse.ok) {
-        throw new Error(`Failed to record transaction: ${transactionResponse.status}`);
-      }
+      if (!transactionResponse.ok) throw new Error(`Failed to record transaction: ${transactionResponse.status}`);
       const transactionData = await transactionResponse.json();
-      console.log('Transaction recorded:', transactionData);
 
-      // 2. Update product stock for each item in the cart
       for (const item of cart) {
         const stockUpdateResponse = await fetch(`http://localhost:3001/products/${item.id}/stock`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ quantity: item.quantity }),
         });
-
-        if (!stockUpdateResponse.ok) {
-          throw new Error(`Failed to update stock for ${item.name}: ${stockUpdateResponse.status}`);
-        }
+        if (!stockUpdateResponse.ok) throw new Error(`Failed to update stock for ${item.name}: ${stockUpdateResponse.status}`);
       }
 
-      // If all successful
-      const calculatedChange = paymentAmount - total;
-      setChange(calculatedChange);
-      setCart([]); // Clear the cart
-      setPaymentAmount(0); // Reset payment amount
+      setCart([]);
+      setPaymentAmount(0);
+      setDiscount(0);
+      setDiscountType('percentage');
       toast.success(`Pembayaran Berhasil! Kembalian: Rp${calculatedChange.toLocaleString()}`);
 
-      // Set current transaction for receipt modal
       setCurrentTransaction({
         id: transactionData.transactionId,
-        timestamp: Date.now(), // Use current time for receipt
-        total_amount: total,
+        timestamp: Date.now(),
+        total_amount: totalAfterDiscount,
         payment_amount: paymentAmount,
         change_amount: calculatedChange,
-        items: cart.map(item => ({ // Map cart items to ReceiptItem format
+        discount: calculatedDiscount,
+        items: cart.map(item => ({
+          id: 0, // dummy id
+          transaction_id: transactionData.transactionId,
+          product_id: item.id,
           product_name: item.name,
           price_at_sale: item.price,
-          quantity: item.quantity,
-          id: 0, // Dummy ID, not used for display
-          transaction_id: transactionData.transactionId, // Dummy, not used for display
-          product_id: item.id // Dummy, not used for display
+          cost_price_at_sale: item.cost_price,
+          quantity: item.quantity
         })),
-        payment_method: paymentMethod // Tambahkan payment_method ke currentTransaction
+        payment_method: paymentMethod,
       });
-      setShowReceiptModal(true); // Show the receipt modal
+      setShowReceiptModal(true);
 
-      // Refresh product list to show updated stock
-      fetch('http://localhost:3001/products')
-        .then(res => res.json())
-        .then(setProducts);
-
-      // Refresh transaction history
+      fetch('http://localhost:3001/products').then(res => res.json()).then(setProducts);
       fetchTransactions();
 
     } catch (error: any) {
@@ -546,15 +478,10 @@ function App() {
   const handleResetTransactions = async () => {
     if (window.confirm('Apakah Anda yakin ingin mereset semua data transaksi? Tindakan ini tidak dapat diurungkan.')) {
       try {
-        const response = await fetch('http://localhost:3001/reset-transactions', {
-          method: 'POST',
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const response = await fetch('http://localhost:3001/reset-transactions', { method: 'POST' });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         toast.info(data.message);
-        // Refresh transaction history
         fetchTransactions();
       } catch (error: any) {
         console.error("Error resetting transactions:", error);
@@ -571,12 +498,8 @@ function App() {
           fetch('http://localhost:3001/categories')
         ]);
 
-        if (!productsResponse.ok) {
-          throw new Error(`HTTP error! status: ${productsResponse.status}`);
-        }
-        if (!categoriesResponse.ok) {
-          throw new Error(`HTTP error! status: ${categoriesResponse.status}`);
-        }
+        if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
+        if (!categoriesResponse.ok) throw new Error(`HTTP error! status: ${categoriesResponse.status}`);
 
         const productsData = await productsResponse.json();
         const categoriesData = await categoriesResponse.json();
@@ -597,87 +520,15 @@ function App() {
     fetchProductsAndCategories();
   }, []);
 
-  if (loading) {
-    return (
-      <Container className="mt-5">
-        <div className="text-center my-5">
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading products...</span>
-          </Spinner>
-          <p className="mt-2">Memuat produk...</p>
-        </div>
-        <h1 className="mb-4">Daftar Produk Toko Dyka Akbar</h1>
-        <div className="mb-3">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Cari produk berdasarkan nama atau ID..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            disabled
-          />
-        </div>
-        <Row>
-          {Array.from({ length: 8 }).map((_, index) => (
-            <ProductSkeleton key={index} />
-          ))}
-        </Row>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return <Container className="mt-5">Error: {error}</Container>;
-  }
-
   const totalBeforeDiscount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const total = totalBeforeDiscount - (totalBeforeDiscount * (discount / 100));
+  const calculatedDiscount = discountType === 'percentage' ? (totalBeforeDiscount * discount) / 100 : discount;
+  const total = Math.max(0, totalBeforeDiscount - calculatedDiscount);
 
-  return (
-    <Container className="mt-5 py-4">
-      <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
-        <Container>
-          <Navbar.Brand href="#home">Dcashier Program</Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto">
-              <Button variant="outline-light" onClick={toggleTheme} className="rounded-circle p-2 me-2">
-                {theme === 'light' ? <MoonFill size={20} /> : <SunFill size={20} />}
-              </Button>
-              {isLoggedIn && (
-                <Button variant="outline-light" onClick={handleLogout} className="rounded-circle p-2">
-                  <BoxArrowRight size={20} />
-                </Button>
-              )}
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      {!isLoggedIn ? (
-        <AuthPage onLogin={handleLogin} />
-      ) : (
-        <>
-          <div className="d-flex justify-content-between align-items-center mb-5 pb-2 border-bottom">
-            <h1 className="mb-0 text-primary">Daftar Produk Toko Dyka Akbar</h1>
-          </div>
-          <Tab.Container activeKey={activeTab} onSelect={(k: string | null) => setActiveTab(k || 'sales')}>
-        <Nav variant="tabs" className="mb-4 border-bottom-0">
-          <Nav.Item>
-            <Nav.Link eventKey="dashboard" className="fw-semibold">Dashboard</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="sales" className="fw-semibold">Penjualan</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="product-management" className="fw-semibold">Manajemen Produk</Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link eventKey="reports" className="fw-semibold">Laporan</Nav.Link>
-          </Nav.Item>
-        </Nav>
-
-        <Tab.Content>
-          <Tab.Pane eventKey="dashboard" className="p-3 border rounded fade">
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return (
+          <div>
             <h2 className="mt-3 mb-4 text-primary">Dashboard</h2>
             <p className="text-muted">Selamat datang di Dashboard! Bagian ini akan menampilkan ringkasan penjualan, stok, dan informasi penting lainnya.</p>
             <Row className="g-4">
@@ -805,203 +656,136 @@ function App() {
                 <p className="text-muted">Tidak ada transaksi terbaru.</p>
               )
             )}
-          </Tab.Pane>
-          <Tab.Pane eventKey="sales" className="p-3 border rounded fade">
-            <Row>
-              {/* Product Listing Column */}
-              <Col md={8}>
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    className="form-control form-control-lg"
-                    placeholder="Cari produk berdasarkan nama atau ID..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    className="form-control form-control-lg"
-                    placeholder="Scan Barcode atau Masukkan Barcode..."
-                    value={barcodeInput}
-                    onChange={(e) => setBarcodeInput(e.target.value)}
-                    onKeyPress={async (e) => {
-                      if (e.key === 'Enter' && barcodeInput.trim() !== '') {
-                        try {
-                          const response = await fetch(`http://localhost:3001/products/barcode/${barcodeInput}`);
-                          if (!response.ok) {
-                            throw new Error(`Product with barcode ${barcodeInput} not found.`);
-                          }
-                          const product: Product = await response.json();
-                          addToCart(product);
-                          setBarcodeInput(''); // Clear input after adding
-                        } catch (error: any) {
-                          toast.error(error.message);
-                        }
-                      }
-                    }}
-                  />
-                </div>
-                <Row className="g-4 mb-5"> {/* Add gutter spacing and bottom margin */}
-                  {loading ? (
-                    Array.from({ length: 8 }).map((_, index) => (
-                      <Col key={index} sm={6} md={4} lg={4}>
-                        <ProductSkeleton />
-                      </Col>
-                    ))
+          </div>
+        );
+      case 'sales':
+        return (
+          <Row>
+            <Col md={8}>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  className="form-control form-control-lg"
+                  placeholder="Cari produk..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Row className="g-4 mb-5">
+                {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
+                  <Col key={product.id} sm={6} md={4} lg={4}>
+                    <Card onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
+                      {product.image_url && (
+                        <Card.Img variant="top" src={`http://localhost:3001${product.image_url}`} alt={product.name} style={{ height: '150px', objectFit: 'contain', padding: '10px' }} />
+                      )}
+                      <Card.Body className="d-flex justify-content-between align-items-center">
+                        <div>
+                          <Card.Title>{product.name}</Card.Title>
+                          <Card.Text>Rp{product.price.toLocaleString()}</Card.Text>
+                        </div>
+                        <CartPlusFill size={24} className="text-primary" />
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </Col>
+            <Col md={4}>
+              <div className="sticky-cart-container">
+                <div className={`p-3 border rounded shadow-lg ${cartAnimationTrigger ? 'animate-cart' : ''}`}>
+                  <h4 className="mb-3 text-primary">Keranjang Belanja</h4>
+                  {cart.length === 0 ? (
+                    <p className="text-muted small">Keranjang kosong.</p>
                   ) : (
-                    products
-                      .filter(product =>
-                        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        product.id.toLowerCase().includes(searchTerm.toLowerCase())
-                      )
-                      .map(product => (
-                        <Col key={product.id} sm={6} md={4} lg={4}>
-                          <Card className={product.stock <= LOW_STOCK_THRESHOLD ? 'border border-danger shadow-sm' : 'shadow-sm'}> {/* Add shadow */}
-                            <Card.Body>
-                              {product.stock <= LOW_STOCK_THRESHOLD && (
-                                <div className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 rounded-bottom-left small fw-semibold">
-                                  Stok Rendah!
-                                </div>
-                              )}
-                              <Card.Title
-                                className="fw-bold text-primary"
-                                onDoubleClick={() => {
-                                  setEditingProductId(product.id);
-                                  setEditingField('name');
-                                }}
-                              >
-                                {editingProductId === product.id && editingField === 'name' ? (
-                                  <input
-                                    type="text"
-                                    defaultValue={product.name}
-                                    onBlur={(e) => handleInlineUpdateProduct(product.id, 'name', e.target.value)}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
-                                        handleInlineUpdateProduct(product.id, 'name', (e.target as HTMLInputElement).value);
-                                      }
-                                    }}
-                                    autoFocus
-                                    className="form-control form-control-sm"
-                                  />
-                                ) : (
-                                  product.name
-                                )}
-                              </Card.Title>
-                              <Card.Text className="mb-1">
-                                <span className="fw-semibold">Harga:</span> Rp{product.price.toLocaleString()}
-                              </Card.Text>
-                              <Card.Text className="mb-1">
-                                <span className="fw-semibold">Stok:</span> {product.stock}
-                              </Card.Text>
-                              <div className="d-flex justify-content-between mt-3">
-                                <Button variant="primary" onClick={() => addToCart(product)}><CartPlus /></Button>
-                              </div>
-                            </Card.Body>
-                          </Card>
-                        </Col>
-                      ))
-                  )}
-                </Row>
-              </Col>
-
-              {/* Floating Cart Column */}
-              <Col md={4}>
-                <div className="sticky-cart-container">
-                  <div className={`p-3 border rounded shadow-lg ${cartAnimationTrigger ? 'animate-cart' : ''}`}>
-                    <h4 className="mb-3 text-primary">Keranjang Belanja</h4>
-                    {cart.length === 0 ? (
-                      <p className="fade-in text-muted small">Keranjang kosong.</p>
-                    ) : (
-                      <div className="fade-in">
-                        <div className="cart-items-container">
-                          <table className="table table-sm align-middle">
-                            <thead>
-                              <tr>
-                                <th>Produk</th>
-                                <th className="text-center">Qty</th>
-                                <th>Aksi</th>
+                    <>
+                      <div className="cart-items-container">
+                        <table className="table table-sm align-middle">
+                          <tbody>
+                            {cart.map(item => (
+                              <tr key={item.id}>
+                                <td>
+                                  <div className="small lh-sm">{item.name}</div>
+                                  <div className="text-muted small">Rp{item.price.toLocaleString()}</div>
+                                </td>
+                                <td className="text-center">{item.quantity}</td>
+                                <td>
+                                  <div className="btn-group">
+                                    <Button variant="outline-danger" size="sm" onClick={() => decreaseQuantity(item.id)}>-</Button>
+                                    <Button variant="outline-success" size="sm" onClick={() => increaseQuantity(item.id)}>+</Button>
+                                  </div>
+                                </td>
                               </tr>
-                            </thead>
-                            <tbody>
-                              {cart.map(item => (
-                                <tr key={item.id}>
-                                  <td>
-                                    <div className="small lh-sm">{item.name}</div>
-                                    <div className="text-muted small">Rp{item.price.toLocaleString()}</div>
-                                  </td>
-                                  <td className="text-center">{item.quantity}</td>
-                                  <td>
-                                    <div className="btn-group">
-                                      <Button variant="outline-danger" size="sm" onClick={() => decreaseQuantity(item.id)}>-</Button>
-                                      <Button variant="outline-success" size="sm" onClick={() => increaseQuantity(item.id)}>+</Button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-
-                        <div className="mt-3 pt-3 border-top">
-                          <div className="d-flex justify-content-between align-items-center mb-2">
-                            <span className="fw-semibold">Subtotal</span>
-                            <span>Rp{totalBeforeDiscount.toLocaleString()}</span>
-                          </div>
-                          <div className="d-flex justify-content-between align-items-center mb-2">
-                            <label htmlFor="discountInput" className="form-label me-2 small mb-0">Diskon (%):</label>
-                            <input
-                              type="number"
-                              id="discountInput"
-                              className="form-control form-control-sm"
-                              style={{ width: '60px' }}
-                              value={discount}
-                              onChange={(e) => setDiscount(Number(e.target.value))}
-                              min="0"
-                              max="100"
-                            />
-                          </div>
-                          <div className="d-flex justify-content-between align-items-center fw-bold fs-5">
-                            <span>Total</span>
-                            <span className="text-success">Rp{total.toLocaleString()}</span>
-                          </div>
-                        </div>
-
-                        <div className="mt-3 pt-3 border-top">
-                          <div className="d-flex mb-2">
-                            <select
-                              className="form-select form-select-sm me-2"
-                              value={paymentMethod}
-                              onChange={(e) => setPaymentMethod(e.target.value)}
-                            >
-                              <option value="Cash">Tunai</option>
-                              <option value="Credit Card">Kredit</option>
-                              <option value="Debit Card">Debit</option>
-                              <option value="QRIS">QRIS</option>
-                            </select>
-                            <input
-                              type="number"
-                              placeholder="Bayar"
-                              className="form-control form-control-sm"
-                              value={paymentAmount === 0 ? '' : paymentAmount}
-                              onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                            />
-                          </div>
-                          <Button variant="success" className="w-100" onClick={handlePayment} disabled={cart.length === 0 || paymentAmount < total}>Bayar</Button>
-                          {change !== null && (
-                            <div className="mt-2 text-center fw-semibold text-success">Kembalian: Rp{change.toLocaleString()}</div>
-                          )}
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="mt-3 pt-3 border-top">
+                        <div className="d-flex justify-content-between align-items-center fw-bold fs-5">
+                          <span>Total</span>
+                          <span className="text-success">Rp{total.toLocaleString()}</span>
                         </div>
                       </div>
-                    )}
-                  </div>
+                      <div className="mt-3 pt-3 border-top">
+                        <div className="mb-3">
+                          <label htmlFor="paymentAmount" className="form-label">Jumlah Pembayaran</label>
+                          <input
+                            type="number"
+                            id="paymentAmount"
+                            className="form-control"
+                            value={paymentAmount === 0 ? '' : paymentAmount}
+                            onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                            min="0"
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label htmlFor="discount" className="form-label">Diskon</label>
+                          <div className="input-group">
+                            <input
+                              type="number"
+                              id="discount"
+                              className="form-control"
+                              value={discount === 0 ? '' : discount}
+                              onChange={(e) => setDiscount(Number(e.target.value))}
+                              min="0"
+                            />
+                            <select
+                              className="form-select"
+                              value={discountType}
+                              onChange={(e) => setDiscountType(e.target.value as 'percentage')}
+                            >
+                              <option value="percentage">%</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <label htmlFor="paymentMethod" className="form-label">Metode Pembayaran</label>
+                          <select
+                            id="paymentMethod"
+                            className="form-select"
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                          >
+                            <option value="Cash">Tunai</option>
+                            <option value="Credit Card">Kartu Kredit</option>
+                            <option value="Debit Card">Kartu Debit</option>
+                          </select>
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center fw-bold fs-5 mb-3">
+                          <span>Kembalian</span>
+                          <span className="text-info">Rp{(paymentAmount - total).toLocaleString()}</span>
+                        </div>
+                        <Button variant="success" className="w-100" onClick={handlePayment} disabled={cart.length === 0}>Bayar</Button>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </Col>
-            </Row>
-          </Tab.Pane>
-
-          <Tab.Pane eventKey="product-management" className="p-3 border rounded fade">
+              </div>
+            </Col>
+          </Row>
+        );
+      case 'product-management':
+        return (
+          <div>
             <h2 className="mt-3 mb-4 text-primary">Manajemen Produk</h2>
             <Row className="mb-4">
               <Col>
@@ -1036,6 +820,15 @@ function App() {
                       <label htmlFor="productBarcode" className="form-label fw-semibold">Barcode (Opsional)</label>
                       <input type="text" className="form-control" id="productBarcode" value={newProductBarcode} onChange={(e) => setNewProductBarcode(e.target.value)} placeholder="Contoh: 1234567890" />
                     </div>
+                    <div className="mb-3">
+                      <label htmlFor="productImage" className="form-label fw-semibold">Gambar Produk (Opsional)</label>
+                      <input type="file" className="form-control" id="productImage" accept="image/*" onChange={handleImageChange} />
+                      {newProductImagePreview && (
+                        <div className="mt-2">
+                          <img src={newProductImagePreview} alt="Product Preview" style={{ maxWidth: '100px', maxHeight: '100px' }} />
+                        </div>
+                      )}
+                    </div>
                     <div className="mb-4">
                       <label htmlFor="productCategory" className="form-label fw-semibold">Kategori</label>
                       <select
@@ -1062,9 +855,11 @@ function App() {
                 </Card>
               </Col>
             </Row>
-          </Tab.Pane>
-
-          <Tab.Pane eventKey="reports" className="p-3 border rounded fade">
+          </div>
+        );
+      case 'reports':
+        return (
+          <div>
             <h2 className="mt-3 mb-4 text-primary">Laporan Penjualan</h2>
             <p className="text-muted">Bagian ini akan menampilkan laporan penjualan harian, produk terlaris, dan riwayat transaksi.</p>
 
@@ -1279,21 +1074,51 @@ function App() {
                 <p className="text-muted">Tidak ada data laba rugi untuk ditampilkan.</p>
               )
             )}
-          </Tab.Pane>
-        </Tab.Content>
-      </Tab.Container>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (loading) return <Spinner animation="border" />;
+  if (error) return <Container>Error: {error}</Container>;
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      {!isLoggedIn ? (
+        <AuthPage onLogin={handleLogin} />
+      ) : (
+        <>
+          <Col md={2} className="p-0">
+            <Sidebar activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'dashboard')} />
+          </Col>
+          <Col md={10} className="main-content p-4">
+            <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+              <Container>
+                <Navbar.Brand href="#home">Dcashier Program</Navbar.Brand>
+                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Collapse id="basic-navbar-nav">
+                  <Nav className="ms-auto">
+                    <Button variant="outline-light" onClick={toggleTheme} className="rounded-circle p-2 me-2">
+                      {theme === 'light' ? <MoonFill size={20} /> : <SunFill size={20} />}
+                    </Button>
+                    {isLoggedIn && (
+                      <Button variant="outline-light" onClick={handleLogout} className="rounded-circle p-2">
+                        <BoxArrowRight size={20} />
+                      </Button>
+                    )}
+                  </Nav>
+                </Navbar.Collapse>
+              </Container>
+            </Navbar>
+            {renderContent()}
+          </Col>
         </>
       )}
-      <ReceiptModal
-        show={showReceiptModal}
-        onHide={() => setShowReceiptModal(false)}
-        transaction={currentTransaction}
-      />
+      <ReceiptModal show={showReceiptModal} onHide={() => setShowReceiptModal(false)} transaction={currentTransaction} />
       <ToastContainer />
-      <footer className="text-center mt-5 py-3 text-muted border-top">
-        <p className="mb-0">Created by dla 9196</p>
-      </footer>
-    </Container>
+    </div>
   );
 }
 

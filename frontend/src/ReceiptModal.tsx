@@ -17,6 +17,7 @@ const ReceiptModal = ({ show, onHide, transaction }: any) => {
         <h4>Pembayaran Berhasil!</h4>
         <p><strong>Transaction ID:</strong> {transaction.id}</p>
         <p><strong>Total:</strong> Rp{transaction.total_amount.toLocaleString()}</p>
+        {transaction.discount > 0 && <p><strong>Diskon:</strong> Rp{transaction.discount.toLocaleString()}</p>}
         <p><strong>Payment:</strong> Rp{transaction.payment_amount.toLocaleString()}</p>
         <p><strong>Change:</strong> Rp{transaction.change_amount.toLocaleString()}</p>
         <p><strong>Metode Pembayaran:</strong> {transaction.payment_method}</p>
