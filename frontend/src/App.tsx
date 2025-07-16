@@ -5,7 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceiptModal from './ReceiptModal';
 import ProductSkeleton from './ProductSkeleton';
-import { CartPlus, PencilSquare, Trash, SunFill, MoonFill, BoxArrowRight } from 'react-bootstrap-icons'; // Import ikon dan ikon tema
+import { CartPlus, SunFill, MoonFill, BoxArrowRight } from 'react-bootstrap-icons'; // Import ikon dan ikon tema
 import AuthPage from './AuthPage';
 
 interface Product {
@@ -293,18 +293,10 @@ function App() {
     fetchDailySales();
     fetchTopProducts();
     fetchProfitLossReport();
-  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport]);
+    fetchTransactions();
+  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions]);
 
-  const handleEditClick = (product: Product) => {
-    setEditingProduct(product);
-    setNewProductId(product.id);
-    setNewProductName(product.name);
-    setNewProductPrice(product.price);
-    setNewProductCostPrice(product.cost_price || 0); // Set cost_price
-    setNewProductStock(product.stock);
-    setNewProductBarcode(product.barcode || '');
-    setNewProductCategory(product.category_id || '');
-  };
+  
 
   const handleCancelEdit = () => {
     setEditingProduct(null);
@@ -466,27 +458,7 @@ function App() {
     }
   };
 
-  const handleDeleteProduct = async (productId: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-      try {
-        const response = await fetch(`http://localhost:3001/products/${productId}`, {
-          method: 'DELETE',
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        toast.success(data.message);
-        // Refresh product list
-        fetch('http://localhost:3001/products')
-          .then(res => res.json())
-          .then(setProducts);
-      } catch (error: any) {
-        console.error("Error deleting product:", error);
-        toast.error(`Failed to delete product: ${error.message}`);
-      }
-    }
-  };
+  
 
   const handlePayment = async () => {
     if (paymentAmount < total) {
@@ -835,305 +807,198 @@ function App() {
             )}
           </Tab.Pane>
           <Tab.Pane eventKey="sales" className="p-3 border rounded fade">
-            <div className="mb-4">
-              <input
-                type="text"
-                className="form-control form-control-lg"
-                placeholder="Cari produk berdasarkan nama atau ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="mb-4">
-              <input
-                type="text"
-                className="form-control form-control-lg"
-                placeholder="Scan Barcode atau Masukkan Barcode..."
-                value={barcodeInput}
-                onChange={(e) => setBarcodeInput(e.target.value)}
-                onKeyPress={async (e) => {
-                  if (e.key === 'Enter' && barcodeInput.trim() !== '') {
-                    try {
-                      const response = await fetch(`http://localhost:3001/products/barcode/${barcodeInput}`);
-                      if (!response.ok) {
-                        throw new Error(`Product with barcode ${barcodeInput} not found.`);
+            <Row>
+              {/* Product Listing Column */}
+              <Col md={8}>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    className="form-control form-control-lg"
+                    placeholder="Cari produk berdasarkan nama atau ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    className="form-control form-control-lg"
+                    placeholder="Scan Barcode atau Masukkan Barcode..."
+                    value={barcodeInput}
+                    onChange={(e) => setBarcodeInput(e.target.value)}
+                    onKeyPress={async (e) => {
+                      if (e.key === 'Enter' && barcodeInput.trim() !== '') {
+                        try {
+                          const response = await fetch(`http://localhost:3001/products/barcode/${barcodeInput}`);
+                          if (!response.ok) {
+                            throw new Error(`Product with barcode ${barcodeInput} not found.`);
+                          }
+                          const product: Product = await response.json();
+                          addToCart(product);
+                          setBarcodeInput(''); // Clear input after adding
+                        } catch (error: any) {
+                          toast.error(error.message);
+                        }
                       }
-                      const product: Product = await response.json();
-                      addToCart(product);
-                      setBarcodeInput(''); // Clear input after adding
-                    } catch (error: any) {
-                      toast.error(error.message);
-                    }
-                  }
-                }}
-              />
-            </div>
-            <Row className="g-4 mb-5"> {/* Add gutter spacing and bottom margin */}
-              {loading ? (
-                Array.from({ length: 8 }).map((_, index) => (
-                  <Col key={index} sm={6} md={4} lg={3}>
-                    <ProductSkeleton />
-                  </Col>
-                ))
-              ) : (
-                products
-                  .filter(product =>
-                    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    product.id.toLowerCase().includes(searchTerm.toLowerCase())
-                  )
-                  .map(product => (
-                    <Col key={product.id} sm={6} md={4} lg={3}>
-                      <Card className={product.stock <= LOW_STOCK_THRESHOLD ? 'border border-danger shadow-sm' : 'shadow-sm'}> {/* Add shadow */}
-                        <Card.Body>
-                          {product.stock <= LOW_STOCK_THRESHOLD && (
-                            <div className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 rounded-bottom-left small fw-semibold">
-                              Stok Rendah!
-                            </div>
-                          )}
-                          <Card.Title
-                            className="fw-bold text-primary"
-                            onDoubleClick={() => {
-                              setEditingProductId(product.id);
-                              setEditingField('name');
-                            }}
-                          >
-                            {editingProductId === product.id && editingField === 'name' ? (
-                              <input
-                                type="text"
-                                value={product.name}
-                                onChange={(e) => {
-                                  const updatedProducts = products.map((p) =>
-                                    p.id === product.id ? { ...p, name: e.target.value } : p
-                                  );
-                                  setProducts(updatedProducts);
+                    }}
+                  />
+                </div>
+                <Row className="g-4 mb-5"> {/* Add gutter spacing and bottom margin */}
+                  {loading ? (
+                    Array.from({ length: 8 }).map((_, index) => (
+                      <Col key={index} sm={6} md={4} lg={4}>
+                        <ProductSkeleton />
+                      </Col>
+                    ))
+                  ) : (
+                    products
+                      .filter(product =>
+                        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        product.id.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
+                      .map(product => (
+                        <Col key={product.id} sm={6} md={4} lg={4}>
+                          <Card className={product.stock <= LOW_STOCK_THRESHOLD ? 'border border-danger shadow-sm' : 'shadow-sm'}> {/* Add shadow */}
+                            <Card.Body>
+                              {product.stock <= LOW_STOCK_THRESHOLD && (
+                                <div className="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 rounded-bottom-left small fw-semibold">
+                                  Stok Rendah!
+                                </div>
+                              )}
+                              <Card.Title
+                                className="fw-bold text-primary"
+                                onDoubleClick={() => {
+                                  setEditingProductId(product.id);
+                                  setEditingField('name');
                                 }}
-                                onBlur={() => handleInlineUpdateProduct(product.id, 'name', product.name)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handleInlineUpdateProduct(product.id, 'name', product.name);
-                                  }
-                                }}
-                                autoFocus
-                                className="form-control form-control-sm"
-                              />
-                            ) : (
-                              product.name
-                            )}
-                          </Card.Title>
-                          <Card.Text className="mb-1">
-                            <span className="fw-semibold">Kategori:</span> {product.category_name || '-'}
-                          </Card.Text>
-                          <Card.Text className="mb-1">
-                            <span className="fw-semibold">Harga:</span> Rp
-                            {editingProductId === product.id && editingField === 'price' ? (
-                              <input
-                                type="number"
-                                value={product.price}
-                                onChange={(e) => {
-                                  const updatedProducts = products.map((p) =>
-                                    p.id === product.id ? { ...p, price: Number(e.target.value) } : p
-                                  );
-                                  setProducts(updatedProducts);
-                                }}
-                                onBlur={() => handleInlineUpdateProduct(product.id, 'price', product.price)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handleInlineUpdateProduct(product.id, 'price', product.price);
-                                  }
-                                }}
-                                autoFocus
-                                className="form-control form-control-sm d-inline-block w-50"
-                              />
-                            ) : (
-                              product.price.toLocaleString()
-                            )}
-                          </Card.Text>
-                          <Card.Text className="mb-1">
-                            <span className="fw-semibold">Harga Beli:</span> Rp
-                            {editingProductId === product.id && editingField === 'cost_price' ? (
-                              <input
-                                type="number"
-                                value={product.cost_price || 0}
-                                onChange={(e) => {
-                                  const updatedProducts = products.map((p) =>
-                                    p.id === product.id ? { ...p, cost_price: Number(e.target.value) } : p
-                                  );
-                                  setProducts(updatedProducts);
-                                }}
-                                onBlur={() => handleInlineUpdateProduct(product.id, 'cost_price', product.cost_price || 0)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handleInlineUpdateProduct(product.id, 'cost_price', product.cost_price || 0);
-                                  }
-                                }}
-                                autoFocus
-                                className="form-control form-control-sm d-inline-block w-50"
-                              />
-                            ) : (
-                              (product.cost_price || 0).toLocaleString()
-                            )}
-                          </Card.Text>
-                          <Card.Text className="mb-1">
-                            <span className="fw-semibold">Stok:</span>
-                            {editingProductId === product.id && editingField === 'stock' ? (
-                              <input
-                                type="number"
-                                value={product.stock}
-                                onChange={(e) => {
-                                  const updatedProducts = products.map((p) =>
-                                    p.id === product.id ? { ...p, stock: Number(e.target.value) } : p
-                                  );
-                                  setProducts(updatedProducts);
-                                }}
-                                onBlur={() => handleInlineUpdateProduct(product.id, 'stock', product.stock)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handleInlineUpdateProduct(product.id, 'stock', product.stock);
-                                  }
-                                }}
-                                autoFocus
-                                className="form-control form-control-sm d-inline-block w-25"
-                              />
-                            ) : (
-                              product.stock
-                            )}
-                            {product.stock <= LOW_STOCK_THRESHOLD && (
-                              <span className="ms-2 badge bg-danger">Stok Rendah!</span>
-                            )}
-                          </Card.Text>
-                          <div className="d-flex justify-content-between mt-3">
-                            <Button variant="primary" onClick={() => addToCart(product)}><CartPlus /></Button>
-                            <div>
-                              <Button variant="warning" className="ms-2" onClick={() => handleEditClick(product)}><PencilSquare /></Button>
-                              <Button variant="danger" className="ms-2" onClick={() => handleDeleteProduct(product.id)}><Trash /></Button>
-                            </div>
-                          </div>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  ))
-              )}
-            </Row>
-
-            <h2 className="mt-5 mb-3 text-primary">Keranjang Belanja</h2>
-            <div className={`cart-section p-3 border rounded ${cartAnimationTrigger ? 'animate-cart' : ''}`}> {/* Add padding, border, and rounded corners */}
-              {cart.length === 0 ? (
-                <p className="fade-in text-muted">Keranjang kosong. Tambahkan produk untuk memulai transaksi.</p>
-              ) : (
-                <Row className="fade-in">
-                  <Col>
-                    <table className="table table-striped table-hover align-middle"> {/* Add table-hover and align-middle */}
-                      <thead>
-                        <tr>
-                          <th>Produk</th>
-                          <th>Harga</th>
-                          <th>Kuantitas</th>
-                          <th>Subtotal</th>
-                          <th>Aksi</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {cart.map(item => (
-                          <tr key={item.id}>
-                            <td>{item.name}</td>
-                            <td>Rp{item.price.toLocaleString()}</td>
-                            <td>{item.quantity}</td>
-                            <td>Rp{(item.price * item.quantity).toLocaleString()}</td>
-                            <td>
-                              <Button variant="outline-primary" size="sm" onClick={() => decreaseQuantity(item.id)}>-</Button>
-                              <input
-                                type="number"
-                                min="1"
-                                value={item.quantity}
-                                onChange={(e) => {
-                                  const newQuantity = Number(e.target.value);
-                                  if (newQuantity >= 1) {
-                                    setCart(prevCart =>
-                                      prevCart.map(cartItem =>
-                                        cartItem.id === item.id ? { ...cartItem, quantity: newQuantity } : cartItem
-                                      )
-                                    );
-                                  }
-                                }}
-                                className="form-control d-inline-block mx-2 text-center" style={{ width: '60px' }}
-                              />
-                              <Button variant="outline-primary" size="sm" onClick={() => increaseQuantity(item.id)}>+</Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div className="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
-                      <Button variant="outline-danger" onClick={() => setCart([])}>Bersihkan Keranjang</Button>
-                      <h3>Total: <span className="text-success">Rp{total.toLocaleString()}</span></h3>
-                    </div>
-                    <div className="d-flex justify-content-end mt-3">
-                      <label htmlFor="discountInput" className="form-label me-2 fw-semibold">Diskon (%):</label>
-                      <input
-                        type="number"
-                        id="discountInput"
-                        className="form-control w-25 me-3"
-                        value={discount}
-                        onChange={(e) => setDiscount(Number(e.target.value))}
-                        min="0"
-                        max="100"
-                      />
-                    </div>
-                    <div className="d-flex justify-content-end mt-3">
-                      <select
-                        className="form-select w-25 me-2"
-                        value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
-                      >
-                        <option value="Cash">Tunai</option>
-                        <option value="Credit Card">Kartu Kredit</option>
-                        <option value="Debit Card">Kartu Debit</option>
-                        <option value="QRIS">QRIS</option>
-                      </select>
-                      <input
-                        type="number"
-                        placeholder="Jumlah Bayar"
-                        className="form-control w-25 me-2"
-                        value={paymentAmount === 0 ? '' : paymentAmount}
-                        onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                      />
-                      <Button variant="success" onClick={handlePayment} disabled={cart.length === 0 || paymentAmount < total}>Bayar</Button>
-                    </div>
-                    {change !== null && (
-                      <h4 className="text-end mt-3 text-success">Kembalian: Rp{change.toLocaleString()}</h4>
-                    )}
-                  </Col>
+                              >
+                                {editingProductId === product.id && editingField === 'name' ? (
+                                  <input
+                                    type="text"
+                                    defaultValue={product.name}
+                                    onBlur={(e) => handleInlineUpdateProduct(product.id, 'name', e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        handleInlineUpdateProduct(product.id, 'name', (e.target as HTMLInputElement).value);
+                                      }
+                                    }}
+                                    autoFocus
+                                    className="form-control form-control-sm"
+                                  />
+                                ) : (
+                                  product.name
+                                )}
+                              </Card.Title>
+                              <Card.Text className="mb-1">
+                                <span className="fw-semibold">Harga:</span> Rp{product.price.toLocaleString()}
+                              </Card.Text>
+                              <Card.Text className="mb-1">
+                                <span className="fw-semibold">Stok:</span> {product.stock}
+                              </Card.Text>
+                              <div className="d-flex justify-content-between mt-3">
+                                <Button variant="primary" onClick={() => addToCart(product)}><CartPlus /></Button>
+                              </div>
+                            </Card.Body>
+                          </Card>
+                        </Col>
+                      ))
+                  )}
                 </Row>
-              )}
-            </div>
+              </Col>
 
-            <h2 className="mt-5 mb-3 text-primary">Produk Stok Rendah</h2>
-            {lowStockProducts.length === 0 ? (
-              <p className="text-muted">Tidak ada produk dengan stok rendah.</p>
-            ) : (
-              <Row>
-                <Col>
-                  <table className="table table-striped table-danger table-hover align-middle">
-                    <thead>
-                      <tr>
-                        <th>ID Produk</th>
-                        <th>Nama Produk</th>
-                        <th>Stok</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {lowStockProducts.map(product => (
-                        <tr key={product.id}>
-                          <td>{product.id}</td>
-                          <td>{product.name}</td>
-                          <td>{product.stock}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Col>
-              </Row>
-            )}
+              {/* Floating Cart Column */}
+              <Col md={4}>
+                <div className="sticky-cart-container">
+                  <div className={`p-3 border rounded shadow-lg ${cartAnimationTrigger ? 'animate-cart' : ''}`}>
+                    <h4 className="mb-3 text-primary">Keranjang Belanja</h4>
+                    {cart.length === 0 ? (
+                      <p className="fade-in text-muted small">Keranjang kosong.</p>
+                    ) : (
+                      <div className="fade-in">
+                        <div className="cart-items-container">
+                          <table className="table table-sm align-middle">
+                            <thead>
+                              <tr>
+                                <th>Produk</th>
+                                <th className="text-center">Qty</th>
+                                <th>Aksi</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {cart.map(item => (
+                                <tr key={item.id}>
+                                  <td>
+                                    <div className="small lh-sm">{item.name}</div>
+                                    <div className="text-muted small">Rp{item.price.toLocaleString()}</div>
+                                  </td>
+                                  <td className="text-center">{item.quantity}</td>
+                                  <td>
+                                    <div className="btn-group">
+                                      <Button variant="outline-danger" size="sm" onClick={() => decreaseQuantity(item.id)}>-</Button>
+                                      <Button variant="outline-success" size="sm" onClick={() => increaseQuantity(item.id)}>+</Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="mt-3 pt-3 border-top">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span className="fw-semibold">Subtotal</span>
+                            <span>Rp{totalBeforeDiscount.toLocaleString()}</span>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <label htmlFor="discountInput" className="form-label me-2 small mb-0">Diskon (%):</label>
+                            <input
+                              type="number"
+                              id="discountInput"
+                              className="form-control form-control-sm"
+                              style={{ width: '60px' }}
+                              value={discount}
+                              onChange={(e) => setDiscount(Number(e.target.value))}
+                              min="0"
+                              max="100"
+                            />
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center fw-bold fs-5">
+                            <span>Total</span>
+                            <span className="text-success">Rp{total.toLocaleString()}</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 pt-3 border-top">
+                          <div className="d-flex mb-2">
+                            <select
+                              className="form-select form-select-sm me-2"
+                              value={paymentMethod}
+                              onChange={(e) => setPaymentMethod(e.target.value)}
+                            >
+                              <option value="Cash">Tunai</option>
+                              <option value="Credit Card">Kredit</option>
+                              <option value="Debit Card">Debit</option>
+                              <option value="QRIS">QRIS</option>
+                            </select>
+                            <input
+                              type="number"
+                              placeholder="Bayar"
+                              className="form-control form-control-sm"
+                              value={paymentAmount === 0 ? '' : paymentAmount}
+                              onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                            />
+                          </div>
+                          <Button variant="success" className="w-100" onClick={handlePayment} disabled={cart.length === 0 || paymentAmount < total}>Bayar</Button>
+                          {change !== null && (
+                            <div className="mt-2 text-center fw-semibold text-success">Kembalian: Rp{change.toLocaleString()}</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Col>
+            </Row>
           </Tab.Pane>
 
           <Tab.Pane eventKey="product-management" className="p-3 border rounded fade">

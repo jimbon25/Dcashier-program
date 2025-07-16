@@ -403,12 +403,14 @@ app.get('/reports/daily-sales', async (req, res) => {
     const rows = await allAsync(
       db,
       `SELECT
-       strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch', 'localtime') AS sale_date,
-       SUM(total_amount) AS total_sales
-     FROM transactions
-     WHERE timestamp >= ? AND timestamp <= ?
-     GROUP BY sale_date
-     ORDER BY sale_date DESC`,
+        ti.product_name,
+        SUM(ti.quantity) AS total_quantity_sold,
+        SUM(ti.price_at_sale * ti.quantity) AS total_revenue
+      FROM transaction_items ti
+      JOIN transactions t ON ti.transaction_id = t.id
+      WHERE t.timestamp >= ? AND t.timestamp <= ?
+      GROUP BY ti.product_name
+      ORDER BY total_revenue DESC`,
       [startOfDay, endOfDay]
     );
     res.json(rows);

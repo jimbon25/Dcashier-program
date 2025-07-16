@@ -58,6 +58,26 @@ code {
   }
 }
 
+/* Sticky Cart */
+.sticky-cart-container {
+  position: -webkit-sticky; /* For Safari */
+  position: sticky;
+  top: 20px; /* Adjust top spacing as needed */
+}
+
+.cart-items-container {
+  max-height: 35vh; /* Adjust max height for scroll */
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.table.table-sm td,
+.table.table-sm th {
+  font-size: 0.875rem; /* Smaller font size for cart table */
+  padding: 0.4rem;
+}
+
+
 /* Cart Animation */
 .cart-section {
   transition: transform 0.15s ease-out;
