@@ -12,6 +12,7 @@ interface Product {
   id: string;
   name: string;
   price: number;
+  cost_price?: number; // Tambahkan properti cost_price opsional
   stock: number;
   barcode?: string; // Tambahkan properti barcode opsional
   category_id?: string;
@@ -33,6 +34,7 @@ interface TransactionItem {
   product_id: string;
   product_name: string;
   price_at_sale: number;
+  cost_price_at_sale?: number; // Tambahkan properti cost_price_at_sale opsional
   quantity: number;
 }
 
@@ -44,6 +46,15 @@ interface Transaction {
   change_amount: number;
   items: TransactionItem[];
   payment_method: string; // Tambahkan properti payment_method
+}
+
+interface ProfitLossReportItem {
+  product_name: string;
+  total_quantity_sold: number;
+  total_revenue: number;
+  total_cost: number;
+  total_profit: number;
+  category_name: string;
 }
 
 function App() {
@@ -64,6 +75,13 @@ function App() {
   const [cartAnimationTrigger, setCartAnimationTrigger] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('sales');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  // Profit/Loss Report States
+  const [profitLossReport, setProfitLossReport] = useState<ProfitLossReportItem[]>([]);
+  const [profitLossLoading, setProfitLossLoading] = useState<boolean>(false);
+  const [profitFilterStartDate, setProfitFilterStartDate] = useState<string>('');
+  const [profitFilterEndDate, setProfitFilterEndDate] = useState<string>('');
+  const [profitFilterCategory, setProfitFilterCategory] = useState<string>('');
 
   useEffect(() => {
     if (localStorage.getItem('token')) {
@@ -107,6 +125,7 @@ function App() {
   const [newProductId, setNewProductId] = useState<string>('');
   const [newProductName, setNewProductName] = useState<string>('');
   const [newProductPrice, setNewProductPrice] = useState<number>(0);
+  const [newProductCostPrice, setNewProductCostPrice] = useState<number>(0); // New state for cost price
   const [newProductStock, setNewProductStock] = useState<number>(0);
   const [newProductBarcode, setNewProductBarcode] = useState<string>('');
   const [newProductCategory, setNewProductCategory] = useState<string>('');
@@ -238,16 +257,50 @@ function App() {
     }
   }, [topProductsLimit]);
 
+  const fetchProfitLossReport = useCallback(async () => {
+    setProfitLossLoading(true);
+    try {
+      let url = 'http://localhost:3001/reports/profit-loss';
+      const params = new URLSearchParams();
+      if (profitFilterStartDate) {
+        params.append('startDate', String(new Date(profitFilterStartDate).getTime()));
+      }
+      if (profitFilterEndDate) {
+        params.append('endDate', String(new Date(profitFilterEndDate).getTime()));
+      }
+      if (profitFilterCategory) {
+        params.append('categoryId', profitFilterCategory);
+      }
+      if (params.toString()) {
+        url += `?${params.toString()}`;
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setProfitLossReport(data);
+    } catch (error: any) {
+      console.error("Error fetching profit/loss report:", error);
+      toast.error(`Failed to fetch profit/loss report: ${error.message}`);
+    } finally {
+      setProfitLossLoading(false);
+    }
+  }, [profitFilterStartDate, profitFilterEndDate, profitFilterCategory]);
+
   useEffect(() => {
     fetchDailySales();
     fetchTopProducts();
-  }, [fetchDailySales, fetchTopProducts]);
+    fetchProfitLossReport();
+  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport]);
 
   const handleEditClick = (product: Product) => {
     setEditingProduct(product);
     setNewProductId(product.id);
     setNewProductName(product.name);
     setNewProductPrice(product.price);
+    setNewProductCostPrice(product.cost_price || 0); // Set cost_price
     setNewProductStock(product.stock);
     setNewProductBarcode(product.barcode || '');
     setNewProductCategory(product.category_id || '');
@@ -258,6 +311,7 @@ function App() {
     setNewProductId('');
     setNewProductName('');
     setNewProductPrice(0);
+    setNewProductCostPrice(0); // Reset cost_price
     setNewProductStock(0);
     setNewProductBarcode('');
     setNewProductCategory('');
@@ -274,7 +328,10 @@ function App() {
       errors.newProductName = 'Nama Produk tidak boleh kosong.';
     }
     if (newProductPrice <= 0) {
-      errors.newProductPrice = 'Harga harus lebih besar dari 0.';
+      errors.newProductPrice = 'Harga jual harus lebih besar dari 0.';
+    }
+    if (newProductCostPrice < 0) {
+      errors.newProductCostPrice = 'Harga beli tidak boleh negatif.';
     }
     if (newProductStock < 0) {
       errors.newProductStock = 'Stok tidak boleh negatif.';
@@ -297,6 +354,7 @@ function App() {
           id: newProductId,
           name: newProductName,
           price: newProductPrice,
+          cost_price: newProductCostPrice, // Kirim cost_price
           stock: newProductStock,
           barcode: newProductBarcode || null, // Kirim barcode, atau null jika kosong
           category_id: newProductCategory || null,
@@ -330,7 +388,10 @@ function App() {
       errors.newProductName = 'Nama Produk tidak boleh kosong.';
     }
     if (newProductPrice <= 0) {
-      errors.newProductPrice = 'Harga harus lebih besar dari 0.';
+      errors.newProductPrice = 'Harga jual harus lebih besar dari 0.';
+    }
+    if (newProductCostPrice < 0) {
+      errors.newProductCostPrice = 'Harga beli tidak boleh negatif.';
     }
     if (newProductStock < 0) {
       errors.newProductStock = 'Stok tidak boleh negatif.';
@@ -352,6 +413,7 @@ function App() {
         body: JSON.stringify({
           name: newProductName,
           price: newProductPrice,
+          cost_price: newProductCostPrice, // Kirim cost_price
           stock: newProductStock,
           barcode: newProductBarcode || null,
           category_id: newProductCategory || null,
@@ -887,6 +949,31 @@ function App() {
                             )}
                           </Card.Text>
                           <Card.Text className="mb-1">
+                            <span className="fw-semibold">Harga Beli:</span> Rp
+                            {editingProductId === product.id && editingField === 'cost_price' ? (
+                              <input
+                                type="number"
+                                value={product.cost_price || 0}
+                                onChange={(e) => {
+                                  const updatedProducts = products.map((p) =>
+                                    p.id === product.id ? { ...p, cost_price: Number(e.target.value) } : p
+                                  );
+                                  setProducts(updatedProducts);
+                                }}
+                                onBlur={() => handleInlineUpdateProduct(product.id, 'cost_price', product.cost_price || 0)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    handleInlineUpdateProduct(product.id, 'cost_price', product.cost_price || 0);
+                                  }
+                                }}
+                                autoFocus
+                                className="form-control form-control-sm d-inline-block w-50"
+                              />
+                            ) : (
+                              (product.cost_price || 0).toLocaleString()
+                            )}
+                          </Card.Text>
+                          <Card.Text className="mb-1">
                             <span className="fw-semibold">Stok:</span>
                             {editingProductId === product.id && editingField === 'stock' ? (
                               <input
@@ -1067,9 +1154,13 @@ function App() {
                       {formErrors.newProductName && <div className="invalid-feedback">{formErrors.newProductName}</div>}
                     </div>
                     <div className="mb-3">
-                      <label htmlFor="productPrice" className="form-label fw-semibold">Harga</label>
+                      <label htmlFor="productPrice" className="form-label fw-semibold">Harga Jual</label>
                       <input type="number" className={`form-control ${formErrors.newProductPrice ? 'is-invalid' : ''}`} id="productPrice" value={newProductPrice === 0 ? '' : newProductPrice} onChange={(e) => {setNewProductPrice(Number(e.target.value)); setFormErrors(prev => { const { newProductPrice, ...rest } = prev; return rest; });}} placeholder="Contoh: 5000" />
                       {formErrors.newProductPrice && <div className="invalid-feedback">{formErrors.newProductPrice}</div>}
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="productCostPrice" className="form-label fw-semibold">Harga Beli</label>
+                      <input type="number" className="form-control" id="productCostPrice" value={newProductCostPrice === 0 ? '' : newProductCostPrice} onChange={(e) => setNewProductCostPrice(Number(e.target.value))} placeholder="Contoh: 4000" />
                     </div>
                     <div className="mb-3">
                       <label htmlFor="productStock" className="form-label fw-semibold">Stok</label>
@@ -1252,6 +1343,77 @@ function App() {
               )
             )}
             <Button variant="danger" className="mt-3" onClick={handleResetTransactions}>Reset Semua Transaksi</Button>
+
+            <h3 className="mt-5 mb-3">Laporan Laba Rugi</h3>
+            <div className="mb-3 d-flex align-items-end">
+              <div className="me-2">
+                <label htmlFor="profitStartDate" className="form-label fw-semibold">Dari Tanggal:</label>
+                <input
+                  type="date"
+                  id="profitStartDate"
+                  className="form-control"
+                  value={profitFilterStartDate}
+                  onChange={(e) => setProfitFilterStartDate(e.target.value)}
+                />
+              </div>
+              <div className="me-2">
+                <label htmlFor="profitEndDate" className="form-label fw-semibold">Sampai Tanggal:</label>
+                <input
+                  type="date"
+                  id="profitEndDate"
+                  className="form-control"
+                  value={profitFilterEndDate}
+                  onChange={(e) => setProfitFilterEndDate(e.target.value)}
+                />
+              </div>
+              <div className="me-2">
+                <label htmlFor="profitCategory" className="form-label fw-semibold">Kategori:</label>
+                <select
+                  id="profitCategory"
+                  className="form-select"
+                  value={profitFilterCategory}
+                  onChange={(e) => setProfitFilterCategory(e.target.value)}
+                >
+                  <option value="">Semua Kategori</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>{category.name}</option>
+                  ))}
+                </select>
+              </div>
+              <Button variant="primary" onClick={fetchProfitLossReport}>Filter Laba Rugi</Button>
+            </div>
+            {profitLossLoading ? (
+              <Spinner animation="border" size="sm" />
+            ) : (
+              profitLossReport.length > 0 ? (
+                <table className="table table-striped table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Produk</th>
+                      <th>Kategori</th>
+                      <th>Kuantitas Terjual</th>
+                      <th>Total Pendapatan</th>
+                      <th>Total Biaya</th>
+                      <th>Laba/Rugi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {profitLossReport.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.product_name}</td>
+                        <td>{item.category_name || '-'}</td>
+                        <td>{item.total_quantity_sold}</td>
+                        <td>Rp{item.total_revenue.toLocaleString()}</td>
+                        <td>Rp{item.total_cost.toLocaleString()}</td>
+                        <td>Rp{item.total_profit.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-muted">Tidak ada data laba rugi untuk ditampilkan.</p>
+              )
+            )}
           </Tab.Pane>
         </Tab.Content>
       </Tab.Container>

@@ -69,6 +69,7 @@ export function initializeDatabase(): Promise<sqlite3.Database> {
               id TEXT PRIMARY KEY,
               name TEXT NOT NULL,
               price INTEGER NOT NULL,
+              cost_price INTEGER NOT NULL DEFAULT 0, -- Added cost_price
               stock INTEGER NOT NULL,
               barcode TEXT UNIQUE,
               category_id TEXT,
@@ -81,14 +82,14 @@ export function initializeDatabase(): Promise<sqlite3.Database> {
           const productCount: { count: number }[] = await allAsync(db, "SELECT COUNT(*) AS count FROM products");
           if (productCount[0].count === 0) {
             const dummyProducts = [
-              { id: 'P001', name: 'Beras 5kg', price: 60000, stock: 100, category_id: 'CAT001' },
-              { id: 'P002', name: 'Minyak Goreng 2L', price: 35000, stock: 50, category_id: 'CAT001' },
-              { id: 'P003', name: 'Gula Pasir 1kg', price: 15000, stock: 200, category_id: 'CAT001' },
-              { id: 'P004', name: 'Telur Ayam 1kg', price: 28000, stock: 75, category_id: 'CAT001' },
-              { id: 'P005', name: 'Kopi Bubuk 200gr', price: 12000, stock: 150, category_id: 'CAT002' },
+              { id: 'P001', name: 'Beras 5kg', price: 60000, stock: 100, cost_price: 55000, category_id: 'CAT001' },
+              { id: 'P002', name: 'Minyak Goreng 2L', price: 35000, stock: 50, cost_price: 30000, category_id: 'CAT001' },
+              { id: 'P003', name: 'Gula Pasir 1kg', price: 15000, stock: 200, cost_price: 13000, category_id: 'CAT001' },
+              { id: 'P004', name: 'Telur Ayam 1kg', price: 28000, stock: 75, cost_price: 25000, category_id: 'CAT001' },
+              { id: 'P005', name: 'Kopi Bubuk 200gr', price: 12000, stock: 150, cost_price: 10000, category_id: 'CAT002' },
             ];
             for (const p of dummyProducts) {
-              await runAsync(db, "INSERT INTO products (id, name, price, stock, category_id) VALUES (?, ?, ?, ?, ?)", [p.id, p.name, p.price, p.stock, p.category_id]);
+              await runAsync(db, "INSERT INTO products (id, name, price, stock, category_id, cost_price) VALUES (?, ?, ?, ?, ?, ?)", [p.id, p.name, p.price, p.stock, p.category_id, p.cost_price]);
             }
             console.log('Dummy products inserted.');
           }
@@ -114,6 +115,7 @@ export function initializeDatabase(): Promise<sqlite3.Database> {
               product_id TEXT NOT NULL,
               product_name TEXT NOT NULL,
               price_at_sale INTEGER NOT NULL,
+              cost_price_at_sale INTEGER NOT NULL DEFAULT 0, -- Added cost_price_at_sale
               quantity INTEGER NOT NULL,
               FOREIGN KEY (transaction_id) REFERENCES transactions(id)
             )

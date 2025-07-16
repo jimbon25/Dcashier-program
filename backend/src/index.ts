@@ -173,7 +173,6 @@ app.get('/products', async (req, res) => {
   try {
     const db = getDatabase();
     const rows = await allAsync(db, "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id");
-    console.log("Products fetched:", rows);
     res.json(rows);
   } catch (err: any) {
     console.error("Error fetching products:", err.message);
@@ -182,14 +181,14 @@ app.get('/products', async (req, res) => {
 });
 
 app.post('/products', async (req, res) => {
-  const { id, name, price, stock, barcode, category_id } = req.body;
-  if (!id || !name || !price || !stock) {
-    return res.status(400).json({ error: 'All fields (id, name, price, stock) are required.' });
+  const { id, name, price, stock, barcode, category_id, cost_price } = req.body;
+  if (!id || !name || !price || !stock || cost_price === undefined) {
+    return res.status(400).json({ error: 'All fields (id, name, price, stock, cost_price) are required.' });
   }
 
   try {
     const db = getDatabase();
-    const result = await runAsync(db, "INSERT INTO products (id, name, price, stock, barcode, category_id) VALUES (?, ?, ?, ?, ?, ?)", [id, name, price, stock, barcode, category_id]);
+    const result = await runAsync(db, "INSERT INTO products (id, name, price, stock, barcode, category_id, cost_price) VALUES (?, ?, ?, ?, ?, ?, ?)", [id, name, price, stock, barcode, category_id, cost_price]);
     res.status(201).json({ message: 'Product added successfully', id: result.lastID });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -240,14 +239,14 @@ app.get('/products/barcode/:barcode', async (req, res) => {
 
 app.put('/products/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, price, stock, barcode, category_id } = req.body;
-  if (!name || !price || !stock) {
-    return res.status(400).json({ error: 'All fields (name, price, stock) are required.' });
+  const { name, price, stock, barcode, category_id, cost_price } = req.body;
+  if (!name || !price || !stock || cost_price === undefined) {
+    return res.status(400).json({ error: 'All fields (name, price, stock, cost_price) are required.' });
   }
 
   try {
     const db = getDatabase();
-    const result = await runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ?, category_id = ? WHERE id = ?", [name, price, stock, barcode, category_id, id]);
+    const result = await runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ?, category_id = ?, cost_price = ? WHERE id = ?", [name, price, stock, barcode, category_id, cost_price, id]);
     if (result.changes === 0) {
       res.status(404).json({ error: 'Product not found or no changes made.' });
       return;
@@ -302,10 +301,20 @@ app.post('/transactions', async (req, res) => {
 
     // Insert into transaction_items table
     for (const item of cartItems) {
+      // Fetch the cost_price for the current product
+      const product: any = await new Promise((resolve, reject) => {
+        db.get("SELECT cost_price FROM products WHERE id = ?", [item.id], (err, row) => {
+          if (err) reject(err);
+          else resolve(row);
+        });
+      });
+
+      const costPriceAtSale = product ? product.cost_price : 0; // Default to 0 if not found
+
       await runAsync(
         db,
-        "INSERT INTO transaction_items (transaction_id, product_id, product_name, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?)",
-        [transactionId, item.id, item.name, item.price, item.quantity]
+        "INSERT INTO transaction_items (transaction_id, product_id, product_name, price_at_sale, quantity, cost_price_at_sale) VALUES (?, ?, ?, ?, ?, ?)",
+        [transactionId, item.id, item.name, item.price, item.quantity, costPriceAtSale]
       );
     }
 
@@ -427,6 +436,58 @@ app.get('/reports/top-products', async (req, res) => {
     );
     res.json(rows);
   } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/reports/profit-loss', async (req, res) => {
+  const db = getDatabase();
+  const { startDate, endDate, categoryId } = req.query;
+
+  let query = `
+    SELECT
+      ti.product_name,
+      SUM(ti.quantity) AS total_quantity_sold,
+      SUM(ti.price_at_sale * ti.quantity) AS total_revenue,
+      SUM(ti.cost_price_at_sale * ti.quantity) AS total_cost,
+      (SUM(ti.price_at_sale * ti.quantity) - SUM(ti.cost_price_at_sale * ti.quantity)) AS total_profit,
+      c.name AS category_name
+    FROM transaction_items ti
+    JOIN transactions t ON ti.transaction_id = t.id
+    LEFT JOIN products p ON ti.product_id = p.id
+    LEFT JOIN categories c ON p.category_id = c.id
+  `;
+
+  const params: (number | string)[] = [];
+  const conditions: string[] = [];
+
+  if (startDate) {
+    conditions.push("t.timestamp >= ?");
+    params.push(parseInt(startDate as string));
+  }
+  if (endDate) {
+    conditions.push("t.timestamp <= ?");
+    params.push(parseInt(endDate as string));
+  }
+  if (categoryId) {
+    conditions.push("p.category_id = ?");
+    params.push(categoryId as string);
+  }
+
+  if (conditions.length > 0) {
+    query += " WHERE " + conditions.join(" AND ");
+  }
+
+  query += `
+    GROUP BY ti.product_name, c.name
+    ORDER BY total_profit DESC
+  `;
+
+  try {
+    const rows = await allAsync(db, query, params);
+    res.json(rows);
+  } catch (err: any) {
+    console.error("Error fetching profit/loss report:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
