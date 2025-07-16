@@ -4,7 +4,7 @@ import { Container, Row, Col, Card, Button, Nav, Spinner, Navbar } from 'react-b
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceiptModal from './ReceiptModal';
-import { CartPlusFill, PencilSquare, TrashFill } from 'react-bootstrap-icons';
+import { CartPlus, PencilSquare, TrashFill } from 'react-bootstrap-icons';
 import AuthPage from './AuthPage';
 import Sidebar from './Sidebar';
 
@@ -836,8 +836,9 @@ function App() {
                         <div>
                           <Card.Title>{product.name}</Card.Title>
                           <Card.Text>Rp{product.price.toLocaleString()}</Card.Text>
+                          <Card.Text className="text-muted">Stok: {product.stock}</Card.Text>
                         </div>
-                        <CartPlusFill size={24} className="text-primary" />
+                        <CartPlus size={24} className="text-primary" />
                       </Card.Body>
                     </Card>
                   </Col>
@@ -861,10 +862,10 @@ function App() {
                                   <div className="small lh-sm">{item.name}</div>
                                   <div className="text-muted small">Rp{item.price.toLocaleString()}</div>
                                 </td>
-                                <td className="text-center">{item.quantity}</td>
                                 <td>
-                                  <div className="btn-group">
+                                  <div className="btn-group d-flex align-items-center">
                                     <Button variant="outline-danger" size="sm" onClick={() => decreaseQuantity(item.id)}>-</Button>
+                                    <span className="mx-2">{item.quantity}</span>
                                     <Button variant="outline-success" size="sm" onClick={() => increaseQuantity(item.id)}>+</Button>
                                   </div>
                                 </td>
@@ -876,7 +877,7 @@ function App() {
                       <div className="mt-3 pt-3 border-top">
                         <div className="d-flex justify-content-between align-items-center fw-bold fs-5">
                           <span>Total</span>
-                          <span className="text-success">Rp{total.toLocaleString()}</span>
+                          <span className="text-primary">Rp{total.toLocaleString()}</span>
                         </div>
                       </div>
                       <div className="mt-3 pt-3 border-top">
@@ -926,9 +927,9 @@ function App() {
                         </div>
                         <div className="d-flex justify-content-between align-items-center fw-bold fs-5 mb-3">
                           <span>Kembalian</span>
-                          <span className="text-info">Rp{(paymentAmount - total).toLocaleString()}</span>
+                          <span className="text-primary">Rp{(paymentAmount - total).toLocaleString()}</span>
                         </div>
-                        <Button variant="success" className="w-100" onClick={handlePayment} disabled={cart.length === 0}>Bayar</Button>
+                        <Button variant="primary" className="w-100" onClick={handlePayment} disabled={cart.length === 0}>Bayar</Button>
                       </div>
                     </>
                   )}
