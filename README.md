@@ -1,6 +1,6 @@
 # Dcashier-program
 
-A brief description of your project and its purpose.
+Dcashier-program is a modern and intuitive cashier application designed to streamline product management, sales processes, and transaction reporting. This project is currently in its **beta phase** and **under active testing and development**. It features barcode scanning, stock tracking, and daily sales reports, aiming to enhance operational efficiency for retail businesses.
 
 ## Features
 
