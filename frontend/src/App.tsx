@@ -675,7 +675,7 @@ function App() {
                 <Card className="shadow-sm">
                   <Card.Body>
                     <Card.Title className="fw-bold">Total Penjualan Hari Ini</Card.Title>
-                    <Card.Text className="fs-3 text-primary">Rp{dailySales.reduce((acc, item) => acc + item.total_revenue, 0).toLocaleString()}</Card.Text>
+                    <Card.Text className="fs-3 text-primary">Rp{(dailySales.reduce((acc, item) => acc + (item.total_revenue || 0), 0)).toLocaleString()}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
@@ -732,7 +732,7 @@ function App() {
                       <tr key={index}>
                         <td>{item.product_name}</td>
                         <td>{item.total_quantity_sold}</td>
-                        <td>Rp{item.total_revenue.toLocaleString()}</td>
+                        <td>Rp{(item.total_revenue || 0).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1140,7 +1140,7 @@ function App() {
                       <tr key={index}>
                         <td>{item.product_name}</td>
                         <td>{item.total_quantity_sold}</td>
-                        <td>Rp{item.total_revenue.toLocaleString()}</td>
+                        <td>Rp{(item.total_revenue || 0).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
