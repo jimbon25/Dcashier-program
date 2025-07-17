@@ -153,6 +153,10 @@ app.post('/categories', async (req, res) => {
     await runAsync(db, "INSERT INTO categories (id, name) VALUES (?, ?)", [id, name]);
     res.status(201).json({ message: 'Category added successfully' });
   } catch (err: any) {
+    console.error("Error adding category:", err.message);
+    if (err.message.includes('UNIQUE constraint failed')) {
+      return res.status(409).json({ error: 'Category ID or name already exists.' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -213,6 +217,10 @@ app.post('/products', async (req, res) => {
     const result = await runAsync(db, "INSERT INTO products (id, name, price, stock, barcode, category_id, cost_price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [id, name, price, stock, barcode, category_id, cost_price, image_url || null]);
     res.status(201).json({ message: 'Product added successfully', id: result.lastID });
   } catch (err: any) {
+    console.error("Error adding product:", err.message);
+    if (err.message.includes('UNIQUE constraint failed')) {
+      return res.status(409).json({ error: 'Product ID or barcode already exists.' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -275,6 +283,10 @@ app.put('/products/:id', async (req, res) => {
     }
     res.json({ message: 'Product updated successfully' });
   } catch (err: any) {
+    console.error("Error updating product:", err.message);
+    if (err.message.includes('UNIQUE constraint failed')) {
+      return res.status(409).json({ error: 'Barcode already exists for another product.' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
