@@ -313,12 +313,14 @@ function App() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetchDailySales();
-      fetchTopProducts();
-      fetchProfitLossReport();
+      if (userRole === 'admin') {
+        fetchDailySales();
+        fetchTopProducts();
+        fetchProfitLossReport();
+      }
       fetchTransactions();
     }
-  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions, isLoggedIn]);
+  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions, isLoggedIn, userRole]);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
