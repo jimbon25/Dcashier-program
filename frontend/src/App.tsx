@@ -60,6 +60,12 @@ interface ProfitLossReportItem {
   category_name: string;
 }
 
+interface User {
+  id: number;
+  username: string;
+  role: 'admin' | 'cashier';
+}
+
 function App() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -122,8 +128,16 @@ function App() {
   const [newCategoryName, setNewCategoryName] = useState<string>('');
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
+  // User Management States
+  const [users, setUsers] = useState<User[]>([]);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [newUserUsername, setNewUserUsername] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'cashier'>('cashier');
+
   const productFormRef = useRef<HTMLDivElement>(null);
   const categoryFormRef = useRef<HTMLDivElement>(null);
+  const userFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -661,6 +675,99 @@ function App() {
       toast.error(`Failed to fetch categories: ${error.message}`);
     }
   }, [authenticatedFetch]);
+
+  const fetchUsers = useCallback(async () => {
+    if (userRole !== 'admin') return;
+    try {
+      const response = await authenticatedFetch('http://localhost:3001/users');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setUsers(data);
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      toast.error(`Failed to fetch users: ${error.message}`);
+    }
+  }, [authenticatedFetch, userRole]);
+
+  const handleAddUser = async () => {
+    if (!newUserUsername.trim() || !newUserPassword.trim()) {
+      toast.error('Username and password are required.');
+      return;
+    }
+    try {
+      const response = await authenticatedFetch('http://localhost:3001/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: newUserUsername, password: newUserPassword, role: newUserRole }),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      toast.success(data.message);
+      fetchUsers();
+      setNewUserUsername('');
+      setNewUserPassword('');
+      setNewUserRole('cashier');
+    } catch (error: any) {
+      console.error("Error adding user:", error);
+      toast.error(`Failed to add user: ${error.message}`);
+    }
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setNewUserUsername(user.username);
+    setNewUserRole(user.role);
+    if (userFormRef.current) {
+      userFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUser) return;
+    if (!newUserUsername.trim()) {
+      toast.error('Username is required.');
+      return;
+    }
+    try {
+      const response = await authenticatedFetch(`http://localhost:3001/users/${editingUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: newUserUsername, password: newUserPassword, role: newUserRole }),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      toast.success(data.message);
+      fetchUsers();
+      handleCancelEditUser();
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+      toast.error(`Failed to update user: ${error.message}`);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        const response = await authenticatedFetch(`http://localhost:3001/users/${userId}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        toast.success(data.message);
+        fetchUsers();
+      } catch (error: any) {
+        console.error("Error deleting user:", error);
+        toast.error(`Failed to delete user: ${error.message}`);
+      }
+    }
+  };
+
+  const handleCancelEditUser = () => {
+    setEditingUser(null);
+    setNewUserUsername('');
+    setNewUserPassword('');
+    setNewUserRole('cashier');
+  };
 
   
 
@@ -1417,6 +1524,72 @@ function App() {
               />
               <small className="form-text text-muted">Produk dengan stok di bawah batas ini akan ditandai sebagai stok rendah.</small>
             </div>
+          </div>
+        );
+      case 'user-management':
+        return (
+          <div>
+            <h2 className="mt-3 mb-4 text-primary">Manajemen Pengguna</h2>
+            <Row className="mb-4">
+              <Col>
+                <Card className="shadow-sm" ref={userFormRef}>
+                  <Card.Body>
+                    <Card.Title className="mb-4 fw-bold">{editingUser ? 'Edit Pengguna' : 'Tambah Pengguna'}</Card.Title>
+                    <div className="mb-3">
+                      <label htmlFor="username" className="form-label fw-semibold">Username</label>
+                      <input type="text" className="form-control" id="username" value={newUserUsername} onChange={(e) => setNewUserUsername(e.target.value)} placeholder="Masukkan username" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="password" className="form-label fw-semibold">Password</label>
+                      <input type="password" className="form-control" id="password" value={newUserPassword} onChange={(e) => setNewUserPassword(e.target.value)} placeholder={editingUser ? 'Kosongkan jika tidak ingin mengubah' : 'Masukkan password'} />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="role" className="form-label fw-semibold">Role</label>
+                      <select className="form-select" id="role" value={newUserRole} onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'cashier')}>
+                        <option value="cashier">Kasir</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </div>
+                    {editingUser ? (
+                      <>
+                        <Button variant="warning" onClick={handleUpdateUser} className="me-2">Update Pengguna</Button>
+                        <Button variant="secondary" onClick={handleCancelEditUser}>Batal Edit</Button>
+                      </>
+                    ) : (
+                      <Button variant="success" onClick={handleAddUser}>Tambah Pengguna</Button>
+                    )}
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+            <h3 className="mt-4 mb-3">Daftar Pengguna</h3>
+            {users.length === 0 ? (
+              <p className="text-muted">Tidak ada pengguna untuk ditampilkan.</p>
+            ) : (
+              <table className="table table-striped table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map(user => (
+                    <tr key={user.id}>
+                      <td>{user.id}</td>
+                      <td>{user.username}</td>
+                      <td>{user.role}</td>
+                      <td>
+                        <Button variant="info" size="sm" className="me-2" onClick={() => handleEditUser(user)}><PencilSquare /></Button>
+                        <Button variant="danger" size="sm" onClick={() => handleDeleteUser(user.id)}><TrashFill /></Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         );
       default:

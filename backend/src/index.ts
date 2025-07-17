@@ -127,7 +127,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-app.post('/login', async (req, res) => {
+'''app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password are required.' });
@@ -158,6 +158,87 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// User Management Endpoints
+app.get('/users', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  try {
+    const db = getDatabase();
+    const rows = await allAsync(db, "SELECT id, username, role FROM users");
+    res.json(rows);
+  } catch (err: any) {
+    console.error("Error fetching users:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/users', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  const { username, password, role } = req.body;
+  if (!username || !password || !role) {
+    return res.status(400).json({ error: 'Username, password, and role are required.' });
+  }
+  if (!['admin', 'cashier'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role specified.' });
+  }
+
+  try {
+    const db = getDatabase();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await runAsync(db, "INSERT INTO users (username, password, role) VALUES (?, ?, ?)", [username, hashedPassword, role]);
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (err: any) {
+    if (err.message.includes('UNIQUE constraint failed')) {
+      return res.status(409).json({ error: 'Username already exists.' });
+    }
+    console.error("Error creating user:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/users/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  const { id } = req.params;
+  const { username, password, role } = req.body;
+
+  if (!username || !role) {
+    return res.status(400).json({ error: 'Username and role are required.' });
+  }
+  if (!['admin', 'cashier'].includes(role)) {
+    return res.status(400).json({ error: 'Invalid role specified.' });
+  }
+
+  try {
+    const db = getDatabase();
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await runAsync(db, "UPDATE users SET username = ?, password = ?, role = ? WHERE id = ?", [username, hashedPassword, role, id]);
+    } else {
+      await runAsync(db, "UPDATE users SET username = ?, role = ? WHERE id = ?", [username, role, id]);
+    }
+    res.json({ message: 'User updated successfully' });
+  } catch (err: any) {
+    if (err.message.includes('UNIQUE constraint failed')) {
+      return res.status(409).json({ error: 'Username already exists.' });
+    }
+    console.error("Error updating user:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/users/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+  const { id } = req.params;
+  try {
+    const db = getDatabase();
+    const result = await runAsync(db, "DELETE FROM users WHERE id = ?", [id]);
+    if (result.changes === 0) {
+      res.status(404).json({ error: 'User not found.' });
+      return;
+    }
+    res.json({ message: 'User deleted successfully' });
+  } catch (err: any) {
+    console.error("Error deleting user:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+''
 
 // Category Endpoints
 app.get('/categories', async (req, res) => {
