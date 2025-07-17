@@ -52,6 +52,7 @@
   border-radius: 15px; /* More rounded corners */
   border: 1px solid var(--bs-primary); /* Primary color border */
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth transition for hover effects */
+  background-color: var(--bs-light); /* Subtle background color for cards */
 }
 
 .card:hover {
@@ -60,7 +61,11 @@
 }
 
 .card-title {
-  font-size: 0.9rem; /* Smaller font size for product names */
+  font-size: 0.85rem; /* Smaller font size for product names */
+}
+
+.card-text {
+  font-size: 0.8rem; /* Smaller font size for product details */
 }
 
 /* Cart Animation */

@@ -1,10 +1,10 @@
 // Created by dla 9196
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { Container, Row, Col, Card, Button, Nav, Spinner, Navbar } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Nav, Spinner, Navbar, InputGroup, FormControl } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ReceiptModal from './ReceiptModal';
-import { CartPlus, PencilSquare, TrashFill } from 'react-bootstrap-icons';
+import { CartPlus, PencilSquare, TrashFill, Search } from 'react-bootstrap-icons';
 import AuthPage from './AuthPage';
 import Sidebar from './Sidebar';
 
@@ -103,10 +103,17 @@ function App() {
   const [topProducts, setTopProducts] = useState<any[]>([]);
   const [topProductsLimit, setTopProductsLimit] = useState<number>(5);
   const [topProductsLoading, setTopProductsLoading] = useState<boolean>(false);
+  const [lowStockThreshold, setLowStockThreshold] = useState<number>(() => {
+    const savedThreshold = localStorage.getItem('lowStockThreshold');
+    return savedThreshold ? Number(savedThreshold) : 10;
+  });
   const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
-  const LOW_STOCK_THRESHOLD = 10;
   const [filterStartDate, setFilterStartDate] = useState<string>('');
   const [filterEndDate, setFilterEndDate] = useState<string>('');
+  const [currencySymbol, setCurrencySymbol] = useState<string>(() => {
+    const savedSymbol = localStorage.getItem('currencySymbol');
+    return savedSymbol || 'Rp';
+  });
 
   // Category Management States
   const [newCategoryId, setNewCategoryId] = useState<string>('');
@@ -452,7 +459,7 @@ function App() {
     const calculatedChange = paymentAmount - totalAfterDiscount;
 
     if (paymentAmount < totalAfterDiscount) {
-      toast.error(`Pembayaran Gagal! Uang yang dibayarkan kurang Rp${(totalAfterDiscount - paymentAmount).toLocaleString()}`);
+      toast.error(`Pembayaran Gagal! Uang yang dibayarkan kurang ${currencySymbol}${(totalAfterDiscount - paymentAmount).toLocaleString()}`);
       return;
     }
 
@@ -486,7 +493,7 @@ function App() {
       setPaymentAmount(0);
       setDiscount(0);
       setDiscountType('percentage');
-      toast.success(`Pembayaran Berhasil! Kembalian: Rp${calculatedChange.toLocaleString()}`);
+      toast.success(`Pembayaran Berhasil! Kembalian: ${currencySymbol}${calculatedChange.toLocaleString()}`);
 
       setCurrentTransaction({
         id: transactionData.transactionId,
@@ -635,14 +642,14 @@ function App() {
       setProducts(productsData);
       setLoading(false);
 
-      const lowStock = productsData.filter((p: Product) => p.stock <= LOW_STOCK_THRESHOLD);
+      const lowStock = productsData.filter((p: Product) => p.stock <= lowStockThreshold);
       setLowStockProducts(lowStock);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       setError(error.message);
       setLoading(false);
     }
-  }, []);
+  }, [lowStockThreshold]);
 
   useEffect(() => {
     fetchProductsAndCategories();
@@ -682,7 +689,7 @@ function App() {
                 <Card className="shadow-sm">
                   <Card.Body>
                     <Card.Title className="fw-bold">Total Pendapatan</Card.Title>
-                    <Card.Text className="fs-3 text-success">Rp{transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString()}</Card.Text>
+                    <Card.Text className="fs-3 text-success">{currencySymbol}{transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString()}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
@@ -706,7 +713,7 @@ function App() {
                 <Card className="shadow-sm">
                   <Card.Body>
                     <Card.Title className="fw-bold">Total Penjualan Hari Ini</Card.Title>
-                    <Card.Text className="fs-3 text-primary">Rp{(dailySales.reduce((acc, item) => acc + (item.total_revenue || 0), 0)).toLocaleString()}</Card.Text>
+                    <Card.Text className="fs-3 text-primary">{currencySymbol}{(dailySales.reduce((acc, item) => acc + (item.total_revenue || 0), 0)).toLocaleString()}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
@@ -763,13 +770,13 @@ function App() {
                       <tr key={index}>
                         <td>{item.product_name}</td>
                         <td>{item.total_quantity_sold}</td>
-                        <td>Rp{(item.total_revenue || 0).toLocaleString()}</td>
+                        <td>{currencySymbol}{(item.total_revenue || 0).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
-                <p className="text-muted">Tidak ada penjualan untuk hari ini.</p>
+                <p className="text-muted">Tidak ada penjualan untuk tanggal ini.</p>
               )
             )}
 
@@ -792,7 +799,7 @@ function App() {
                       <tr key={transaction.id}>
                         <td>{transaction.id}</td>
                         <td>{new Date(transaction.timestamp).toLocaleString()}</td>
-                        <td>Rp{transaction.total_amount.toLocaleString()}</td>
+                        <td>{currencySymbol}{transaction.total_amount.toLocaleString()}</td>
                         <td>{transaction.payment_method}</td>
                       </tr>
                     ))}
@@ -809,21 +816,25 @@ function App() {
           <Row>
             <Col md={8}>
               <div className="mb-4">
-                <input
-                  type="text"
-                  className="form-control form-control-lg mb-3"
-                  placeholder="Scan Barcode atau masukkan barcode..."
-                  value={barcodeSearchTerm}
-                  onChange={(e) => setBarcodeSearchTerm(e.target.value)}
-                  onKeyDown={handleBarcodeScan}
-                />
-                <input
-                  type="text"
-                  className="form-control form-control-lg"
-                  placeholder="Cari produk berdasarkan nama..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                <InputGroup className="mb-3">
+                  <InputGroup.Text><Search /></InputGroup.Text>
+                  <FormControl
+                    type="text"
+                    placeholder="Scan Barcode atau masukkan barcode..."
+                    value={barcodeSearchTerm}
+                    onChange={(e) => setBarcodeSearchTerm(e.target.value)}
+                    onKeyDown={handleBarcodeScan}
+                  />
+                </InputGroup>
+                <InputGroup>
+                  <InputGroup.Text><Search /></InputGroup.Text>
+                  <FormControl
+                    type="text"
+                    placeholder="Cari produk berdasarkan nama..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </InputGroup>
               </div>
               <Row className="g-4 mb-5">
                 {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
@@ -835,7 +846,7 @@ function App() {
                       <Card.Body className="d-flex justify-content-between align-items-center">
                         <div>
                           <Card.Title>{product.name}</Card.Title>
-                          <Card.Text>Rp{product.price.toLocaleString()}</Card.Text>
+                          <Card.Text>{currencySymbol}{product.price.toLocaleString()}</Card.Text>
                           <Card.Text className="text-muted">Stok: {product.stock}</Card.Text>
                         </div>
                         <CartPlus size={24} className="text-primary" />
@@ -860,7 +871,7 @@ function App() {
                               <tr key={item.id}>
                                 <td>
                                   <div className="small lh-sm">{item.name}</div>
-                                  <div className="text-muted small">Rp{item.price.toLocaleString()}</div>
+                                  <div className="text-muted small">{currencySymbol}{item.price.toLocaleString()}</div>
                                 </td>
                                 <td>
                                   <div className="btn-group d-flex align-items-center">
@@ -877,7 +888,7 @@ function App() {
                       <div className="mt-3 pt-3 border-top">
                         <div className="d-flex justify-content-between align-items-center fw-bold fs-5">
                           <span>Total</span>
-                          <span className="text-primary">Rp{total.toLocaleString()}</span>
+                          <span className="text-primary">{currencySymbol}{total.toLocaleString()}</span>
                         </div>
                       </div>
                       <div className="mt-3 pt-3 border-top">
@@ -927,7 +938,7 @@ function App() {
                         </div>
                         <div className="d-flex justify-content-between align-items-center fw-bold fs-5 mb-3">
                           <span>Kembalian</span>
-                          <span className="text-primary">Rp{(paymentAmount - total).toLocaleString()}</span>
+                          <span className="text-primary">{currencySymbol}{(paymentAmount - total).toLocaleString()}</span>
                         </div>
                         <Button variant="primary" className="w-100" onClick={handlePayment} disabled={cart.length === 0}>Bayar</Button>
                       </div>
@@ -1033,8 +1044,8 @@ function App() {
                     <tr key={product.id}>
                       <td>{product.id}</td>
                       <td>{product.name}</td>
-                      <td>Rp{product.price.toLocaleString()}</td>
-                      <td>Rp{(product.cost_price || 0).toLocaleString()}</td>
+                      <td>{currencySymbol}{product.price.toLocaleString()}</td>
+                      <td>{currencySymbol}{(product.cost_price || 0).toLocaleString()}</td>
                       <td>{product.stock}</td>
                       <td>{product.barcode || '-'}</td>
                       <td>{product.category_name || '-'}</td>
@@ -1088,7 +1099,7 @@ function App() {
                       <tr key={index}>
                         <td>{item.product_name}</td>
                         <td>{item.total_quantity_sold}</td>
-                        <td>Rp{(item.total_revenue || 0).toLocaleString()}</td>
+                        <td>{currencySymbol}{(item.total_revenue || 0).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1180,14 +1191,14 @@ function App() {
                       <tr key={transaction.id}>
                         <td>{transaction.id}</td>
                         <td>{new Date(transaction.timestamp).toLocaleString()}</td>
-                        <td>Rp{transaction.total_amount.toLocaleString()}</td>
-                        <td>Rp{transaction.payment_amount.toLocaleString()}</td>
-                        <td>Rp{transaction.change_amount.toLocaleString()}</td>
+                        <td>{currencySymbol}{transaction.total_amount.toLocaleString()}</td>
+                        <td>{currencySymbol}{transaction.payment_amount.toLocaleString()}</td>
+                        <td>{currencySymbol}{transaction.change_amount.toLocaleString()}</td>
                         <td>{transaction.payment_method}</td>
                         <td>
                           <ul>
                             {transaction.items.map((item, idx) => (
-                              <li key={idx}>{item.product_name} ({item.quantity} x Rp{item.price_at_sale.toLocaleString()})</li>
+                              <li key={idx}>{item.product_name} ({item.quantity} x {currencySymbol}{item.price_at_sale.toLocaleString()})</li>
                             ))}
                           </ul>
                         </td>
@@ -1260,9 +1271,9 @@ function App() {
                         <td>{item.product_name}</td>
                         <td>{item.category_name || '-'}</td>
                         <td>{item.total_quantity_sold}</td>
-                        <td>Rp{item.total_revenue.toLocaleString()}</td>
-                        <td>Rp{item.total_cost.toLocaleString()}</td>
-                        <td>Rp{item.total_profit.toLocaleString()}</td>
+                        <td>{currencySymbol}{item.total_revenue.toLocaleString()}</td>
+                        <td>{currencySymbol}{item.total_cost.toLocaleString()}</td>
+                        <td>{currencySymbol}{item.total_profit.toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1328,6 +1339,45 @@ function App() {
                 </tbody>
               </table>
             )}
+          </div>
+        );
+      case 'settings':
+        return (
+          <div>
+            <h2 className="mt-3 mb-4 text-primary">Pengaturan Aplikasi</h2>
+            <p className="text-muted">Di sini Anda dapat mengelola pengaturan umum aplikasi.</p>
+
+            <div className="mb-3">
+              <label htmlFor="currencySymbolInput" className="form-label fw-semibold">Simbol Mata Uang</label>
+              <input
+                type="text"
+                id="currencySymbolInput"
+                className="form-control w-25"
+                value={currencySymbol}
+                onChange={(e) => {
+                  setCurrencySymbol(e.target.value);
+                  localStorage.setItem('currencySymbol', e.target.value);
+                }}
+                maxLength={5}
+              />
+              <small className="form-text text-muted">Contoh: Rp, $, €</small>
+            </div>
+
+            <div className="mb-3">
+              <label htmlFor="lowStockThresholdInput" className="form-label fw-semibold">Batas Stok Rendah</label>
+              <input
+                type="number"
+                id="lowStockThresholdInput"
+                className="form-control w-25"
+                value={lowStockThreshold}
+                onChange={(e) => {
+                  setLowStockThreshold(Number(e.target.value));
+                  localStorage.setItem('lowStockThreshold', e.target.value);
+                }}
+                min={0}
+              />
+              <small className="form-text text-muted">Produk dengan stok di bawah batas ini akan ditandai sebagai stok rendah.</small>
+            </div>
           </div>
         );
       default:

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Nav, Button } from 'react-bootstrap';
-import { HouseDoorFill, CartFill, InboxesFill, FileEarmarkBarGraphFill, TagsFill, SunFill, MoonFill, BoxArrowRight } from 'react-bootstrap-icons';
+import { HouseDoorFill, CartFill, InboxesFill, FileEarmarkBarGraphFill, TagsFill, SunFill, MoonFill, BoxArrowRight, GearFill } from 'react-bootstrap-icons';
 
 interface SidebarProps {
   activeKey: string;
@@ -32,6 +32,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeKey, onSelect, theme, toggleThe
         </Nav.Link>
         <Nav.Link eventKey="reports" className="mb-2 sidebar-nav-link d-flex align-items-center">
           <FileEarmarkBarGraphFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Laporan</span>
+        </Nav.Link>
+        <Nav.Link eventKey="settings" className="mb-2 sidebar-nav-link d-flex align-items-center">
+          <GearFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Pengaturan</span>
         </Nav.Link>
       </div>
       <div className="mt-auto d-flex flex-row justify-content-center align-items-center">
