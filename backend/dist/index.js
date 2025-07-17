@@ -17,11 +17,46 @@ const cors_1 = __importDefault(require("cors"));
 const database_1 = require("./database");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
 const SECRET_KEY = process.env.JWT_SECRET || 'supersecretjwtkey'; // Use environment variable in production
+// Middleware to authenticate JWT token
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null)
+        return res.sendStatus(401); // No token
+    jsonwebtoken_1.default.verify(token, SECRET_KEY, (err, user) => {
+        if (err)
+            return res.sendStatus(403); // Invalid token
+        req.user = user;
+        next();
+    });
+};
+// Middleware to authorize roles
+const authorizeRoles = (...roles) => {
+    return (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            return res.status(403).json({ error: 'Forbidden: Insufficient permissions.' });
+        }
+        next();
+    };
+};
 const app = (0, express_1.default)();
 const port = 3001; // Using 3001 to avoid conflict with React's default 3000
+// Multer storage configuration
+const storage = multer_1.default.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/images');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path_1.default.extname(file.originalname)); // Append timestamp to filename
+    }
+});
+const upload = (0, multer_1.default)({ storage: storage });
 app.use((0, cors_1.default)()); // Enable CORS for all routes
 app.use(express_1.default.json()); // Enable JSON body parsing
+app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads'))); // Serve static files from the uploads directory
 // Helper function to promisify db.run
 const runAsync = (db, sql, params = []) => {
     return new Promise((resolve, reject) => {
@@ -63,6 +98,12 @@ const execAsync = (db, sql) => {
 };
 app.get('/', (req, res) => {
     res.send('Hello from Backend!');
+});
+app.post('/upload/image', upload.single('image'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded.' });
+    }
+    res.json({ imageUrl: `/uploads/images/${req.file.filename}` });
 });
 // User Authentication Endpoints
 app.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -106,8 +147,8 @@ app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (!isMatch) {
             return res.status(400).json({ error: 'Invalid username or password.' });
         }
-        const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
-        res.json({ message: 'Logged in successfully', token });
+        const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+        res.json({ message: 'Logged in successfully', token, role: user.role });
     }
     catch (err) {
         console.error("Error logging in user:", err.message);
@@ -126,7 +167,7 @@ app.get('/categories', (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ error: err.message });
     }
 }));
-app.post('/categories', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/categories', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id, name } = req.body;
     if (!id || !name) {
         return res.status(400).json({ error: 'Category ID and name are required.' });
@@ -137,10 +178,14 @@ app.post('/categories', (req, res) => __awaiter(void 0, void 0, void 0, function
         res.status(201).json({ message: 'Category added successfully' });
     }
     catch (err) {
+        console.error("Error adding category:", err.message);
+        if (err.message.includes('UNIQUE constraint failed')) {
+            return res.status(409).json({ error: 'Category ID or name already exists.' });
+        }
         res.status(500).json({ error: err.message });
     }
 }));
-app.put('/categories/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.put('/categories/:id', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { name } = req.body;
     if (!name) {
@@ -159,7 +204,7 @@ app.put('/categories/:id', (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).json({ error: err.message });
     }
 }));
-app.delete('/categories/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.delete('/categories/:id', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         const db = (0, database_1.getDatabase)();
@@ -178,7 +223,6 @@ app.get('/products', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     try {
         const db = (0, database_1.getDatabase)();
         const rows = yield allAsync(db, "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id");
-        console.log("Products fetched:", rows);
         res.json(rows);
     }
     catch (err) {
@@ -186,17 +230,21 @@ app.get('/products', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.status(500).json({ error: err.message });
     }
 }));
-app.post('/products', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, name, price, stock, barcode, category_id } = req.body;
-    if (!id || !name || !price || !stock) {
-        return res.status(400).json({ error: 'All fields (id, name, price, stock) are required.' });
+app.post('/products', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id, name, price, stock, barcode, category_id, cost_price, image_url } = req.body;
+    if (!id || !name || !price || !stock || cost_price === undefined) {
+        return res.status(400).json({ error: 'All fields (id, name, price, stock, cost_price) are required.' });
     }
     try {
         const db = (0, database_1.getDatabase)();
-        const result = yield runAsync(db, "INSERT INTO products (id, name, price, stock, barcode, category_id) VALUES (?, ?, ?, ?, ?, ?)", [id, name, price, stock, barcode, category_id]);
+        const result = yield runAsync(db, "INSERT INTO products (id, name, price, stock, barcode, category_id, cost_price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [id, name, price, stock, barcode, category_id, cost_price, image_url || null]);
         res.status(201).json({ message: 'Product added successfully', id: result.lastID });
     }
     catch (err) {
+        console.error("Error adding product:", err.message);
+        if (err.message.includes('UNIQUE constraint failed')) {
+            return res.status(409).json({ error: 'Product ID or barcode already exists.' });
+        }
         res.status(500).json({ error: err.message });
     }
 }));
@@ -244,15 +292,15 @@ app.get('/products/barcode/:barcode', (req, res) => __awaiter(void 0, void 0, vo
         res.status(500).json({ error: err.message });
     }
 }));
-app.put('/products/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.put('/products/:id', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
-    const { name, price, stock, barcode, category_id } = req.body;
-    if (!name || !price || !stock) {
-        return res.status(400).json({ error: 'All fields (name, price, stock) are required.' });
+    const { name, price, stock, barcode, category_id, cost_price, image_url } = req.body;
+    if (!name || !price || !stock || cost_price === undefined) {
+        return res.status(400).json({ error: 'All fields (name, price, stock, cost_price) are required.' });
     }
     try {
         const db = (0, database_1.getDatabase)();
-        const result = yield runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ?, category_id = ? WHERE id = ?", [name, price, stock, barcode, category_id, id]);
+        const result = yield runAsync(db, "UPDATE products SET name = ?, price = ?, stock = ?, barcode = ?, category_id = ?, cost_price = ?, image_url = ? WHERE id = ?", [name, price, stock, barcode, category_id, cost_price, image_url || null, id]);
         if (result.changes === 0) {
             res.status(404).json({ error: 'Product not found or no changes made.' });
             return;
@@ -260,10 +308,14 @@ app.put('/products/:id', (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.json({ message: 'Product updated successfully' });
     }
     catch (err) {
+        console.error("Error updating product:", err.message);
+        if (err.message.includes('UNIQUE constraint failed')) {
+            return res.status(409).json({ error: 'Barcode already exists for another product.' });
+        }
         res.status(500).json({ error: err.message });
     }
 }));
-app.delete('/products/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.delete('/products/:id', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         const db = (0, database_1.getDatabase)();
@@ -278,7 +330,7 @@ app.delete('/products/:id', (req, res) => __awaiter(void 0, void 0, void 0, func
         res.status(500).json({ error: err.message });
     }
 }));
-app.post('/reset-transactions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/reset-transactions', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const db = (0, database_1.getDatabase)();
     try {
         yield runAsync(db, "DELETE FROM transaction_items");
@@ -289,7 +341,7 @@ app.post('/reset-transactions', (req, res) => __awaiter(void 0, void 0, void 0, 
         res.status(500).json({ error: err.message });
     }
 }));
-app.post('/transactions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/transactions', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { total_amount, payment_amount, change_amount, cartItems, payment_method } = req.body;
     const db = (0, database_1.getDatabase)();
     const transactionId = `TRX-${Date.now()}`;
@@ -300,7 +352,17 @@ app.post('/transactions', (req, res) => __awaiter(void 0, void 0, void 0, functi
         yield runAsync(db, "INSERT INTO transactions (id, timestamp, total_amount, payment_amount, change_amount, payment_method) VALUES (?, ?, ?, ?, ?, ?)", [transactionId, timestamp, total_amount, payment_amount, change_amount, payment_method || 'Cash']);
         // Insert into transaction_items table
         for (const item of cartItems) {
-            yield runAsync(db, "INSERT INTO transaction_items (transaction_id, product_id, product_name, price_at_sale, quantity) VALUES (?, ?, ?, ?, ?)", [transactionId, item.id, item.name, item.price, item.quantity]);
+            // Fetch the cost_price for the current product
+            const product = yield new Promise((resolve, reject) => {
+                db.get("SELECT cost_price FROM products WHERE id = ?", [item.id], (err, row) => {
+                    if (err)
+                        reject(err);
+                    else
+                        resolve(row);
+                });
+            });
+            const costPriceAtSale = product ? product.cost_price : 0; // Default to 0 if not found
+            yield runAsync(db, "INSERT INTO transaction_items (transaction_id, product_id, product_name, price_at_sale, quantity, cost_price_at_sale) VALUES (?, ?, ?, ?, ?, ?)", [transactionId, item.id, item.name, item.price, item.quantity, costPriceAtSale]);
         }
         yield execAsync(db, "COMMIT");
         res.status(201).json({ message: 'Transaction recorded successfully', transactionId });
@@ -311,7 +373,7 @@ app.post('/transactions', (req, res) => __awaiter(void 0, void 0, void 0, functi
         res.status(500).json({ error: err.message });
     }
 }));
-app.put('/products/:id/stock', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.put('/products/:id/stock', authenticateToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     const { quantity } = req.body;
     if (typeof quantity !== 'number' || quantity < 0) {
@@ -330,7 +392,7 @@ app.put('/products/:id/stock', (req, res) => __awaiter(void 0, void 0, void 0, f
         res.status(500).json({ error: err.message });
     }
 }));
-app.get('/transactions', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/transactions', authenticateToken, authorizeRoles('admin', 'cashier'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const db = (0, database_1.getDatabase)();
     const { startDate, endDate } = req.query;
     let query = "SELECT * FROM transactions";
@@ -365,7 +427,7 @@ app.get('/transactions', (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(500).json({ error: err.message });
     }
 }));
-app.get('/reports/daily-sales', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/reports/daily-sales', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const db = (0, database_1.getDatabase)();
     const { date } = req.query; // Format YYYY-MM-DD
     if (!date) {
@@ -375,19 +437,21 @@ app.get('/reports/daily-sales', (req, res) => __awaiter(void 0, void 0, void 0, 
     const endOfDay = new Date(date).setHours(23, 59, 59, 999);
     try {
         const rows = yield allAsync(db, `SELECT
-       strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch', 'localtime') AS sale_date,
-       SUM(total_amount) AS total_sales
-     FROM transactions
-     WHERE timestamp >= ? AND timestamp <= ?
-     GROUP BY sale_date
-     ORDER BY sale_date DESC`, [startOfDay, endOfDay]);
+        ti.product_name,
+        SUM(ti.quantity) AS total_quantity_sold,
+        SUM(ti.price_at_sale * ti.quantity) AS total_revenue
+      FROM transaction_items ti
+      JOIN transactions t ON ti.transaction_id = t.id
+      WHERE t.timestamp >= ? AND t.timestamp <= ?
+      GROUP BY ti.product_name
+      ORDER BY total_revenue DESC`, [startOfDay, endOfDay]);
         res.json(rows);
     }
     catch (err) {
         res.status(500).json({ error: err.message });
     }
 }));
-app.get('/reports/top-products', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/reports/top-products', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const db = (0, database_1.getDatabase)();
     const { limit = 5 } = req.query; // Default limit to 5
     try {
@@ -402,6 +466,52 @@ app.get('/reports/top-products', (req, res) => __awaiter(void 0, void 0, void 0,
         res.json(rows);
     }
     catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}));
+app.get('/reports/profit-loss', authenticateToken, authorizeRoles('admin'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const db = (0, database_1.getDatabase)();
+    const { startDate, endDate, categoryId } = req.query;
+    let query = `
+    SELECT
+      ti.product_name,
+      SUM(ti.quantity) AS total_quantity_sold,
+      SUM(ti.price_at_sale * ti.quantity) AS total_revenue,
+      SUM(ti.cost_price_at_sale * ti.quantity) AS total_cost,
+      (SUM(ti.price_at_sale * ti.quantity) - SUM(ti.cost_price_at_sale * ti.quantity)) AS total_profit,
+      c.name AS category_name
+    FROM transaction_items ti
+    JOIN transactions t ON ti.transaction_id = t.id
+    LEFT JOIN products p ON ti.product_id = p.id
+    LEFT JOIN categories c ON p.category_id = c.id
+  `;
+    const params = [];
+    const conditions = [];
+    if (startDate) {
+        conditions.push("t.timestamp >= ?");
+        params.push(parseInt(startDate));
+    }
+    if (endDate) {
+        conditions.push("t.timestamp <= ?");
+        params.push(parseInt(endDate));
+    }
+    if (categoryId) {
+        conditions.push("p.category_id = ?");
+        params.push(categoryId);
+    }
+    if (conditions.length > 0) {
+        query += " WHERE " + conditions.join(" AND ");
+    }
+    query += `
+    GROUP BY ti.product_name, c.name
+    ORDER BY total_profit DESC
+  `;
+    try {
+        const rows = yield allAsync(db, query, params);
+        res.json(rows);
+    }
+    catch (err) {
+        console.error("Error fetching profit/loss report:", err.message);
         res.status(500).json({ error: err.message });
     }
 }));

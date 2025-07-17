@@ -3,7 +3,7 @@ import { Container, Card, Form, Button, Alert } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 
 interface AuthPageProps {
-  onLogin: (token: string) => void;
+  onLogin: (token: string, role: string) => void;
 }
 
 const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
@@ -45,7 +45,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin }) => {
       }
 
       if (!isRegister) {
-        onLogin(data.token);
+        onLogin(data.token, data.role);
         toast.success('Logged in successfully!');
       } else {
         toast.success('Registration successful! Please log in.');

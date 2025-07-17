@@ -7,7 +7,35 @@ import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import path from 'path';
 
+interface AuthRequest extends express.Request {
+  user?: { id: number; username: string; role: string };
+}
+
 const SECRET_KEY = process.env.JWT_SECRET || 'supersecretjwtkey'; // Use environment variable in production
+
+// Middleware to authenticate JWT token
+const authenticateToken = (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) return res.sendStatus(401); // No token
+
+  jwt.verify(token, SECRET_KEY, (err: any, user: any) => {
+    if (err) return res.sendStatus(403); // Invalid token
+    req.user = user;
+    next();
+  });
+};
+
+// Middleware to authorize roles
+const authorizeRoles = (...roles: string[]) => {
+  return (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Forbidden: Insufficient permissions.' });
+    }
+    next();
+  };
+};
 
 const app = express();
 const port = 3001; // Using 3001 to avoid conflict with React's default 3000
@@ -123,8 +151,8 @@ app.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid username or password.' });
     }
 
-    const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
-    res.json({ message: 'Logged in successfully', token });
+    const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, SECRET_KEY, { expiresIn: '1h' });
+    res.json({ message: 'Logged in successfully', token, role: user.role });
   } catch (err: any) {
     console.error("Error logging in user:", err.message);
     res.status(500).json({ error: err.message });
@@ -143,7 +171,7 @@ app.get('/categories', async (req, res) => {
   }
 });
 
-app.post('/categories', async (req, res) => {
+app.post('/categories', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { id, name } = req.body;
   if (!id || !name) {
     return res.status(400).json({ error: 'Category ID and name are required.' });
@@ -161,7 +189,7 @@ app.post('/categories', async (req, res) => {
   }
 });
 
-app.put('/categories/:id', async (req, res) => {
+app.put('/categories/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
   if (!name) {
@@ -180,7 +208,7 @@ app.put('/categories/:id', async (req, res) => {
   }
 });
 
-app.delete('/categories/:id', async (req, res) => {
+app.delete('/categories/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { id } = req.params;
   try {
     const db = getDatabase();
@@ -206,7 +234,7 @@ app.get('/products', async (req, res) => {
   }
 });
 
-app.post('/products', async (req, res) => {
+app.post('/products', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { id, name, price, stock, barcode, category_id, cost_price, image_url } = req.body;
   if (!id || !name || !price || !stock || cost_price === undefined) {
     return res.status(400).json({ error: 'All fields (id, name, price, stock, cost_price) are required.' });
@@ -267,7 +295,7 @@ app.get('/products/barcode/:barcode', async (req, res) => {
   }
 });
 
-app.put('/products/:id', async (req, res) => {
+app.put('/products/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { id } = req.params;
   const { name, price, stock, barcode, category_id, cost_price, image_url } = req.body;
   if (!name || !price || !stock || cost_price === undefined) {
@@ -291,7 +319,7 @@ app.put('/products/:id', async (req, res) => {
   }
 });
 
-app.delete('/products/:id', async (req, res) => {
+app.delete('/products/:id', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const { id } = req.params;
   try {
     const db = getDatabase();
@@ -306,7 +334,7 @@ app.delete('/products/:id', async (req, res) => {
   }
 });
 
-app.post('/reset-transactions', async (req, res) => {
+app.post('/reset-transactions', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const db = getDatabase();
   try {
     await runAsync(db, "DELETE FROM transaction_items");
@@ -317,7 +345,7 @@ app.post('/reset-transactions', async (req, res) => {
   }
 });
 
-app.post('/transactions', async (req, res) => {
+app.post('/transactions', authenticateToken, async (req, res) => {
   const { total_amount, payment_amount, change_amount, cartItems, payment_method } = req.body;
   const db = getDatabase();
   const transactionId = `TRX-${Date.now()}`;
@@ -361,7 +389,7 @@ app.post('/transactions', async (req, res) => {
   }
 });
 
-app.put('/products/:id/stock', async (req, res) => {
+app.put('/products/:id/stock', authenticateToken, async (req, res) => {
   const { id } = req.params;
   const { quantity } = req.body;
   if (typeof quantity !== 'number' || quantity < 0) {
@@ -381,7 +409,7 @@ app.put('/products/:id/stock', async (req, res) => {
   }
 });
 
-app.get('/transactions', async (req, res) => {
+app.get('/transactions', authenticateToken, authorizeRoles('admin', 'cashier'), async (req, res) => {
   const db = getDatabase();
   const { startDate, endDate } = req.query;
   let query = "SELECT * FROM transactions";
@@ -422,7 +450,7 @@ app.get('/transactions', async (req, res) => {
   }
 });
 
-app.get('/reports/daily-sales', async (req, res) => {
+app.get('/reports/daily-sales', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const db = getDatabase();
   const { date } = req.query; // Format YYYY-MM-DD
 
@@ -453,7 +481,7 @@ app.get('/reports/daily-sales', async (req, res) => {
   }
 });
 
-app.get('/reports/top-products', async (req, res) => {
+app.get('/reports/top-products', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const db = getDatabase();
   const { limit = 5 } = req.query; // Default limit to 5
 
@@ -476,7 +504,7 @@ app.get('/reports/top-products', async (req, res) => {
   }
 });
 
-app.get('/reports/profit-loss', async (req, res) => {
+app.get('/reports/profit-loss', authenticateToken, authorizeRoles('admin'), async (req, res) => {
   const db = getDatabase();
   const { startDate, endDate, categoryId } = req.query;
 

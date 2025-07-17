@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -73,6 +73,49 @@ code {
     position: relative;
     top: 0;
   }
+}
+
+/* Define some custom CSS variables for theme consistency */
+:root {
+  --bs-primary: #34875C; /* Hijau Profesional untuk Light Mode */
+  --bs-primary-rgb: 52, 135, 92;
+  --bs-primary-dark: #2a6b4a; /* Sedikit lebih gelap untuk hover */
+
+  --bs-secondary: #6c757d; /* Gray */
+  --bs-secondary-rgb: 108, 117, 125;
+
+  --bs-light: #f8f9fa;
+  --bs-dark: #343a40;
+
+  --bs-body-bg: #ffffff;
+  --bs-body-color: #212529;
+  --bs-border-color: #dee2e6;
+  --bs-card-bg: #ffffff;
+  --bs-card-color: #212529;
+  --bs-card-cap-bg: #f8f9fa;
+  --bs-table-striped-bg: #f2f2f2;
+  --bs-table-hover-bg: #e9ecef;
+}
+
+[data-bs-theme="dark"] {
+  --bs-primary: #6FCF97; /* Hijau Cerah untuk Dark Mode */
+  --bs-primary-rgb: 111, 207, 151;
+  --bs-primary-dark: #59b380; /* Sedikit lebih gelap untuk hover di dark mode */
+
+  --bs-secondary: #495057; /* Darker gray for dark mode */
+  --bs-secondary-rgb: 73, 80, 87;
+
+  --bs-light: #343a40;
+  --bs-dark: #f8f9fa;
+
+  --bs-body-bg: #212529;
+  --bs-body-color: #f8f9fa;
+  --bs-border-color: #495057;
+  --bs-card-bg: #2c3034;
+  --bs-card-color: #f8f9fa;
+  --bs-card-cap-bg: #343a40;
+  --bs-table-striped-bg: #2c3034;
+  --bs-table-hover-bg: #343a40;
 }
 
 /* Sidebar Navigation Link */

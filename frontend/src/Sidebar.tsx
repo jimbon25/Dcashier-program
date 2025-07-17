@@ -9,13 +9,14 @@ interface SidebarProps {
   toggleTheme: () => void;
   isLoggedIn: boolean;
   handleLogout: () => void;
+  userRole: string | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeKey, onSelect, theme, toggleTheme, isLoggedIn, handleLogout }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeKey, onSelect, theme, toggleTheme, isLoggedIn, handleLogout, userRole }) => {
   return (
     <Nav className="flex-column bg-secondary vh-100 p-3 sticky-top" activeKey={activeKey} onSelect={onSelect} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
       <div className="text-center mb-4">
-        <h4 className="text-primary">Dcashier-Pos</h4>
+        <h4 className="text-primary fw-bold">Dcashier-Pos</h4>
       </div>
       <div>
         <Nav.Link eventKey="dashboard" className="mb-2 sidebar-nav-link d-flex align-items-center">
@@ -24,15 +25,19 @@ const Sidebar: React.FC<SidebarProps> = ({ activeKey, onSelect, theme, toggleThe
         <Nav.Link eventKey="sales" className="mb-2 sidebar-nav-link d-flex align-items-center">
           <CartFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Penjualan</span>
         </Nav.Link>
-        <Nav.Link eventKey="product-management" className="mb-2 sidebar-nav-link d-flex align-items-center">
-          <InboxesFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Manajemen Produk</span>
-        </Nav.Link>
-        <Nav.Link eventKey="category-management" className="mb-2 sidebar-nav-link d-flex align-items-center">
-          <TagsFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Manajemen Kategori</span>
-        </Nav.Link>
-        <Nav.Link eventKey="reports" className="mb-2 sidebar-nav-link d-flex align-items-center">
-          <FileEarmarkBarGraphFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Laporan</span>
-        </Nav.Link>
+        {userRole === 'admin' && (
+          <>
+            <Nav.Link eventKey="product-management" className="mb-2 sidebar-nav-link d-flex align-items-center">
+              <InboxesFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Manajemen Produk</span>
+            </Nav.Link>
+            <Nav.Link eventKey="category-management" className="mb-2 sidebar-nav-link d-flex align-items-center">
+              <TagsFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Manajemen Kategori</span>
+            </Nav.Link>
+            <Nav.Link eventKey="reports" className="mb-2 sidebar-nav-link d-flex align-items-center">
+              <FileEarmarkBarGraphFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Laporan</span>
+            </Nav.Link>
+          </>
+        )}
         <Nav.Link eventKey="settings" className="mb-2 sidebar-nav-link d-flex align-items-center">
           <GearFill className="me-2" size={20} /><span style={{ whiteSpace: 'nowrap' }}>Pengaturan</span>
         </Nav.Link>

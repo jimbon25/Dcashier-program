@@ -128,9 +128,18 @@ export function initializeDatabase(): Promise<sqlite3.Database> {
             CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               username TEXT NOT NULL UNIQUE,
-              password TEXT NOT NULL
+              password TEXT NOT NULL,
+              role TEXT NOT NULL DEFAULT 'cashier'
             )
           `);
+          // Add role column if it doesn't exist (for existing databases)
+          await runAsync(db, "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'cashier'").catch(err => {
+            if (err.message.includes('duplicate column name: role')) {
+              console.log('Role column already exists in users table.');
+            } else {
+              throw err;
+            }
+          });
           console.log('Users table created or already exists.');
 
           resolve(db);

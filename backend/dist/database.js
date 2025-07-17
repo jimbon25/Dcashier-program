@@ -81,8 +81,10 @@ function initializeDatabase() {
               id TEXT PRIMARY KEY,
               name TEXT NOT NULL,
               price INTEGER NOT NULL,
+              cost_price INTEGER NOT NULL DEFAULT 0, -- Added cost_price
               stock INTEGER NOT NULL,
               barcode TEXT UNIQUE,
+              image_url TEXT, -- Added image_url
               category_id TEXT,
               FOREIGN KEY (category_id) REFERENCES categories(id)
             )
@@ -92,14 +94,14 @@ function initializeDatabase() {
                     const productCount = yield allAsync(db, "SELECT COUNT(*) AS count FROM products");
                     if (productCount[0].count === 0) {
                         const dummyProducts = [
-                            { id: 'P001', name: 'Beras 5kg', price: 60000, stock: 100, category_id: 'CAT001' },
-                            { id: 'P002', name: 'Minyak Goreng 2L', price: 35000, stock: 50, category_id: 'CAT001' },
-                            { id: 'P003', name: 'Gula Pasir 1kg', price: 15000, stock: 200, category_id: 'CAT001' },
-                            { id: 'P004', name: 'Telur Ayam 1kg', price: 28000, stock: 75, category_id: 'CAT001' },
-                            { id: 'P005', name: 'Kopi Bubuk 200gr', price: 12000, stock: 150, category_id: 'CAT002' },
+                            { id: 'P001', name: 'Beras 5kg', price: 60000, stock: 100, cost_price: 55000, category_id: 'CAT001', image_url: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Beras' },
+                            { id: 'P002', name: 'Minyak Goreng 2L', price: 35000, stock: 50, cost_price: 30000, category_id: 'CAT001', image_url: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Minyak' },
+                            { id: 'P003', name: 'Gula Pasir 1kg', price: 15000, stock: 200, cost_price: 13000, category_id: 'CAT001', image_url: 'https://via.placeholder.com/150/FFFF00/000000?text=Gula' },
+                            { id: 'P004', name: 'Telur Ayam 1kg', price: 28000, stock: 75, cost_price: 25000, category_id: 'CAT001', image_url: 'https://via.placeholder.com/150/FF00FF/FFFFFF?text=Telur' },
+                            { id: 'P005', name: 'Kopi Bubuk 200gr', price: 12000, stock: 150, cost_price: 10000, category_id: 'CAT002', image_url: 'https://via.placeholder.com/150/00FFFF/000000?text=Kopi' },
                         ];
                         for (const p of dummyProducts) {
-                            yield runAsync(db, "INSERT INTO products (id, name, price, stock, category_id) VALUES (?, ?, ?, ?, ?)", [p.id, p.name, p.price, p.stock, p.category_id]);
+                            yield runAsync(db, "INSERT INTO products (id, name, price, stock, category_id, cost_price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)", [p.id, p.name, p.price, p.stock, p.category_id, p.cost_price, p.image_url]);
                         }
                         console.log('Dummy products inserted.');
                     }
@@ -123,6 +125,7 @@ function initializeDatabase() {
               product_id TEXT NOT NULL,
               product_name TEXT NOT NULL,
               price_at_sale INTEGER NOT NULL,
+              cost_price_at_sale INTEGER NOT NULL DEFAULT 0, -- Added cost_price_at_sale
               quantity INTEGER NOT NULL,
               FOREIGN KEY (transaction_id) REFERENCES transactions(id)
             )
@@ -133,9 +136,19 @@ function initializeDatabase() {
             CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               username TEXT NOT NULL UNIQUE,
-              password TEXT NOT NULL
+              password TEXT NOT NULL,
+              role TEXT NOT NULL DEFAULT 'cashier'
             )
           `);
+                    // Add role column if it doesn't exist (for existing databases)
+                    yield runAsync(db, "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'cashier'").catch(err => {
+                        if (err.message.includes('duplicate column name: role')) {
+                            console.log('Role column already exists in users table.');
+                        }
+                        else {
+                            throw err;
+                        }
+                    });
                     console.log('Users table created or already exists.');
                     resolve(db);
                 }

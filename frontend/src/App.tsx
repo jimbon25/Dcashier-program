@@ -7,6 +7,7 @@ import ReceiptModal from './ReceiptModal';
 import { CartPlus, PencilSquare, TrashFill, Search } from 'react-bootstrap-icons';
 import AuthPage from './AuthPage';
 import Sidebar from './Sidebar';
+import ProductSkeleton from './ProductSkeleton';
 
 interface Product {
   id: string;
@@ -75,6 +76,7 @@ function App() {
   const [cartAnimationTrigger, setCartAnimationTrigger] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [profitLossReport, setProfitLossReport] = useState<ProfitLossReportItem[]>([]);
   const [profitLossLoading, setProfitLossLoading] = useState<boolean>(false);
   const [profitFilterStartDate, setProfitFilterStartDate] = useState<string>('');
@@ -124,8 +126,11 @@ function App() {
   const categoryFormRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (localStorage.getItem('token')) {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('userRole');
+    if (token && role) {
       setIsLoggedIn(true);
+      setUserRole(role);
     }
   }, []);
 
@@ -134,25 +139,49 @@ function App() {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  const handleLogin = (token: string) => {
+  const handleLogin = (token: string, role: string) => {
     localStorage.setItem('token', token);
+    localStorage.setItem('userRole', role);
     setIsLoggedIn(true);
+    setUserRole(role);
   };
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
     setIsLoggedIn(false);
+    setUserRole(null);
     toast.info('Logged out successfully.');
-  };
+  }, []);
 
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
+  const authenticatedFetch = useCallback(async (url: string, options?: RequestInit) => {
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, { ...options, headers });
+    
+    // Handle unauthorized or forbidden responses globally
+    if (response.status === 401 || response.status === 403) {
+      handleLogout(); // Log out if token is invalid or unauthorized
+    }
+
+    return response;
+  }, [handleLogout]);
+
   const handleBarcodeScan = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && barcodeSearchTerm.trim() !== '') {
       try {
-        const response = await fetch(`http://localhost:3001/products/barcode/${barcodeSearchTerm}`);
+        const response = await authenticatedFetch(`http://localhost:3001/products/barcode/${barcodeSearchTerm}`);
         if (!response.ok) {
           toast.error('Produk dengan barcode tersebut tidak ditemukan.');
           return;
@@ -218,7 +247,7 @@ function App() {
       if (filterEndDate) params.append('endDate', String(new Date(filterEndDate).getTime()));
       if (params.toString()) url += `?${params.toString()}`;
 
-      const response = await fetch(url);
+      const response = await authenticatedFetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setTransactions(data);
@@ -228,12 +257,12 @@ function App() {
     } finally {
       setLoading(false);
     }
-  }, [filterStartDate, filterEndDate]);
+  }, [filterStartDate, filterEndDate, authenticatedFetch]);
 
   const fetchDailySales = useCallback(async () => {
     setDailySalesLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/reports/daily-sales?date=${reportDate}`);
+      const response = await authenticatedFetch(`http://localhost:3001/reports/daily-sales?date=${reportDate}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setDailySales(data);
@@ -243,12 +272,12 @@ function App() {
     } finally {
       setDailySalesLoading(false);
     }
-  }, [reportDate]);
+  }, [reportDate, authenticatedFetch]);
 
   const fetchTopProducts = useCallback(async () => {
     setTopProductsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/reports/top-products?limit=${topProductsLimit}`);
+      const response = await authenticatedFetch(`http://localhost:3001/reports/top-products?limit=${topProductsLimit}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setTopProducts(data);
@@ -258,7 +287,7 @@ function App() {
     } finally {
       setTopProductsLoading(false);
     }
-  }, [topProductsLimit]);
+  }, [topProductsLimit, authenticatedFetch]);
 
   const fetchProfitLossReport = useCallback(async () => {
     setProfitLossLoading(true);
@@ -270,7 +299,7 @@ function App() {
       if (profitFilterCategory) params.append('categoryId', profitFilterCategory);
       if (params.toString()) url += `?${params.toString()}`;
 
-      const response = await fetch(url);
+      const response = await authenticatedFetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setProfitLossReport(data);
@@ -280,14 +309,16 @@ function App() {
     } finally {
       setProfitLossLoading(false);
     }
-  }, [profitFilterStartDate, profitFilterEndDate, profitFilterCategory]);
+  }, [profitFilterStartDate, profitFilterEndDate, profitFilterCategory, authenticatedFetch]);
 
   useEffect(() => {
-    fetchDailySales();
-    fetchTopProducts();
-    fetchProfitLossReport();
-    fetchTransactions();
-  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions]);
+    if (isLoggedIn) {
+      fetchDailySales();
+      fetchTopProducts();
+      fetchProfitLossReport();
+      fetchTransactions();
+    }
+  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions, isLoggedIn]);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
@@ -347,7 +378,7 @@ function App() {
       const formData = new FormData();
       formData.append('image', newProductImage);
       try {
-        const uploadResponse = await fetch('http://localhost:3001/upload/image', {
+        const uploadResponse = await authenticatedFetch('http://localhost:3001/upload/image', {
           method: 'POST',
           body: formData,
         });
@@ -362,7 +393,7 @@ function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/products', {
+      const response = await authenticatedFetch('http://localhost:3001/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -413,7 +444,7 @@ function App() {
       const formData = new FormData();
       formData.append('image', newProductImage);
       try {
-        const uploadResponse = await fetch('http://localhost:3001/upload/image', {
+        const uploadResponse = await authenticatedFetch('http://localhost:3001/upload/image', {
           method: 'POST',
           body: formData,
         });
@@ -428,7 +459,7 @@ function App() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/products/${editingProduct.id}`, {
+      const response = await authenticatedFetch(`http://localhost:3001/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -464,7 +495,7 @@ function App() {
     }
 
     try {
-      const transactionResponse = await fetch('http://localhost:3001/transactions', {
+      const transactionResponse = await authenticatedFetch('http://localhost:3001/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -481,7 +512,7 @@ function App() {
       const transactionData = await transactionResponse.json();
 
       for (const item of cart) {
-        const stockUpdateResponse = await fetch(`http://localhost:3001/products/${item.id}/stock`, {
+        const stockUpdateResponse = await authenticatedFetch(`http://localhost:3001/products/${item.id}/stock`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ quantity: item.quantity }),
@@ -527,7 +558,7 @@ function App() {
   const handleResetTransactions = async () => {
     if (window.confirm('Apakah Anda yakin ingin mereset semua data transaksi? Tindakan ini tidak dapat diurungkan.')) {
       try {
-        const response = await fetch('http://localhost:3001/reset-transactions', { method: 'POST' });
+        const response = await authenticatedFetch('http://localhost:3001/reset-transactions', { method: 'POST' });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         toast.info(data.message);
@@ -551,7 +582,7 @@ function App() {
       return;
     }
     try {
-      const response = await fetch('http://localhost:3001/categories', {
+      const response = await authenticatedFetch('http://localhost:3001/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: newCategoryId, name: newCategoryName }),
@@ -584,7 +615,7 @@ function App() {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:3001/categories/${editingCategory.id}`, {
+      const response = await authenticatedFetch(`http://localhost:3001/categories/${editingCategory.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newCategoryName }),
@@ -603,7 +634,7 @@ function App() {
   const handleDeleteCategory = async (categoryId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini? Produk yang terkait mungkin terpengaruh.')) {
       try {
-        const response = await fetch(`http://localhost:3001/categories/${categoryId}`, {
+        const response = await authenticatedFetch(`http://localhost:3001/categories/${categoryId}`, {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -619,7 +650,7 @@ function App() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:3001/categories');
+      const response = await authenticatedFetch('http://localhost:3001/categories');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setCategories(data);
@@ -627,13 +658,13 @@ function App() {
       console.error("Error fetching categories:", error);
       toast.error(`Failed to fetch categories: ${error.message}`);
     }
-  }, []);
+  }, [authenticatedFetch]);
 
   
 
   const fetchProductsAndCategories = useCallback(async () => {
     try {
-      const productsResponse = await fetch('http://localhost:3001/products');
+      const productsResponse = await authenticatedFetch('http://localhost:3001/products');
 
       if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
 
@@ -649,7 +680,7 @@ function App() {
       setError(error.message);
       setLoading(false);
     }
-  }, [lowStockThreshold]);
+  }, [lowStockThreshold, authenticatedFetch]);
 
   useEffect(() => {
     fetchProductsAndCategories();
@@ -659,7 +690,7 @@ function App() {
   const handleDeleteProduct = async (productId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
       try {
-        const response = await fetch(`http://localhost:3001/products/${productId}`, {
+        const response = await authenticatedFetch(`http://localhost:3001/products/${productId}`, {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -686,7 +717,7 @@ function App() {
             <p className="text-muted">Selamat datang di Dashboard! Bagian ini akan menampilkan ringkasan penjualan, stok, dan informasi penting lainnya.</p>
             <Row className="g-4">
               <Col md={3}>
-                <Card className="shadow-sm">
+                <Card className="shadow-sm dashboard-card">
                   <Card.Body>
                     <Card.Title className="fw-bold">Total Pendapatan</Card.Title>
                     <Card.Text className="fs-3 text-success">{currencySymbol}{transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString()}</Card.Text>
@@ -694,7 +725,7 @@ function App() {
                 </Card>
               </Col>
               <Col md={3}>
-                <Card className="shadow-sm">
+                <Card className="shadow-sm dashboard-card">
                   <Card.Body>
                     <Card.Title className="fw-bold">Jumlah Produk</Card.Title>
                     <Card.Text className="fs-3 text-info">{products.length}</Card.Text>
@@ -702,7 +733,7 @@ function App() {
                 </Card>
               </Col>
               <Col md={3}>
-                <Card className="shadow-sm">
+                <Card className="shadow-sm dashboard-card">
                   <Card.Body>
                     <Card.Title className="fw-bold">Jumlah Transaksi</Card.Title>
                     <Card.Text className="fs-3 text-warning">{transactions.length}</Card.Text>
@@ -710,7 +741,7 @@ function App() {
                 </Card>
               </Col>
               <Col md={3}>
-                <Card className="shadow-sm">
+                <Card className="shadow-sm dashboard-card">
                   <Card.Body>
                     <Card.Title className="fw-bold">Total Penjualan Hari Ini</Card.Title>
                     <Card.Text className="fs-3 text-primary">{currencySymbol}{(dailySales.reduce((acc, item) => acc + (item.total_revenue || 0), 0)).toLocaleString()}</Card.Text>
@@ -837,23 +868,29 @@ function App() {
                 </InputGroup>
               </div>
               <Row className="g-4 mb-5">
-                {products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
-                  <Col key={product.id} sm={6} md={4} lg={4}>
-                    <Card className="rounded" onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
-                      {product.image_url && (
-                        <Card.Img variant="top" src={`http://localhost:3001${product.image_url}`} alt={product.name} style={{ height: '150px', objectFit: 'contain', padding: '10px' }} />
-                      )}
-                      <Card.Body className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <Card.Title>{product.name}</Card.Title>
-                          <Card.Text>{currencySymbol}{product.price.toLocaleString()}</Card.Text>
-                          <Card.Text className="text-muted">Stok: {product.stock}</Card.Text>
-                        </div>
-                        <CartPlus size={24} className="text-primary" />
-                      </Card.Body>
-                    </Card>
-                  </Col>
-                ))}
+                {loading ? (
+                  Array.from({ length: 9 }).map((_, index) => (
+                    <ProductSkeleton key={index} />
+                  ))
+                ) : (
+                  products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
+                    <Col key={product.id} sm={6} md={4} lg={4}>
+                      <Card className="product-card rounded" onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
+                        {product.image_url && (
+                          <Card.Img variant="top" src={`http://localhost:3001${product.image_url}`} alt={product.name} style={{ height: '150px', objectFit: 'contain', padding: '10px' }} />
+                        )}
+                        <Card.Body className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <Card.Title>{product.name}</Card.Title>
+                            <Card.Text>{currencySymbol}{product.price.toLocaleString()}</Card.Text>
+                            <Card.Text className="text-muted">Stok: {product.stock}</Card.Text>
+                          </div>
+                          <CartPlus size={24} className="text-primary" />
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))
+                )}
               </Row>
             </Col>
             <Col md={4}>
@@ -1395,7 +1432,7 @@ function App() {
       ) : (
         <>
           <Col md={2} className="p-0">
-            <Sidebar activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'dashboard')} theme={theme} toggleTheme={toggleTheme} isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+            <Sidebar activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'dashboard')} theme={theme} toggleTheme={toggleTheme} isLoggedIn={isLoggedIn} handleLogout={handleLogout} userRole={userRole} />
           </Col>
           <Col md={10} className="main-content p-4">
             <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
