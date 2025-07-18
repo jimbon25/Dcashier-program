@@ -3,11 +3,11 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Container, Row, Col, Card, Button, Nav, Spinner, Navbar, InputGroup, FormControl } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ReceiptModal from './ReceiptModal';
+import ReceiptModal from './components/ReceiptModal';
 import { CartPlus, PencilSquare, TrashFill, Search } from 'react-bootstrap-icons';
-import AuthPage from './AuthPage';
-import Sidebar from './Sidebar';
-import ProductSkeleton from './ProductSkeleton';
+import ProductSkeleton from './components/ProductSkeleton';
+import { useDashboard } from './context/DashboardContext';
+
 
 interface Product {
   id: string;
@@ -80,7 +80,7 @@ function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cartAnimationTrigger, setCartAnimationTrigger] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const { activeTab, setActiveTab } = useDashboard();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [profitLossReport, setProfitLossReport] = useState<ProfitLossReportItem[]>([]);
@@ -88,10 +88,7 @@ function App() {
   const [profitFilterStartDate, setProfitFilterStartDate] = useState<string>('');
   const [profitFilterEndDate, setProfitFilterEndDate] = useState<string>('');
   const [profitFilterCategory, setProfitFilterCategory] = useState<string>('');
-  const [theme, setTheme] = useState<string>(() => {
-    const savedTheme = localStorage.getItem('theme');
-    return savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  });
+  
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [barcodeSearchTerm, setBarcodeSearchTerm] = useState<string>('');
   const [newProductId, setNewProductId] = useState<string>('');
@@ -105,60 +102,33 @@ function App() {
   const [newProductImagePreview, setNewProductImagePreview] = useState<string | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  const [reportDate, setReportDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [dailySales, setDailySales] = useState<any[]>([]);
-  const [dailySalesLoading, setDailySalesLoading] = useState<boolean>(false);
-  const [topProducts, setTopProducts] = useState<any[]>([]);
-  const [topProductsLimit, setTopProductsLimit] = useState<number>(5);
-  const [topProductsLoading, setTopProductsLoading] = useState<boolean>(false);
-  const [lowStockThreshold, setLowStockThreshold] = useState<number>(() => {
-    const savedThreshold = localStorage.getItem('lowStockThreshold');
-    return savedThreshold ? Number(savedThreshold) : 10;
-  });
+
+  // Additional missing states
   const [lowStockProducts, setLowStockProducts] = useState<Product[]>([]);
+  const [lowStockThreshold, setLowStockThreshold] = useState<number>(
+    Number(localStorage.getItem('lowStockThreshold')) || 10
+  );
+  const [users, setUsers] = useState<User[]>([]);
+  const [dailySales, setDailySales] = useState<any[]>([]);
+  const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [reportDate, setReportDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [topProductsLimit, setTopProductsLimit] = useState<number>(10);
   const [filterStartDate, setFilterStartDate] = useState<string>('');
   const [filterEndDate, setFilterEndDate] = useState<string>('');
-  const [currencySymbol, setCurrencySymbol] = useState<string>(() => {
-    const savedSymbol = localStorage.getItem('currencySymbol');
-    return savedSymbol || 'Rp';
-  });
-
-  // Category Management States
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newCategoryId, setNewCategoryId] = useState<string>('');
   const [newCategoryName, setNewCategoryName] = useState<string>('');
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-
-  // User Management States
-  const [users, setUsers] = useState<User[]>([]);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [newUserUsername, setNewUserUsername] = useState('');
-  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserUsername, setNewUserUsername] = useState<string>('');
+  const [newUserPassword, setNewUserPassword] = useState<string>('');
   const [newUserRole, setNewUserRole] = useState<'admin' | 'cashier'>('cashier');
+  const [dailySalesLoading, setDailySalesLoading] = useState<boolean>(false);
+  const [topProductsLoading, setTopProductsLoading] = useState<boolean>(false);
+  const [currencySymbol, setCurrencySymbol] = useState<string>('Rp');
 
   const productFormRef = useRef<HTMLDivElement>(null);
   const categoryFormRef = useRef<HTMLDivElement>(null);
   const userFormRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('userRole');
-    if (token && role) {
-      setIsLoggedIn(true);
-      setUserRole(role);
-    }
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-bs-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  const handleLogin = (token: string, role: string) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('userRole', role);
-    setIsLoggedIn(true);
-    setUserRole(role);
-  };
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
@@ -167,10 +137,6 @@ function App() {
     setUserRole(null);
     toast.info('Logged out successfully.');
   }, []);
-
-  const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
-  };
 
   const authenticatedFetch = useCallback(async (url: string, options?: RequestInit) => {
     const token = localStorage.getItem('token');
@@ -192,7 +158,21 @@ function App() {
     return response;
   }, [handleLogout]);
 
-  const handleBarcodeScan = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const addToCart = useCallback((product: Product) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      } else {
+        return [...prevCart, { ...product, quantity: 1 }];
+      }
+    });
+    setCartAnimationTrigger(true);
+  }, []);
+
+  const handleBarcodeScan = useCallback(async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && barcodeSearchTerm.trim() !== '') {
       try {
         const response = await authenticatedFetch(`http://localhost:3001/products/barcode/${barcodeSearchTerm}`);
@@ -208,49 +188,41 @@ function App() {
         toast.error(`Gagal mencari produk: ${error.message}`);
       }
     }
-  };
+  }, [authenticatedFetch, addToCart, barcodeSearchTerm]);
 
-  const addToCart = (product: Product) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      } else {
-        return [...prevCart, { ...product, quantity: 1 }];
-      }
-    });
-    setCartAnimationTrigger(true);
-  };
+  const fetchProductsAndCategories = useCallback(async () => {
+    console.log("Fetching products and categories...");
+    try {
+      const productsResponse = await authenticatedFetch('http://localhost:3001/products');
 
-  useEffect(() => {
-    if (cartAnimationTrigger) {
-      const timer = setTimeout(() => setCartAnimationTrigger(false), 300);
-      return () => clearTimeout(timer);
+      if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
+
+      const productsData = await productsResponse.json();
+
+      setProducts(productsData);
+      setLoading(false);
+      console.log("Products data received:", productsData);
+
+      const lowStock = productsData.filter((p: Product) => p.stock <= lowStockThreshold);
+      setLowStockProducts(lowStock);
+    } catch (error: any) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
     }
-  }, [cartAnimationTrigger]);
+  }, [lowStockThreshold, authenticatedFetch]);
 
-  const increaseQuantity = (productId: string) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
-  };
-
-  const decreaseQuantity = (productId: string) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === productId);
-      if (existingItem && existingItem.quantity > 1) {
-        return prevCart.map(item =>
-          item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
-        );
-      } else {
-        return prevCart.filter(item => item.id !== productId);
-      }
-    });
-  };
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await authenticatedFetch('http://localhost:3001/categories');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setCategories(data);
+    } catch (error: any) {
+      console.error("Error fetching categories:", error);
+      toast.error(`Failed to fetch categories: ${error.message}`);
+    }
+  }, [authenticatedFetch]);
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
@@ -298,8 +270,6 @@ function App() {
     } catch (error: any) {
       console.error("Error fetching top products:", error);
       toast.error(`Failed to fetch top products: ${error.message}`);
-    } finally {
-      setTopProductsLoading(false);
     }
   }, [topProductsLimit, authenticatedFetch]);
 
@@ -320,10 +290,58 @@ function App() {
     } catch (error: any) {
       console.error("Error fetching profit/loss report:", error);
       toast.error(`Failed to fetch profit/loss report: ${error.message}`);
-    } finally {
-      setProfitLossLoading(false);
     }
   }, [profitFilterStartDate, profitFilterEndDate, profitFilterCategory, authenticatedFetch]);
+
+  const fetchUsers = useCallback(async () => {
+    if (userRole !== 'admin') return;
+    try {
+      const response = await authenticatedFetch('http://localhost:3001/users');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setUsers(data);
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      toast.error(`Failed to fetch users: ${error.message}`);
+    }
+  }, [authenticatedFetch, userRole]);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (token && role) {
+      setIsLoggedIn(true);
+      setUserRole(role);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cartAnimationTrigger) {
+      const timer = setTimeout(() => setCartAnimationTrigger(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [cartAnimationTrigger]);
+
+  const increaseQuantity = (productId: string) => {
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
+      )
+    );
+  };
+
+  const decreaseQuantity = (productId: string) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === productId);
+      if (existingItem && existingItem.quantity > 1) {
+        return prevCart.map(item =>
+          item.id === productId ? { ...item, quantity: item.quantity - 1 } : item
+        );
+      } else {
+        return prevCart.filter(item => item.id !== productId);
+      }
+    });
+  };
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -333,8 +351,10 @@ function App() {
         fetchProfitLossReport();
       }
       fetchTransactions();
+      fetchProductsAndCategories();
+      fetchCategories();
     }
-  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions, isLoggedIn, userRole]);
+  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions, fetchProductsAndCategories, fetchCategories, isLoggedIn, userRole]);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
@@ -664,31 +684,6 @@ function App() {
     }
   };
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const response = await authenticatedFetch('http://localhost:3001/categories');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      setCategories(data);
-    } catch (error: any) {
-      console.error("Error fetching categories:", error);
-      toast.error(`Failed to fetch categories: ${error.message}`);
-    }
-  }, [authenticatedFetch]);
-
-  const fetchUsers = useCallback(async () => {
-    if (userRole !== 'admin') return;
-    try {
-      const response = await authenticatedFetch('http://localhost:3001/users');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      setUsers(data);
-    } catch (error: any) {
-      console.error("Error fetching users:", error);
-      toast.error(`Failed to fetch users: ${error.message}`);
-    }
-  }, [authenticatedFetch, userRole]);
-
   const handleAddUser = async () => {
     if (!newUserUsername.trim() || !newUserPassword.trim()) {
       toast.error('Username and password are required.');
@@ -770,26 +765,6 @@ function App() {
   };
 
   
-
-  const fetchProductsAndCategories = useCallback(async () => {
-    try {
-      const productsResponse = await authenticatedFetch('http://localhost:3001/products');
-
-      if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
-
-      const productsData = await productsResponse.json();
-
-      setProducts(productsData);
-      setLoading(false);
-
-      const lowStock = productsData.filter((p: Product) => p.stock <= lowStockThreshold);
-      setLowStockProducts(lowStock);
-    } catch (error: any) {
-      console.error("Error fetching data:", error);
-      setError(error.message);
-      setLoading(false);
-    }
-  }, [lowStockThreshold, authenticatedFetch]);
 
   useEffect(() => {
     fetchProductsAndCategories();
@@ -952,6 +927,7 @@ function App() {
           </div>
         );
       case 'sales':
+        console.log("Rendering sales tab. Current products:", products);
         return (
           <Row>
             <Col md={8}>
@@ -1106,17 +1082,17 @@ function App() {
                     <Card.Title className="mb-4 fw-bold">Tambah Produk</Card.Title>
                     <div className="mb-3">
                       <label htmlFor="productId" className="form-label fw-semibold">ID Produk</label>
-                      <input type="text" className={`form-control ${formErrors.newProductId ? 'is-invalid' : ''}`} id="productId" value={newProductId} onChange={(e) => {setNewProductId(e.target.value); setFormErrors(prev => { const { newProductId, ...rest } = prev; return rest; });}} placeholder="Contoh: P006" disabled={!!editingProduct} />
+                      <input type="text" className={`form-control ${formErrors.newProductId ? 'is-invalid' : ''}`} id="productId" value={newProductId} onChange={(e) => {setNewProductId(e.target.value); setFormErrors((prev: { [key: string]: string }) => { const { newProductId, ...rest } = prev; return rest; });}} placeholder="Contoh: P006" disabled={!!editingProduct} />
                       {formErrors.newProductId && <div className="invalid-feedback">{formErrors.newProductId}</div>}
                     </div>
                     <div className="mb-3">
                       <label htmlFor="productName" className="form-label fw-semibold">Nama Produk</label>
-                      <input type="text" className={`form-control ${formErrors.newProductName ? 'is-invalid' : ''}`} id="productName" value={newProductName} onChange={(e) => {setNewProductName(e.target.value); setFormErrors(prev => { const { newProductName, ...rest } = prev; return rest; });}} placeholder="Contoh: Sabun Mandi" />
+                      <input type="text" className={`form-control ${formErrors.newProductName ? 'is-invalid' : ''}`} id="productName" value={newProductName} onChange={(e) => {setNewProductName(e.target.value); setFormErrors((prev: { [key: string]: string }) => { const { newProductName, ...rest } = prev; return rest; });}} placeholder="Contoh: Sabun Mandi" />
                       {formErrors.newProductName && <div className="invalid-feedback">{formErrors.newProductName}</div>}
                     </div>
                     <div className="mb-3">
                       <label htmlFor="productPrice" className="form-label fw-semibold">Harga Jual</label>
-                      <input type="number" className={`form-control ${formErrors.newProductPrice ? 'is-invalid' : ''}`} id="productPrice" value={newProductPrice === 0 ? '' : newProductPrice} onChange={(e) => {setNewProductPrice(Number(e.target.value)); setFormErrors(prev => { const { newProductPrice, ...rest } = prev; return rest; });}} placeholder="Contoh: 5000" />
+                      <input type="number" className={`form-control ${formErrors.newProductPrice ? 'is-invalid' : ''}`} id="productPrice" value={newProductPrice === 0 ? '' : newProductPrice} onChange={(e) => {setNewProductPrice(Number(e.target.value)); setFormErrors((prev: { [key: string]: string }) => { const { newProductPrice, ...rest } = prev; return rest; });}} placeholder="Contoh: 5000" />
                       {formErrors.newProductPrice && <div className="invalid-feedback">{formErrors.newProductPrice}</div>}
                     </div>
                     <div className="mb-3">
@@ -1125,7 +1101,7 @@ function App() {
                     </div>
                     <div className="mb-3">
                       <label htmlFor="productStock" className="form-label fw-semibold">Stok</label>
-                      <input type="number" className={`form-control ${formErrors.newProductStock ? 'is-invalid' : ''}`} id="productStock" value={newProductStock === 0 ? '' : newProductStock} onChange={(e) => {setNewProductStock(Number(e.target.value)); setFormErrors(prev => { const { newProductStock, ...rest } = prev; return rest; });}} placeholder="Contoh: 100" />
+                      <input type="number" className={`form-control ${formErrors.newProductStock ? 'is-invalid' : ''}`} id="productStock" value={newProductStock === 0 ? '' : newProductStock} onChange={(e) => {setNewProductStock(Number(e.target.value)); setFormErrors((prev: { [key: string]: string }) => { const { newProductStock, ...rest } = prev; return rest; });}} placeholder="Contoh: 100" />
                       {formErrors.newProductStock && <div className="invalid-feedback">{formErrors.newProductStock}</div>}
                     </div>
                     <div className="mb-3">
@@ -1602,14 +1578,9 @@ function App() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {!isLoggedIn ? (
-        <AuthPage onLogin={handleLogin} />
-      ) : (
+      {!isLoggedIn ? null : (
         <>
-          <Col md={2} className="p-0">
-            <Sidebar activeKey={activeTab} onSelect={(k) => setActiveTab(k || 'dashboard')} theme={theme} toggleTheme={toggleTheme} isLoggedIn={isLoggedIn} handleLogout={handleLogout} userRole={userRole} />
-          </Col>
-          <Col md={10} className="main-content p-4">
+          <Col md={12} className="main-content p-4">
             <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
               <Container>
                 

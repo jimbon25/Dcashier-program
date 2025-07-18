@@ -1,0 +1,669 @@
+2025-07-18T04:19:41.789Z [info] : Server is running at http://localhost:3001
+2025-07-18T04:19:41.793Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T04:19:59.823Z [info] : Server is running at http://localhost:3001
+2025-07-18T04:19:59.828Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:16:44.615Z [info] : Server is running at http://localhost:3001
+2025-07-18T05:16:44.619Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:19:41.123Z [info] : Server is running at http://localhost:3001
+2025-07-18T05:19:41.127Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:27:55.533Z [info] : Server is running at http://localhost:3001
+2025-07-18T05:27:55.536Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:28:28.243Z [error] : ERROR 💥 Cannot set property query of #<IncomingMessage> which has only a getter {"stack":"TypeError: Cannot set property query of #<IncomingMessage> which has only a getter\n    at /home/j1mb/Dcashier-program/backend/node_modules/xss-clean/src/index.js:10:20\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9\n    at processParams (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:582:12)\n    at next (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:291:5)\n    at logger (/home/j1mb/Dcashier-program/backend/node_modules/morgan/index.js:144:5)\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9"}
+2025-07-18T05:29:15.720Z [info] : Server is running at http://localhost:3001
+2025-07-18T05:29:15.723Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:29:26.788Z [error] : ERROR 💥 Cannot set property query of #<IncomingMessage> which has only a getter {"stack":"TypeError: Cannot set property query of #<IncomingMessage> which has only a getter\n    at /home/j1mb/Dcashier-program/backend/node_modules/xss-clean/src/index.js:10:20\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9\n    at processParams (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:582:12)\n    at next (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:291:5)\n    at logger (/home/j1mb/Dcashier-program/backend/node_modules/morgan/index.js:144:5)\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9"}
+2025-07-18T05:34:49.978Z [info] : Server is running at http://localhost:3001
+2025-07-18T05:34:49.981Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:36:54.642Z [info] : Server is running at http://localhost:3001
+2025-07-18T05:36:54.646Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:36:57.257Z [info] : POST /login 404 0 ms - {"username":"luis","password":"***"}
+2025-07-18T05:36:57.801Z [info] : POST /login 404 0 ms - {"username":"luis","password":"***"}
+2025-07-18T05:37:08.997Z [info] : POST /login 404 0 ms - {"username":"luis","password":"***"}
+2025-07-18T05:37:19.031Z [info] : POST /login 404 0 ms - {"username":"luis","password":"***"}
+2025-07-18T05:39:04.570Z [error] : [POST] /auth/login >> StatusCode:: 400, Message:: Password minimal 8 karakter
+2025-07-18T05:39:04.575Z [info] : POST /auth/login 400 0 ms - {"username":"luis","password":"***"}
+2025-07-18T05:40:49.943Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Username sudah digunakan, Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T05:40:49.948Z [info] : POST /auth/register 400 0 ms - {"username":"luis","password":"***","confirmPassword":"Luis123?"}
+2025-07-18T05:41:56.309Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T05:41:56.314Z [info] : POST /auth/register 400 0 ms - {"username":"niken123","password":"***","confirmPassword":"Niken123?"}
+2025-07-18T05:42:33.732Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T05:42:33.736Z [info] : POST /auth/login 401 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:43:15.257Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T05:43:15.259Z [info] : POST /auth/login 401 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:44:58.733Z [info] : New user registered: adit
+2025-07-18T05:44:58.735Z [info] : POST /auth/register 201 0 ms - {"username":"adit","password":"***","confirmPassword":"NikenKu!23."}
+2025-07-18T05:45:01.833Z [info] : User logged in: adit
+2025-07-18T05:45:01.834Z [info] : POST /auth/login 200 0 ms - {"username":"adit","password":"***"}
+2025-07-18T05:45:01.898Z [info] : GET /products 404 0 ms - {}
+2025-07-18T05:45:01.901Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:45:01.903Z [info] : GET /products 404 0 ms - {}
+2025-07-18T05:45:01.907Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:45:25.381Z [info] : GET /products 404 0 ms - {}
+2025-07-18T05:45:25.385Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:45:25.388Z [info] : GET /products 404 0 ms - {}
+2025-07-18T05:45:25.391Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:45:31.828Z [info] : GET /products 404 0 ms - {}
+2025-07-18T05:45:31.834Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:45:31.836Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:45:31.839Z [info] : GET /products 404 0 ms - {}
+2025-07-18T05:47:22.908Z [info] : GET /products 404 0 ms - {}
+2025-07-18T05:47:22.913Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:47:22.920Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:47:22.922Z [info] : GET /products 404 0 ms - {}
+2025-07-18T05:49:18.276Z [info] : Server is running at http://localhost:3001
+2025-07-18T05:49:18.279Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:49:34.798Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:49:34.818Z [info] : GET /products 200 0 ms - {}
+2025-07-18T05:49:34.827Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:49:34.830Z [info] : GET /products 200 0 ms - {}
+2025-07-18T05:50:07.718Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:50:07.727Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:50:07.736Z [info] : GET /categories 404 0 ms - {}
+2025-07-18T05:50:07.742Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:50:36.433Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T05:50:36.436Z [info] : POST /auth/login 401 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:10.883Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T05:51:10.886Z [info] : POST /auth/login 401 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:39.573Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T05:51:39.576Z [info] : POST /auth/login 401 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:40.613Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T05:51:40.616Z [info] : POST /auth/login 401 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:40.896Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T05:51:40.900Z [info] : POST /auth/login 401 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:41.088Z [info] : POST /auth/login 429 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:41.273Z [info] : POST /auth/login 429 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:41.435Z [info] : POST /auth/login 429 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:41.554Z [info] : POST /auth/login 429 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:51:46.279Z [info] : New user registered: niken123
+2025-07-18T05:51:46.281Z [info] : POST /auth/register 201 0 ms - {"username":"niken123","password":"***","confirmPassword":"NikenKu!23."}
+2025-07-18T05:51:46.941Z [info] : POST /auth/login 429 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:53:25.435Z [info] : Server is running at http://localhost:3001
+2025-07-18T05:53:25.438Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T05:53:44.167Z [info] : User logged in: niken123
+2025-07-18T05:53:44.173Z [info] : POST /auth/login 200 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:53:44.279Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:53:44.282Z [info] : GET /categories 200 0 ms - {}
+2025-07-18T05:53:44.287Z [info] : GET /categories 200 0 ms - {}
+2025-07-18T05:53:44.289Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:54:04.904Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:54:04.911Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:54:05.195Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:54:05.199Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:55:01.696Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:55:01.698Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:55:01.712Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:55:01.714Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:56:47.716Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:56:47.723Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:56:48.014Z [info] : GET /transactions 404 0 ms - {}
+2025-07-18T05:56:52.629Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:56:52.637Z [info] : GET /transactions 404 0 ms - {}
+2025-07-18T05:56:52.639Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:56:53.197Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:56:53.200Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:57:19.435Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:57:19.439Z [info] : GET /transactions 404 0 ms - {}
+2025-07-18T05:57:19.446Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:57:19.449Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:57:19.460Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:57:22.425Z [info] : GET /transactions 404 0 ms - {}
+2025-07-18T05:57:22.427Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:57:22.429Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:57:22.437Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:57:22.439Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:57:42.012Z [info] : User logged in: niken123
+2025-07-18T05:57:42.014Z [info] : POST /auth/login 200 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T05:57:42.152Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:57:42.170Z [info] : GET /transactions 404 0 ms - {}
+2025-07-18T05:57:42.180Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:57:42.188Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:57:42.208Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:57:57.525Z [info] : GET /transactions 404 0 ms - {}
+2025-07-18T05:57:57.527Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:57:57.529Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T05:57:57.568Z [info] : GET /products 304 0 ms - {}
+2025-07-18T05:57:57.570Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:00:00.467Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:00:00.468Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:00:00.471Z [info] : GET /transactions 404 0 ms - {}
+2025-07-18T06:00:00.533Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:00:00.536Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:01:11.179Z [info] : Server is running at http://localhost:3001
+2025-07-18T06:01:11.182Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T06:01:22.179Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:01:22.183Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:01:22.189Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T06:01:22.192Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:01:22.195Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:01:32.649Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:01:32.651Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:01:32.653Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:01:32.660Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:01:32.662Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:03:32.894Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:03:32.898Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:03:32.903Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:03:32.908Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:03:32.913Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:03:53.755Z [info] : User logged in: niken123
+2025-07-18T06:03:53.757Z [info] : POST /auth/login 200 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T06:03:53.826Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:03:53.831Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:03:53.834Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:03:53.838Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:03:53.841Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:47:23.091Z [info] : Server is running at http://localhost:3001
+2025-07-18T06:47:23.094Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T06:47:44.112Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:47:44.115Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:47:44.120Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:47:44.123Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:47:44.127Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:47:47.195Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:47:47.196Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:47:47.199Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:47:47.207Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:47:47.209Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:48:46.653Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T06:48:46.656Z [info] : POST /auth/login 401 0 ms - {"username":"niken123","password":"***"}
+2025-07-18T06:49:21.888Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T06:49:21.891Z [info] : POST /auth/register 400 0 ms - {"username":"aris","password":"***","confirmPassword":"AriS1234?"}
+2025-07-18T06:49:52.434Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T06:49:52.437Z [info] : POST /auth/register 400 0 ms - {"username":"aris","password":"***","confirmPassword":"dimAS123?"}
+2025-07-18T06:50:44.143Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T06:50:44.145Z [info] : POST /auth/register 400 0 ms - {"username":"aris","password":"***","confirmPassword":"dimAS123?"}
+2025-07-18T06:52:02.894Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T06:52:02.896Z [info] : POST /auth/register 400 0 ms - {"username":"user","password":"***","confirmPassword":"UserAdmin123?"}
+2025-07-18T06:52:21.450Z [info] : Server is running at http://localhost:3001
+2025-07-18T06:52:21.453Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T06:52:37.506Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T06:52:37.512Z [info] : POST /auth/register 400 0 ms - {"username":"user","password":"***","confirmPassword":"UserAdmin123?"}
+2025-07-18T06:54:19.416Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T06:54:19.420Z [info] : POST /auth/register 400 0 ms - {"username":"user","password":"***","confirmPassword":"UserAdmin123?"}
+2025-07-18T06:54:20.221Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
+2025-07-18T06:54:20.223Z [info] : POST /auth/register 400 0 ms - {"username":"user","password":"***","confirmPassword":"UserAdmin123?"}
+2025-07-18T06:54:31.729Z [info] : Server is running at http://localhost:3001
+2025-07-18T06:54:31.732Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T06:54:55.131Z [info] : New user registered: user
+2025-07-18T06:54:55.137Z [info] : POST /auth/register 201 0 ms - {"username":"user","password":"***","confirmPassword":"UserAdmin123?"}
+2025-07-18T06:54:57.565Z [info] : User logged in: user
+2025-07-18T06:54:57.567Z [info] : POST /auth/login 200 0 ms - {"username":"user","password":"***"}
+2025-07-18T06:54:57.680Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:54:57.683Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:54:57.688Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:54:57.691Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:54:57.696Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:56:20.741Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:56:20.757Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:56:20.762Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:56:40.436Z [info] : User logged in: user
+2025-07-18T06:56:40.439Z [info] : POST /auth/login 200 0 ms - {"username":"user","password":"***"}
+2025-07-18T06:56:40.549Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:56:40.561Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:56:40.564Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:56:40.570Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:56:40.581Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:59:43.830Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:59:43.850Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T06:59:43.857Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:59:53.282Z [info] : GET /products 304 0 ms - {}
+2025-07-18T06:59:53.285Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T06:59:53.291Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T07:09:22.905Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T07:09:22.936Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:09:22.950Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:09:22.963Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:09:22.979Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:10:13.379Z [info] : User logged in: user
+2025-07-18T07:10:13.380Z [info] : POST /auth/login 200 0 ms - {"username":"user","password":"***"}
+2025-07-18T07:10:13.453Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:10:13.461Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:10:13.466Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T07:10:13.469Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:10:13.472Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:13:40.573Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:13:40.586Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:13:40.589Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:13:40.596Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T07:13:40.602Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:15:54.169Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:15:54.177Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:15:54.188Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:15:54.194Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:15:54.203Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T07:17:17.863Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:17:17.866Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T07:17:17.872Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T07:17:17.895Z [info] : GET /products 304 0 ms - {}
+2025-07-18T07:17:17.897Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T12:05:42.521Z [info] : Server is running at http://localhost:3001
+2025-07-18T12:05:42.524Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T12:37:25.184Z [info] : GET /products 200 0 ms - {}
+2025-07-18T12:37:25.208Z [info] : GET /categories 200 0 ms - {}
+2025-07-18T12:37:25.218Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T12:37:25.226Z [info] : GET /products 304 0 ms - {}
+2025-07-18T12:37:25.258Z [info] : GET /products 304 0 ms - {}
+2025-07-18T12:37:25.263Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T12:37:25.271Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T12:38:35.983Z [info] : GET /products 304 0 ms - {}
+2025-07-18T12:38:36.066Z [info] : GET /products 304 0 ms - {}
+2025-07-18T12:38:36.071Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T12:38:36.090Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T12:38:36.095Z [info] : GET /products 304 0 ms - {}
+2025-07-18T12:38:36.100Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T12:38:36.113Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:32:50.592Z [info] : Server is running at http://localhost:3001
+2025-07-18T15:32:50.595Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T15:33:11.175Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:33:11.188Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:33:11.202Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T15:33:11.206Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:33:11.212Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:33:11.249Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:33:11.253Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:46:19.843Z [error] : [POST] /auth/login >> StatusCode:: 400, Message:: Password minimal 8 karakter
+2025-07-18T15:46:19.847Z [info] : POST /auth/login 400 0 ms - {"username":"luis","password":"***"}
+2025-07-18T15:48:47.632Z [info] : New user registered: akusuka
+2025-07-18T15:48:47.633Z [info] : POST /auth/register 201 0 ms - {"username":"akusuka","password":"***","confirmPassword":"aKuSuka123?"}
+2025-07-18T15:48:49.951Z [info] : User logged in: akusuka
+2025-07-18T15:48:49.953Z [info] : POST /auth/login 200 0 ms - {"username":"akusuka","password":"***"}
+2025-07-18T15:48:50.023Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:48:50.031Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:48:50.035Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:48:50.042Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T15:48:50.051Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:48:50.053Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:48:50.065Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:49:43.435Z [info] : POST /products 404 0 ms - {"id":"P006","name":"Sabun piring","price":5000,"cost_price":4500,"stock":100,"barcode":null,"category_id":"CAT002","image_url":null}
+2025-07-18T15:50:20.073Z [error] : ERROR 💥 request entity too large {"expected":186009,"length":186009,"limit":102400,"type":"entity.too.large","stack":"PayloadTooLargeError: request entity too large\n    at readStream (/home/j1mb/Dcashier-program/backend/node_modules/raw-body/index.js:163:17)\n    at getRawBody (/home/j1mb/Dcashier-program/backend/node_modules/raw-body/index.js:116:12)\n    at read (/home/j1mb/Dcashier-program/backend/node_modules/body-parser/lib/read.js:74:3)\n    at jsonParser (/home/j1mb/Dcashier-program/backend/node_modules/body-parser/lib/types/json.js:125:5)\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9\n    at processParams (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:582:12)\n    at next (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:291:5)\n    at cors (/home/j1mb/Dcashier-program/backend/node_modules/cors/lib/index.js:188:7)"}
+2025-07-18T15:51:24.849Z [error] : ERROR 💥 request entity too large {"expected":186011,"length":186011,"limit":102400,"type":"entity.too.large","stack":"PayloadTooLargeError: request entity too large\n    at readStream (/home/j1mb/Dcashier-program/backend/node_modules/raw-body/index.js:163:17)\n    at getRawBody (/home/j1mb/Dcashier-program/backend/node_modules/raw-body/index.js:116:12)\n    at read (/home/j1mb/Dcashier-program/backend/node_modules/body-parser/lib/read.js:74:3)\n    at jsonParser (/home/j1mb/Dcashier-program/backend/node_modules/body-parser/lib/types/json.js:125:5)\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9\n    at processParams (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:582:12)\n    at next (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:291:5)\n    at cors (/home/j1mb/Dcashier-program/backend/node_modules/cors/lib/index.js:188:7)"}
+2025-07-18T15:57:55.863Z [info] : Server is running at http://localhost:3001
+2025-07-18T15:57:55.877Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T15:58:00.998Z [info] : GET /products 200 0 ms - {}
+2025-07-18T15:58:01.027Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:58:01.058Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T15:58:01.074Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:58:01.103Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:58:01.145Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:58:01.161Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:58:48.081Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:58:48.092Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:58:48.094Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:58:48.098Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T15:58:48.103Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:58:48.119Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:58:48.135Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:59:53.479Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:59:53.484Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:59:53.490Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T15:59:53.494Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:59:53.497Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T15:59:53.504Z [info] : GET /products 304 0 ms - {}
+2025-07-18T15:59:53.515Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:09:49.037Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:09:49.047Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:09:49.055Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:09:49.063Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:09:49.072Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:09:49.077Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:09:49.093Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:12:25.347Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:12:25.357Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:12:25.361Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:12:25.377Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:12:25.382Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:12:25.384Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:12:25.395Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:12:26.511Z [info] : Server is running at http://localhost:3001
+2025-07-18T16:12:26.518Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T16:12:27.742Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:12:27.753Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:10.730Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:15:10.740Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:15:13.288Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:13.290Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:13.299Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:13.302Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:15:13.306Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:13.313Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:13.320Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:46.363Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:15:46.370Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:15:48.514Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:48.516Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:48.521Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:15:48.528Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:48.533Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:48.543Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:48.545Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:49.660Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:49.672Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:50.472Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:50.474Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:50.478Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:50.483Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:15:50.487Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:50.492Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:50.498Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:51.486Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:51.493Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:51.959Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:51.961Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:51.971Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:51.973Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:51.975Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:15:51.979Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:15:51.987Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:52.488Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:15:52.493Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:16:18.621Z [info] : POST /transactions 404 0 ms - {"total_amount":95000,"payment_amount":100000,"change_amount":5000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1}]}
+2025-07-18T16:16:23.299Z [info] : POST /transactions 404 0 ms - {"total_amount":95000,"payment_amount":100000,"change_amount":5000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1}]}
+2025-07-18T16:16:30.897Z [info] : POST /transactions 404 0 ms - {"total_amount":95000,"payment_amount":100000,"change_amount":5000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1}]}
+2025-07-18T16:16:41.296Z [info] : POST /transactions 404 0 ms - {"total_amount":95000,"payment_amount":100000,"change_amount":5000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1}]}
+2025-07-18T16:18:09.941Z [info] : GET / 404 0 ms - {}
+2025-07-18T16:19:10.969Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-18T16:19:10.971Z [info] : POST /auth/login 401 0 ms - {"username":"akuadalah","password":"***"}
+2025-07-18T16:19:43.208Z [info] : User logged in: akusuka
+2025-07-18T16:19:43.210Z [info] : POST /auth/login 200 0 ms - {"username":"akusuka","password":"***"}
+2025-07-18T16:19:43.286Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:19:43.299Z [info] : GET /categories 200 0 ms - {}
+2025-07-18T16:19:43.303Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:19:43.306Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:19:43.321Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:19:43.324Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:19:43.326Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T16:21:22.367Z [info] : User logged in: akusuka
+2025-07-18T16:21:22.368Z [info] : POST /auth/login 200 0 ms - {"username":"akusuka","password":"***"}
+2025-07-18T16:21:22.439Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:21:22.444Z [info] : GET /categories 200 0 ms - {}
+2025-07-18T16:21:22.448Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T16:21:22.452Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:21:22.460Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:21:22.462Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:21:22.464Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:21:24.360Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T16:21:24.362Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:21:25.029Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:21:25.031Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:21:38.645Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:21:53.006Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:21:55.583Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:22:17.100Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:22:19.703Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:22:23.509Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:22:41.370Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:23:06.349Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:23:08.166Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:23:26.702Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:23:29.549Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:27:07.331Z [info] : Server is running at http://localhost:3001
+2025-07-18T16:27:07.335Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T16:27:48.334Z [info] : POST /transactions 404 0 ms - {"total_amount":110000,"payment_amount":150000,"change_amount":40000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:29:22.161Z [info] : Server is running at http://localhost:3001
+2025-07-18T16:29:22.167Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T16:29:43.059Z [error] : ERROR 💥 SQLITE_ERROR: table transactions has no column named discount {"errno":1,"code":"SQLITE_ERROR","stack":"Error: SQLITE_ERROR: table transactions has no column named discount"}
+2025-07-18T16:29:43.075Z [info] : POST /transactions 500 0 ms - {"total_amount":50000,"payment_amount":50000,"change_amount":0,"payment_method":"Cash","items":[{"product_id":"1","product_name":"Test Product","price_at_sale":50000,"quantity":1}]}
+2025-07-18T16:29:58.201Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T16:29:58.204Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:29:58.208Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:29:58.216Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:29:58.224Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:29:58.228Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:29:58.232Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:30:17.045Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:17.058Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:30:17.392Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:17.400Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:30:17.411Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:17.416Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:30:17.429Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:30:17.435Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:17.443Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:30:18.090Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:30:18.105Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:30:18.896Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:18.898Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:30:18.904Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:30:18.917Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:18.919Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:30:18.936Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:18.942Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:30:19.571Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:19.577Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:30:36.710Z [error] : ERROR 💥 SQLITE_ERROR: table transactions has no column named discount {"errno":1,"code":"SQLITE_ERROR","stack":"Error: SQLITE_ERROR: table transactions has no column named discount"}
+2025-07-18T16:30:36.712Z [info] : POST /transactions 500 0 ms - {"total_amount":50000,"payment_amount":60000,"change_amount":10000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1}]}
+2025-07-18T16:32:34.261Z [info] : Server is running at http://localhost:3001
+2025-07-18T16:32:34.265Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T16:32:41.710Z [info] : POST /transactions 201 0 ms - {"total_amount":50000,"payment_amount":50000,"change_amount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":50000,"quantity":1}]}
+2025-07-18T16:33:46.983Z [info] : POST /transactions 201 0 ms - {"total_amount":50000,"payment_amount":60000,"change_amount":10000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1}]}
+2025-07-18T16:33:46.998Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:34:49.358Z [info] : Server is running at http://localhost:3001
+2025-07-18T16:34:49.361Z [info] : API Documentation available at http://localhost:3001/api-docs
+2025-07-18T16:35:08.787Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:08.793Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:08.799Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T16:35:08.856Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:08.861Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:08.870Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:08.879Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:18.650Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:18.661Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:25.942Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:25.950Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:26.595Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:26.597Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:26.603Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:26.608Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:26.611Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:26.617Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:26.621Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:27.442Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:27.452Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:28.152Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:28.154Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:28.160Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:28.163Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:28.165Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:28.169Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:28.177Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:28.711Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:28.718Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:29.450Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:29.452Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:29.459Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:29.461Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:29.465Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:29.473Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:29.476Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:29.919Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:29.940Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:30.445Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:30.448Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:30.456Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:30.459Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:30.462Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:30.467Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:30.475Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:31.642Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:31.645Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:35:32.870Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:32.871Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:32.874Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:32.882Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:32.884Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:32.889Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:32.892Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:33.278Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:33.285Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:33.700Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:33.702Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:33.711Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:33.716Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:33.718Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:33.724Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:33.730Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:35.449Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:35.456Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:36.566Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:36.568Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:36.578Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:36.580Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:36.581Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:35:36.585Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:35:36.592Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:35:39.462Z [info] : GET /reports/profit-loss 200 0 ms - {}
+2025-07-18T16:35:55.619Z [info] : GET /reports/profit-loss 304 0 ms - {}
+2025-07-18T16:35:56.569Z [info] : GET /reports/profit-loss 304 0 ms - {}
+2025-07-18T16:36:13.367Z [info] : GET /reports/profit-loss 304 0 ms - {}
+2025-07-18T16:36:14.533Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:36:14.551Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T16:36:16.940Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:36:18.607Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:18.610Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:18.629Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:18.634Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:18.639Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:36:18.656Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:18.703Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:21.173Z [info] : GET /reports/profit-loss 304 0 ms - {}
+2025-07-18T16:36:27.942Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:27.956Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:28.487Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:28.488Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:28.503Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:28.507Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:28.509Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:36:28.516Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:28.525Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:32.351Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:32.357Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:32.816Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:32.818Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:32.826Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:36:32.833Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:32.837Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:32.838Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:32.848Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:33.184Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:33.189Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:33.603Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:33.604Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:33.611Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:36:33.613Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:33.616Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:33.620Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:33.627Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:36:34.032Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:34.037Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:36:53.162Z [info] : POST /transactions 201 0 ms - {"total_amount":62000,"payment_amount":70000,"change_amount":8000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P005","product_name":"Kopi Bubuk 200gr","price_at_sale":12000,"cost_price_at_sale":10000,"quantity":1},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":1},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":1}]}
+2025-07-18T16:36:53.178Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:37:02.631Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:37:02.634Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:37:02.639Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T16:37:02.644Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:37:02.646Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:37:02.649Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:37:02.656Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:37:03.846Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:37:03.857Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:39:09.921Z [info] : User logged in: akusuka
+2025-07-18T16:39:09.923Z [info] : POST /auth/login 200 0 ms - {"username":"akusuka","password":"***"}
+2025-07-18T16:39:10.011Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:39:10.015Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:39:10.017Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:39:10.023Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:39:10.027Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:39:10.039Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:39:10.041Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:39:13.362Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:39:13.364Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:43:17.454Z [info] : User logged in: akusuka
+2025-07-18T16:43:17.456Z [info] : POST /auth/login 200 0 ms - {"username":"akusuka","password":"***"}
+2025-07-18T16:43:17.530Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:43:17.532Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:43:17.546Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T16:43:17.556Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:43:17.559Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:43:17.566Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:43:17.577Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T16:43:32.404Z [info] : GET /reports/profit-loss 200 0 ms - {}
+2025-07-18T16:43:34.896Z [info] : GET /products 304 0 ms - {}
+2025-07-18T16:43:34.912Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:44:02.378Z [info] : POST /transactions 201 0 ms - {"total_amount":300000,"payment_amount":400000,"change_amount":100000,"discount":0,"payment_method":"Cash","items":[{"product_id":"P001","product_name":"Beras 5kg","price_at_sale":60000,"cost_price_at_sale":55000,"quantity":2},{"product_id":"P002","product_name":"Minyak Goreng 2L","price_at_sale":35000,"cost_price_at_sale":30000,"quantity":2},{"product_id":"P003","product_name":"Gula Pasir 1kg","price_at_sale":15000,"cost_price_at_sale":13000,"quantity":2},{"product_id":"P004","product_name":"Telur Ayam 1kg","price_at_sale":28000,"cost_price_at_sale":25000,"quantity":2},{"product_id":"P005","product_name":"Kopi Bubuk 200gr","price_at_sale":12000,"cost_price_at_sale":10000,"quantity":2}]}
+2025-07-18T16:44:02.409Z [info] : GET /products 200 0 ms - {}
+2025-07-18T16:44:21.107Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T16:44:21.113Z [info] : GET /transactions 200 0 ms - {}
+2025-07-18T17:12:45.295Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:12:45.296Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:12:45.305Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:12:45.310Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:12:45.312Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:12:45.320Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:12:45.324Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:11.476Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:11.483Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:14.027Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:14.031Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:14.034Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:14.041Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:14.043Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:14.051Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:14.053Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:52.329Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:52.339Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:52.721Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:52.723Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:52.730Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:52.734Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:52.736Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:52.739Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:52.747Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:53.835Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:53.843Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:54.723Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:54.724Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:54.733Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:54.735Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:54.736Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:54.740Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:54.747Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:55.140Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:55.153Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:56.233Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:56.236Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:56.242Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:56.245Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:13:56.252Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:13:56.254Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:13:56.262Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:03.469Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:03.473Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:04.202Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:04.204Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:04.209Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:04.211Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:14:04.213Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:04.220Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:04.222Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:05.644Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:05.650Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:33.643Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:33.646Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:33.654Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:33.656Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:14:33.658Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:33.662Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:33.669Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:35.439Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:14:35.446Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:14:35.896Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:35.900Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:37.667Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:37.671Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:37.688Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:14:37.689Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:37.693Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:37.695Z [info] : GET /products 304 0 ms - {}
+2025-07-18T17:14:37.698Z [info] : GET /categories 304 0 ms - {}
+2025-07-18T17:14:40.769Z [info] : GET /transactions 304 0 ms - {}
+2025-07-18T17:14:40.776Z [info] : GET /transactions 304 0 ms - {}

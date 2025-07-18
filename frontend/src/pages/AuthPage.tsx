@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Container, Card, Form, Button, Alert } from 'react-bootstrap';
-import { useAppDispatch } from './store/hooks';
+import { useAppDispatch } from '../store/hooks';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { setCredentials } from './store/slices/authSlice';
-import { authService } from './services/auth.service';
+import { setCredentials } from '../store/slices/authSlice';
+import { authService } from '../services/auth.service';
 
 const AuthPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -28,37 +28,30 @@ const AuthPage: React.FC = () => {
     }
 
     try {
-      const response = isRegister
-        ? await authService.register({ username, password, confirmPassword })
-        : await authService.login({ username, password });
-
-      if (response.token) {
-        dispatch(setCredentials({
-          user: { username, role: response.role },
-          token: response.token,
-        }));
-        toast.success(isRegister ? 'Registration successful!' : 'Login successful!');
-        navigate('/dashboard');
+      if (isRegister) {
+        const _response = await authService.register({ username, password, confirmPassword });
+        toast.success('Registration successful! Please log in.');
+        setIsRegister(false);
       } else {
-        setError('Authentication failed');
+        const response = await authService.login({ username, password });
+        dispatch(setCredentials(response));
+        toast.success('Logged in successfully!');
+        navigate('/');
       }
-    } catch (error: any) {
-      setError(error.message || 'An error occurred');
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Something went wrong');
+      toast.error(err.response?.data?.error || err.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100">
-      <Card style={{ width: '400px' }}>
-        <Card.Body>
-          <Card.Title className="text-center mb-4">
-            {isRegister ? 'Register' : 'Login'}
-          </Card.Title>
-          
+    <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+      <Card style={{ width: '25rem' }} className="shadow-lg">
+        <Card.Body className="p-4">
+          <h2 className="text-center mb-4 text-primary">{isRegister ? 'Register' : 'Login'}</h2>
           {error && <Alert variant="danger">{error}</Alert>}
-          
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3" controlId="username">
               <Form.Label>Username</Form.Label>
@@ -96,21 +89,15 @@ const AuthPage: React.FC = () => {
             )}
 
             <Button variant="primary" type="submit" className="w-100 mt-3" disabled={loading}>
-              {loading ? 'Processing...' : (isRegister ? 'Register' : 'Login')}
+              {loading ? 'Loading...' : (isRegister ? 'Register' : 'Login')}
             </Button>
           </Form>
-
-          <div className="text-center mt-3">
-            <Button
-              variant="link"
-              onClick={() => setIsRegister(!isRegister)}
-              className="text-decoration-none"
-            >
-              {isRegister
-                ? 'Already have an account? Login'
-                : "Don't have an account? Register"}
+          <p className="text-center mt-3">
+            {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <Button variant="link" onClick={() => setIsRegister(!isRegister)}>
+              {isRegister ? 'Login' : 'Register'}
             </Button>
-          </div>
+          </p>
         </Card.Body>
       </Card>
     </Container>

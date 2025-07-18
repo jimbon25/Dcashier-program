@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.runAsync = void 0;
 exports.initializeDatabase = initializeDatabase;
 exports.getDatabase = getDatabase;
 const sqlite3_1 = __importDefault(require("sqlite3"));
@@ -30,6 +31,7 @@ const runAsync = (db, sql, params = []) => {
         });
     });
 };
+exports.runAsync = runAsync;
 // Helper function to promisify db.all
 const allAsync = (db, sql, params = []) => {
     return new Promise((resolve, reject) => {
@@ -54,7 +56,7 @@ function initializeDatabase() {
                 console.log('Connected to the SQLite database.');
                 try {
                     // Create categories table
-                    yield runAsync(db, `
+                    yield (0, exports.runAsync)(db, `
             CREATE TABLE IF NOT EXISTS categories (
               id TEXT PRIMARY KEY,
               name TEXT NOT NULL UNIQUE
@@ -71,12 +73,12 @@ function initializeDatabase() {
                             { id: 'CAT004', name: 'Snack' },
                         ];
                         for (const c of dummyCategories) {
-                            yield runAsync(db, "INSERT INTO categories (id, name) VALUES (?, ?)", [c.id, c.name]);
+                            yield (0, exports.runAsync)(db, "INSERT INTO categories (id, name) VALUES (?, ?)", [c.id, c.name]);
                         }
                         console.log('Dummy categories inserted.');
                     }
                     // Create products table
-                    yield runAsync(db, `
+                    yield (0, exports.runAsync)(db, `
             CREATE TABLE IF NOT EXISTS products (
               id TEXT PRIMARY KEY,
               name TEXT NOT NULL,
@@ -101,12 +103,12 @@ function initializeDatabase() {
                             { id: 'P005', name: 'Kopi Bubuk 200gr', price: 12000, stock: 150, cost_price: 10000, category_id: 'CAT002', image_url: 'https://via.placeholder.com/150/00FFFF/000000?text=Kopi' },
                         ];
                         for (const p of dummyProducts) {
-                            yield runAsync(db, "INSERT INTO products (id, name, price, stock, category_id, cost_price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)", [p.id, p.name, p.price, p.stock, p.category_id, p.cost_price, p.image_url]);
+                            yield (0, exports.runAsync)(db, "INSERT INTO products (id, name, price, stock, category_id, cost_price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)", [p.id, p.name, p.price, p.stock, p.category_id, p.cost_price, p.image_url]);
                         }
                         console.log('Dummy products inserted.');
                     }
                     // Create transactions table
-                    yield runAsync(db, `
+                    yield (0, exports.runAsync)(db, `
             CREATE TABLE IF NOT EXISTS transactions (
               id TEXT PRIMARY KEY,
               timestamp INTEGER NOT NULL,
@@ -118,7 +120,7 @@ function initializeDatabase() {
           `);
                     console.log('Transactions table created or already exists.');
                     // Create transaction_items table
-                    yield runAsync(db, `
+                    yield (0, exports.runAsync)(db, `
             CREATE TABLE IF NOT EXISTS transaction_items (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               transaction_id TEXT NOT NULL,
@@ -132,7 +134,7 @@ function initializeDatabase() {
           `);
                     console.log('Transaction items table created or already exists.');
                     // Create users table
-                    yield runAsync(db, `
+                    yield (0, exports.runAsync)(db, `
             CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               username TEXT NOT NULL UNIQUE,
@@ -141,7 +143,7 @@ function initializeDatabase() {
             )
           `);
                     // Add role column if it doesn't exist (for existing databases)
-                    yield runAsync(db, "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'cashier'").catch(err => {
+                    yield (0, exports.runAsync)(db, "ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'cashier'").catch(err => {
                         if (err.message.includes('duplicate column name: role')) {
                             console.log('Role column already exists in users table.');
                         }
@@ -150,6 +152,18 @@ function initializeDatabase() {
                         }
                     });
                     console.log('Users table created or already exists.');
+                    // Create refresh tokens table
+                    yield (0, exports.runAsync)(db, `
+            CREATE TABLE IF NOT EXISTS refresh_tokens (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER NOT NULL,
+              token TEXT NOT NULL UNIQUE,
+              expires_at DATETIME NOT NULL,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+          `);
+                    console.log('Refresh tokens table created or already exists.');
                     resolve(db);
                 }
                 catch (initErr) {

@@ -13,21 +13,33 @@
   "description": "",
   "dependencies": {
     "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^24.0.13",
     "@types/sqlite3": "^3.1.11",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
+    "multer": "^1.4.5-lts.1",
     "sqlite3": "^5.1.7",
-    "ts-node": "^10.9.2",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "typescript": "^5.8.3",
-    "multer": "^1.4.5-lts.1"
+    "winston": "^3.17.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/multer": "^1.4.11"
+    "@types/multer": "^1.4.13",
+    "ts-node": "^10.9.2"
   }
 }

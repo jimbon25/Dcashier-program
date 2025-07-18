@@ -5,7 +5,7 @@ const DB_PATH = './sembako-pos.db';
 let db: sqlite3.Database;
 
 // Helper function to promisify db.run
-const runAsync = (db: sqlite3.Database, sql: string, params: any[] = []): Promise<sqlite3.RunResult> => {
+export const runAsync = (db: sqlite3.Database, sql: string, params: any[] = []): Promise<sqlite3.RunResult> => {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function(this: sqlite3.RunResult, err: Error | null) {
       if (err) {
@@ -103,10 +103,20 @@ export function initializeDatabase(): Promise<sqlite3.Database> {
               total_amount INTEGER NOT NULL,
               payment_amount INTEGER NOT NULL,
               change_amount INTEGER NOT NULL,
+              discount INTEGER NOT NULL DEFAULT 0,
               payment_method TEXT NOT NULL DEFAULT 'Cash'
             )
           `);
           console.log('Transactions table created or already exists.');
+
+          // Add discount column if it doesn't exist (for existing databases)
+          await runAsync(db, "ALTER TABLE transactions ADD COLUMN discount INTEGER NOT NULL DEFAULT 0").catch(err => {
+            if (err.message.includes('duplicate column name: discount')) {
+              console.log('Discount column already exists in transactions table.');
+            } else {
+              throw err;
+            }
+          });
 
           // Create transaction_items table
           await runAsync(db, `
@@ -141,6 +151,19 @@ export function initializeDatabase(): Promise<sqlite3.Database> {
             }
           });
           console.log('Users table created or already exists.');
+
+          // Create refresh tokens table
+          await runAsync(db, `
+            CREATE TABLE IF NOT EXISTS refresh_tokens (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_id INTEGER NOT NULL,
+              token TEXT NOT NULL UNIQUE,
+              expires_at DATETIME NOT NULL,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+          `);
+          console.log('Refresh tokens table created or already exists.');
 
           resolve(db);
         } catch (initErr: any) {
