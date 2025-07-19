@@ -12,6 +12,7 @@ restartPolicyMaxRetries = 3
 [environments.production]
 NODE_ENV = "production"
 PORT = "${{ PORT }}"
+DATABASE_TYPE = "sqlite"
 
 [environments.staging]
 NODE_ENV = "staging"

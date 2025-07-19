@@ -207,8 +207,8 @@ const server = http.createServer(async (req, res) => {
     if (path === '/' && method === 'GET') {
       res.writeHead(200);
       res.end(JSON.stringify({
-        message: 'DCashier API Server with SQLite - Railway',
-        version: '2.0.0',
+        message: 'DCashier SQLite API Server - Railway v2.1',
+        version: '2.1.0',
         health: '/health',
         api: '/api',
         environment: 'production',
@@ -222,11 +222,11 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200);
       res.end(JSON.stringify({
         status: 'OK',
-        message: 'Server is running on Railway with SQLite',
+        message: 'SQLite Database Server - Railway Deployment v2.1',
         timestamp: new Date().toISOString(),
         environment: 'production',
         database: 'SQLite',
-        version: '2.0.0'
+        version: '2.1.0'
       }));
       return;
     }
