@@ -240,7 +240,9 @@ function App() {
       const response = await authenticatedFetch(buildApiUrl('/categories'));
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setCategories(data);
+      // Handle API response format properly
+      const categoriesList = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      setCategories(categoriesList);
     } catch (error: any) {
       console.error("Error fetching categories:", error);
       toast.error(`Failed to fetch categories: ${error.message}`);
@@ -276,7 +278,9 @@ function App() {
       const response = await authenticatedFetch(buildApiUrl(`/reports/daily-sales?date=${reportDate}`));
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setDailySales(data);
+      // Handle API response format properly
+      const salesList = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      setDailySales(salesList);
     } catch (error: any) {
       console.error("Error fetching daily sales:", error);
       toast.error(`Failed to fetch daily sales: ${error.message}`);
@@ -291,7 +295,9 @@ function App() {
       const response = await authenticatedFetch(buildApiUrl(`/reports/top-products?limit=${topProductsLimit}`));
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setTopProducts(data);
+      // Handle API response format properly
+      const productsList = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      setTopProducts(productsList);
     } catch (error: any) {
       console.error("Error fetching top products:", error);
       toast.error(`Failed to fetch top products: ${error.message}`);
@@ -314,7 +320,9 @@ function App() {
       const response = await authenticatedFetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setProfitLossReport(data);
+      // Handle API response format properly  
+      const reportData = data?.data ? data.data : data;
+      setProfitLossReport(reportData);
     } catch (error: any) {
       console.error("Error fetching profit/loss report:", error);
       toast.error(`Failed to fetch profit/loss report: ${error.message}`);
@@ -329,7 +337,9 @@ function App() {
       const response = await authenticatedFetch(buildApiUrl('/users'));
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setUsers(data);
+      // Handle API response format properly
+      const usersList = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      setUsers(usersList);
     } catch (error: any) {
       console.error("Error fetching users:", error);
       toast.error(`Failed to fetch users: ${error.message}`);
