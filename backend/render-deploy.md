@@ -9,7 +9,7 @@ npm install
 
 ### Start Command:
 ```
-node render-server.js
+node simple-server.js
 ```
 
 ### Environment Variables:
