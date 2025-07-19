@@ -1,0 +1,141 @@
+/* CSS Custom Properties for Dark/Light Mode Compatibility */
+:root {
+  /* Light mode colors */
+  --cashier-bg-primary: #f8f9fa;
+  --cashier-bg-secondary: #e9ecef;
+  --cashier-text-primary: #212529;
+  --cashier-text-secondary: #6c757d;
+  --cashier-border: #dee2e6;
+  --cashier-card-bg: #ffffff;
+  --cashier-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode overrides */
+[data-bs-theme="dark"] {
+  --cashier-bg-primary: #212529;
+  --cashier-bg-secondary: #343a40;
+  --cashier-text-primary: #ffffff;
+  --cashier-text-secondary: #adb5bd;
+  --cashier-border: #495057;
+  --cashier-card-bg: #2c3034;
+  --cashier-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* Toast customization for compact size */
+.Toastify__toast {
+  font-size: 0.875rem !important;
+  padding: 8px 12px !important;
+  min-height: auto !important;
+  border-radius: 6px !important;
+}
+
+.Toastify__toast-body {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.Toastify__close-button {
+  font-size: 14px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.Toastify__progress-bar {
+  height: 2px !important;
+}
+
+/* Product card hover effects */
+.product-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.product-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 25px var(--cashier-shadow) !important;
+}
+
+/* Ensure borders are visible in both modes */
+.modal-header,
+.modal-footer {
+  border-color: var(--bs-border-color) !important;
+}
+
+.card {
+  border-color: var(--bs-border-color) !important;
+}
+
+.form-control,
+.input-group-text {
+  border-color: var(--bs-border-color) !important;
+}
+
+/* Button consistency */
+.btn-outline-secondary {
+  border-color: var(--bs-border-color) !important;
+  color: var(--bs-secondary-color) !important;
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--bs-secondary) !important;
+  border-color: var(--bs-secondary) !important;
+}
+
+/* Table styling for receipts */
+.table-borderless th,
+.table-borderless td {
+  border-bottom: 1px solid var(--bs-border-color) !important;
+}
+
+/* Alert component styling */
+.alert {
+  border-color: var(--bs-border-color) !important;
+}
+
+/* Scrollbar styling for better dark mode compatibility */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bs-gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bs-gray-400);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bs-gray-500);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .product-card {
+    margin-bottom: 1rem;
+  }
+  
+  .Toastify__toast {
+    font-size: 0.8rem !important;
+    padding: 6px 10px !important;
+  }
+}
+
+/* Print styles for receipts */
+@media print {
+  .modal-header,
+  .modal-footer {
+    display: none !important;
+  }
+  
+  .modal-body {
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  .text-success,
+  .text-primary,
+  .text-secondary {
+    color: #000 !important;
+  }
+}

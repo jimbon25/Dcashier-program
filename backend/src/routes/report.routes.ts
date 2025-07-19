@@ -1,11 +1,15 @@
 import express, { Request, Response } from 'express';
 import { getDatabase } from '../database';
 import { catchAsync, AppError } from '../errorHandler';
+import { authenticate, requireAuth, requireAdmin, AuthenticatedRequest } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
-// Get daily sales report
-router.get('/daily-sales', catchAsync(async (req: Request, res: Response) => {
+// Middleware autentikasi untuk semua route report
+router.use(authenticate);
+
+// Get daily sales report - accessible by both admin and cashier
+router.get('/daily-sales', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const { date } = req.query;
   
@@ -42,7 +46,7 @@ router.get('/daily-sales', catchAsync(async (req: Request, res: Response) => {
 }));
 
 // Get top products
-router.get('/top-products', catchAsync(async (req: Request, res: Response) => {
+router.get('/top-products', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const { limit = 10 } = req.query;
 
@@ -67,7 +71,7 @@ router.get('/top-products', catchAsync(async (req: Request, res: Response) => {
 }));
 
 // Get profit/loss report
-router.get('/profit-loss', catchAsync(async (req: Request, res: Response) => {
+router.get('/profit-loss', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const { startDate, endDate, categoryId } = req.query;
   
@@ -76,9 +80,9 @@ router.get('/profit-loss', catchAsync(async (req: Request, res: Response) => {
       ti.product_name,
       SUM(ti.quantity) as total_quantity_sold,
       SUM(ti.price_at_sale * ti.quantity) as total_revenue,
-      SUM(ti.cost_price_at_sale * ti.quantity) as total_cost,
-      (SUM(ti.price_at_sale * ti.quantity) - SUM(ti.cost_price_at_sale * ti.quantity)) as total_profit,
-      c.name as category_name
+      COALESCE(SUM(ti.cost_price_at_sale * ti.quantity), 0) as total_cost,
+      (SUM(ti.price_at_sale * ti.quantity) - COALESCE(SUM(ti.cost_price_at_sale * ti.quantity), 0)) as total_profit,
+      COALESCE(c.name, 'Uncategorized') as category_name
     FROM transaction_items ti
     JOIN transactions t ON ti.transaction_id = t.id
     LEFT JOIN products p ON ti.product_id = p.id
@@ -98,7 +102,7 @@ router.get('/profit-loss', catchAsync(async (req: Request, res: Response) => {
     params.push(Number(endDate));
   }
   
-  if (categoryId) {
+  if (categoryId && categoryId !== '') {
     query += " AND p.category_id = ?";
     params.push(categoryId);
   }
@@ -110,8 +114,12 @@ router.get('/profit-loss', catchAsync(async (req: Request, res: Response) => {
 
   const profitLoss = await new Promise<any[]>((resolve, reject) => {
     db.all(query, params, (err, rows) => {
-      if (err) reject(new AppError(500, 'Database error: ' + err.message));
-      else resolve(rows);
+      if (err) {
+        console.error('Profit-loss query error:', err);
+        reject(new AppError(500, 'Database error: ' + err.message));
+      } else {
+        resolve(rows || []);
+      }
     });
   });
 

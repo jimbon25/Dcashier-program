@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { getDatabase, runAsync } from '../database';
 import { AppError } from '../errorHandler';
 import logger from '../logger';
@@ -28,36 +28,65 @@ export class AuthController {
 
   static async login(req: Request, res: Response) {
     const { username, password } = req.body;
+    
+    if (!username || !password) {
+      throw new AppError(400, 'Username dan password harus diisi');
+    }
+    
     const db = getDatabase();
     
     const user: any = await new Promise((resolve, reject) => {
       db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
-        if (err) reject(new AppError(500, 'Database error'));
-        else resolve(row);
+        if (err) {
+          logger.error('Database error during login:', err);
+          reject(new AppError(500, 'Database error'));
+        } else {
+          resolve(row);
+        }
       });
     });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
+      logger.warn(`Login attempt with non-existent username: ${username}`);
       throw new AppError(401, 'Username atau password salah');
     }
 
-    const accessToken = jwt.sign(
-      { id: user.id, username: user.username, role: user.role },
-      process.env.JWT_SECRET || 'supersecretjwtkey',
-      { expiresIn: '15m' }
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      logger.warn(`Invalid password attempt for user: ${username}`);
+      throw new AppError(401, 'Username atau password salah');
+    }
+
+    // Generate tokens with longer expiration for better UX
+    const jwtSecret = process.env.JWT_SECRET || 'supersecretjwtkey';
+    const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
+    
+    const payload = { 
+      id: user.id, 
+      username: user.username, 
+      role: user.role
+    };
+    
+    const options: SignOptions = { expiresIn };
+    const accessToken = jwt.sign(payload, jwtSecret, options);
 
     const refreshToken = generateRefreshToken();
     await storeRefreshToken(user.id, refreshToken);
 
-    logger.info(`User logged in: ${username}`);
+    logger.info(`User logged in successfully: ${username}, role: ${user.role}`);
+    
     res.json({ 
       status: 'success',
       message: 'Login berhasil',
       data: {
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        },
         accessToken,
         refreshToken,
-        role: user.role
+        expiresIn
       }
     });
   }
@@ -69,19 +98,31 @@ export class AuthController {
       throw new AppError(400, 'Refresh token diperlukan');
     }
 
-    const tokenData: any = await verifyRefreshToken(refreshToken);
-    const accessToken = jwt.sign(
-      { id: tokenData.user_id, username: tokenData.username, role: tokenData.role },
-      process.env.JWT_SECRET || 'supersecretjwtkey',
-      { expiresIn: '15m' }
-    );
+    try {
+      const tokenData: any = await verifyRefreshToken(refreshToken);
+      const jwtSecret = process.env.JWT_SECRET || 'supersecretjwtkey';
+      const expiresIn = process.env.JWT_EXPIRES_IN || '24h';
+      
+      const payload = {
+        id: tokenData.user_id,
+        username: tokenData.username,
+        role: tokenData.role
+      };
+      
+      const options: SignOptions = { expiresIn };
+      const accessToken = jwt.sign(payload, jwtSecret, options);
 
-    res.json({
-      status: 'success',
-      data: {
-        accessToken
-      }
-    });
+      res.json({
+        status: 'success',
+        data: {
+          accessToken,
+          expiresIn
+        }
+      });
+    } catch (error) {
+      logger.error('Error refreshing token:', error);
+      throw new AppError(401, 'Invalid refresh token');
+    }
   }
 
   static async logout(req: Request, res: Response) {

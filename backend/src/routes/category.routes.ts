@@ -1,11 +1,15 @@
 import express, { Request, Response } from 'express';
 import { getDatabase, runAsync } from '../database';
 import { catchAsync, AppError } from '../errorHandler';
+import { authenticate, requireAuth, requireAdmin, AuthenticatedRequest } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
-// Get all categories
-router.get('/', catchAsync(async (req: Request, res: Response) => {
+// Middleware autentikasi untuk semua route kategori
+router.use(authenticate);
+
+// Get all categories - accessible by both admin and cashier
+router.get('/', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const categories = await new Promise((resolve, reject) => {
     db.all("SELECT * FROM categories", [], (err, rows) => {
@@ -16,8 +20,8 @@ router.get('/', catchAsync(async (req: Request, res: Response) => {
   res.json(categories);
 }));
 
-// Get category by ID
-router.get('/:id', catchAsync(async (req: Request, res: Response) => {
+// Get category by ID - accessible by both admin and cashier
+router.get('/:id', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const category = await new Promise((resolve, reject) => {
     db.get("SELECT * FROM categories WHERE id = ?", [req.params.id], (err, row) => {
@@ -34,7 +38,7 @@ router.get('/:id', catchAsync(async (req: Request, res: Response) => {
 }));
 
 // Create new category
-router.post('/', catchAsync(async (req: Request, res: Response) => {
+router.post('/', requireAdmin, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { id, name } = req.body;
   
   if (!id || !name) {
@@ -62,7 +66,7 @@ router.post('/', catchAsync(async (req: Request, res: Response) => {
 }));
 
 // Update category
-router.put('/:id', catchAsync(async (req: Request, res: Response) => {
+router.put('/:id', requireAdmin, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { name } = req.body;
   
   if (!name) {
@@ -90,7 +94,7 @@ router.put('/:id', catchAsync(async (req: Request, res: Response) => {
 }));
 
 // Delete category
-router.delete('/:id', catchAsync(async (req: Request, res: Response) => {
+router.delete('/:id', requireAdmin, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   
   // Check if category exists

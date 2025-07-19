@@ -1,11 +1,15 @@
 import express, { Request, Response } from 'express';
 import { getDatabase, runAsync } from '../database';
 import { catchAsync, AppError } from '../errorHandler';
+import { authenticate, requireAuth, requireAdmin, AuthenticatedRequest } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
-// Get all transactions
-router.get('/', catchAsync(async (req: Request, res: Response) => {
+// Middleware autentikasi untuk semua route transaksi
+router.use(authenticate);
+
+// Get all transactions - accessible by both admin and cashier
+router.get('/', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const { startDate, endDate } = req.query;
   let query = "SELECT * FROM transactions";
@@ -47,7 +51,7 @@ router.get('/', catchAsync(async (req: Request, res: Response) => {
 }));
 
 // Get transaction by ID
-router.get('/:id', catchAsync(async (req: Request, res: Response) => {
+router.get('/:id', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const transaction = await new Promise((resolve, reject) => {
     db.get("SELECT * FROM transactions WHERE id = ?", [req.params.id], (err, row) => {
@@ -72,7 +76,7 @@ router.get('/:id', catchAsync(async (req: Request, res: Response) => {
 }));
 
 // Create new transaction
-router.post('/', catchAsync(async (req: Request, res: Response) => {
+router.post('/', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { total_amount, payment_amount, change_amount, discount, items, payment_method } = req.body;
   
   if (!total_amount || !payment_amount || !items || !Array.isArray(items)) {
@@ -139,7 +143,7 @@ router.delete('/:id', catchAsync(async (req: Request, res: Response) => {
 }));
 
 // Reset all transactions (for admin only)
-router.post('/reset', catchAsync(async (req: Request, res: Response) => {
+router.post('/reset', requireAdmin, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   
   // Delete all transaction items

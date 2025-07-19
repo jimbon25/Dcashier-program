@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/index.ts",
-    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "build": "tsc && npm run copy-assets",
+    "copy-assets": "cp -r uploads dist/ 2>/dev/null || true",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "prestart": "npm run build",
+    "railway:deploy": "npm run build && npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -21,12 +27,14 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "bcryptjs": "^3.0.2",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "express-rate-limit": "^8.0.1",
     "express-validator": "^7.2.1",
-    "jsonwebtoken": "^9.0.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
     "sqlite3": "^5.1.7",
@@ -38,7 +46,8 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.10",
+    "@types/compression": "^1.8.1",
+    "@types/jsonwebtoken": "^8.5.9",
     "@types/multer": "^1.4.13",
     "ts-node": "^10.9.2"
   }

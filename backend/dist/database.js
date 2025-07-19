@@ -115,10 +115,20 @@ function initializeDatabase() {
               total_amount INTEGER NOT NULL,
               payment_amount INTEGER NOT NULL,
               change_amount INTEGER NOT NULL,
+              discount INTEGER NOT NULL DEFAULT 0,
               payment_method TEXT NOT NULL DEFAULT 'Cash'
             )
           `);
                     console.log('Transactions table created or already exists.');
+                    // Add discount column if it doesn't exist (for existing databases)
+                    yield (0, exports.runAsync)(db, "ALTER TABLE transactions ADD COLUMN discount INTEGER NOT NULL DEFAULT 0").catch(err => {
+                        if (err.message.includes('duplicate column name: discount')) {
+                            console.log('Discount column already exists in transactions table.');
+                        }
+                        else {
+                            throw err;
+                        }
+                    });
                     // Create transaction_items table
                     yield (0, exports.runAsync)(db, `
             CREATE TABLE IF NOT EXISTS transaction_items (

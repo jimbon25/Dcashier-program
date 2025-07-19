@@ -3,8 +3,12 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { catchAsync, AppError } from '../errorHandler';
+import { authenticate, requireAdmin, AuthenticatedRequest } from '../middleware/auth.middleware';
 
 const router = express.Router();
+
+// Middleware autentikasi untuk semua route upload
+router.use(authenticate);
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -38,7 +42,7 @@ const upload = multer({
 });
 
 // Upload image endpoint
-router.post('/image', upload.single('image'), catchAsync(async (req: Request, res: Response) => {
+router.post('/image', requireAdmin, upload.single('image'), catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   if (!req.file) {
     throw new AppError(400, 'No image file provided');
   }

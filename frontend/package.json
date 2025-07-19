@@ -29,8 +29,12 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:production": "REACT_APP_API_URL=https://your-railway-backend-url npm run build",
+    "build:staging": "REACT_APP_API_URL=https://your-staging-backend-url npm run build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "preview": "npx serve -s build -l 3000",
+    "analyze": "npm run build && npx source-map-explorer 'build/static/js/*.js'"
   },
   "eslintConfig": {
     "extends": [

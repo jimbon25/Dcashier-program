@@ -1,26 +1,50 @@
-2025-07-18T05:28:28.243Z [error] : ERROR 💥 Cannot set property query of #<IncomingMessage> which has only a getter {"stack":"TypeError: Cannot set property query of #<IncomingMessage> which has only a getter\n    at /home/j1mb/Dcashier-program/backend/node_modules/xss-clean/src/index.js:10:20\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9\n    at processParams (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:582:12)\n    at next (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:291:5)\n    at logger (/home/j1mb/Dcashier-program/backend/node_modules/morgan/index.js:144:5)\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9"}
-2025-07-18T05:29:26.788Z [error] : ERROR 💥 Cannot set property query of #<IncomingMessage> which has only a getter {"stack":"TypeError: Cannot set property query of #<IncomingMessage> which has only a getter\n    at /home/j1mb/Dcashier-program/backend/node_modules/xss-clean/src/index.js:10:20\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9\n    at processParams (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:582:12)\n    at next (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:291:5)\n    at logger (/home/j1mb/Dcashier-program/backend/node_modules/morgan/index.js:144:5)\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9"}
-2025-07-18T05:39:04.570Z [error] : [POST] /auth/login >> StatusCode:: 400, Message:: Password minimal 8 karakter
-2025-07-18T05:40:49.943Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Username sudah digunakan, Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T05:41:56.309Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T05:42:33.732Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T05:43:15.257Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T05:50:36.433Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T05:51:10.883Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T05:51:39.573Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T05:51:40.613Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T05:51:40.896Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T06:48:46.653Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T06:49:21.888Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T06:49:52.434Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T06:50:44.143Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T06:52:02.894Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T06:52:37.506Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T06:54:19.416Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T06:54:20.221Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Password harus mengandung minimal 1 karakter spesial (!@#$%^&*)
-2025-07-18T15:46:19.843Z [error] : [POST] /auth/login >> StatusCode:: 400, Message:: Password minimal 8 karakter
-2025-07-18T15:50:20.073Z [error] : ERROR 💥 request entity too large {"expected":186009,"length":186009,"limit":102400,"type":"entity.too.large","stack":"PayloadTooLargeError: request entity too large\n    at readStream (/home/j1mb/Dcashier-program/backend/node_modules/raw-body/index.js:163:17)\n    at getRawBody (/home/j1mb/Dcashier-program/backend/node_modules/raw-body/index.js:116:12)\n    at read (/home/j1mb/Dcashier-program/backend/node_modules/body-parser/lib/read.js:74:3)\n    at jsonParser (/home/j1mb/Dcashier-program/backend/node_modules/body-parser/lib/types/json.js:125:5)\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9\n    at processParams (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:582:12)\n    at next (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:291:5)\n    at cors (/home/j1mb/Dcashier-program/backend/node_modules/cors/lib/index.js:188:7)"}
-2025-07-18T15:51:24.849Z [error] : ERROR 💥 request entity too large {"expected":186011,"length":186011,"limit":102400,"type":"entity.too.large","stack":"PayloadTooLargeError: request entity too large\n    at readStream (/home/j1mb/Dcashier-program/backend/node_modules/raw-body/index.js:163:17)\n    at getRawBody (/home/j1mb/Dcashier-program/backend/node_modules/raw-body/index.js:116:12)\n    at read (/home/j1mb/Dcashier-program/backend/node_modules/body-parser/lib/read.js:74:3)\n    at jsonParser (/home/j1mb/Dcashier-program/backend/node_modules/body-parser/lib/types/json.js:125:5)\n    at Layer.handleRequest (/home/j1mb/Dcashier-program/backend/node_modules/router/lib/layer.js:152:17)\n    at trimPrefix (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:342:13)\n    at /home/j1mb/Dcashier-program/backend/node_modules/router/index.js:297:9\n    at processParams (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:582:12)\n    at next (/home/j1mb/Dcashier-program/backend/node_modules/router/index.js:291:5)\n    at cors (/home/j1mb/Dcashier-program/backend/node_modules/cors/lib/index.js:188:7)"}
-2025-07-18T16:19:10.969Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
-2025-07-18T16:29:43.059Z [error] : ERROR 💥 SQLITE_ERROR: table transactions has no column named discount {"errno":1,"code":"SQLITE_ERROR","stack":"Error: SQLITE_ERROR: table transactions has no column named discount"}
-2025-07-18T16:30:36.710Z [error] : ERROR 💥 SQLITE_ERROR: table transactions has no column named discount {"errno":1,"code":"SQLITE_ERROR","stack":"Error: SQLITE_ERROR: table transactions has no column named discount"}
+2025-07-19T01:32:11.693Z [error] : [POST] /upload/image >> StatusCode:: 400, Message:: No image file provided
+2025-07-19T01:32:54.909Z [error] : [POST] /upload/image >> StatusCode:: 400, Message:: No image file provided
+2025-07-19T01:33:23.380Z [error] : [POST] /upload/image >> StatusCode:: 400, Message:: No image file provided
+2025-07-19T02:22:51.944Z [error] : [POST] /auth/login >> StatusCode:: 400, Message:: Password minimal 8 karakter
+2025-07-19T02:23:28.343Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-19T02:23:30.401Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-19T02:23:39.169Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-19T02:23:42.270Z [error] : [POST] /auth/login >> StatusCode:: 401, Message:: Username atau password salah
+2025-07-19T02:27:29.342Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Username sudah digunakan
+2025-07-19T02:27:31.162Z [error] : [POST] /auth/register >> StatusCode:: 400, Message:: Username sudah digunakan
+2025-07-19T02:52:18.227Z [error] : [GET] /transactions >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.235Z [error] : [GET] /transactions >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.239Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.245Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.276Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.281Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.285Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.289Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.294Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:18.299Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.432Z [error] : [GET] /transactions >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.437Z [error] : [GET] /transactions >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.443Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.448Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.453Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.458Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.463Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.468Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.472Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:52:30.501Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.800Z [error] : [GET] /transactions >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.805Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.816Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.820Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.824Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.831Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.837Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.845Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.851Z [error] : [GET] /transactions >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:54:55.855Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.502Z [error] : [GET] /transactions >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.508Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.512Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.516Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.519Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.522Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.525Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.529Z [error] : [GET] /products >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.533Z [error] : [GET] /categories >> StatusCode:: 401, Message:: Token tidak valid
+2025-07-19T02:55:15.537Z [error] : [GET] /transactions >> StatusCode:: 401, Message:: Token tidak valid

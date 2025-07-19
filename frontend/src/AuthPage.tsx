@@ -32,10 +32,10 @@ const AuthPage: React.FC = () => {
         ? await authService.register({ username, password, confirmPassword })
         : await authService.login({ username, password });
 
-      if (response.token) {
+      if (response.accessToken) {
         dispatch(setCredentials({
-          user: { username, role: response.role },
-          token: response.token,
+          token: response.accessToken,
+          role: response.role
         }));
         toast.success(isRegister ? 'Registration successful!' : 'Login successful!');
         navigate('/dashboard');

@@ -1,10 +1,15 @@
+/* Import modern theme first */
+@import './styles/app-modern-clean.css';
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: var(--font-family), -apple-system, BlinkMacMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   font-size: 16px;
   line-height: 1.6;
 }

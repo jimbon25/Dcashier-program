@@ -7,6 +7,9 @@ import ReceiptModal from './components/ReceiptModal';
 import { CartPlus, PencilSquare, TrashFill, Search } from 'react-bootstrap-icons';
 import ProductSkeleton from './components/ProductSkeleton';
 import { useDashboard } from './context/DashboardContext';
+import { useAppSelector, useAppDispatch } from './store/hooks';
+import { logout } from './store/slices/authSlice';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 interface Product {
@@ -81,8 +84,8 @@ function App() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [cartAnimationTrigger, setCartAnimationTrigger] = useState<boolean>(false);
   const { activeTab, setActiveTab } = useDashboard();
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, role: userRole } = useAppSelector((state) => state.auth);
   const [profitLossReport, setProfitLossReport] = useState<ProfitLossReportItem[]>([]);
   const [profitLossLoading, setProfitLossLoading] = useState<boolean>(false);
   const [profitFilterStartDate, setProfitFilterStartDate] = useState<string>('');
@@ -131,31 +134,44 @@ function App() {
   const userFormRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    setIsLoggedIn(false);
-    setUserRole(null);
+    dispatch(logout());
     toast.info('Logged out successfully.');
-  }, []);
+  }, [dispatch]);
 
   const authenticatedFetch = useCallback(async (url: string, options?: RequestInit) => {
     const token = localStorage.getItem('token');
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, { ...options, headers });
     
-    // Handle unauthorized or forbidden responses globally
-    if (response.status === 401 || response.status === 403) {
-      handleLogout(); // Log out if token is invalid or unauthorized
+    if (!token) {
+      handleLogout();
+      throw new Error('No authentication token found');
     }
 
-    return response;
+    const headers: HeadersInit = {};
+
+    // Only add Content-Type for non-FormData requests
+    if (!(options?.body instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    headers['Authorization'] = `Bearer ${token}`;
+
+    try {
+      const response = await fetch(url, { ...options, headers });
+      
+      // Handle unauthorized or forbidden responses globally
+      if (response.status === 401 || response.status === 403) {
+        handleLogout(); // Log out if token is invalid or unauthorized
+        throw new Error('Authentication failed');
+      }
+
+      return response;
+    } catch (error: any) {
+      if (error.message === 'Authentication failed') {
+        throw error;
+      }
+      console.error('Network error:', error);
+      throw new Error('Network error occurred');
+    }
   }, [handleLogout]);
 
   const addToCart = useCallback((product: Product) => {
@@ -290,6 +306,8 @@ function App() {
     } catch (error: any) {
       console.error("Error fetching profit/loss report:", error);
       toast.error(`Failed to fetch profit/loss report: ${error.message}`);
+    } finally {
+      setProfitLossLoading(false);
     }
   }, [profitFilterStartDate, profitFilterEndDate, profitFilterCategory, authenticatedFetch]);
 
@@ -305,15 +323,6 @@ function App() {
       toast.error(`Failed to fetch users: ${error.message}`);
     }
   }, [authenticatedFetch, userRole]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-    if (token && role) {
-      setIsLoggedIn(true);
-      setUserRole(role);
-    }
-  }, []);
 
   useEffect(() => {
     if (cartAnimationTrigger) {
@@ -344,7 +353,7 @@ function App() {
   };
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isAuthenticated) {
       if (userRole === 'admin') {
         fetchDailySales();
         fetchTopProducts();
@@ -354,7 +363,7 @@ function App() {
       fetchProductsAndCategories();
       fetchCategories();
     }
-  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions, fetchProductsAndCategories, fetchCategories, isLoggedIn, userRole]);
+  }, [fetchDailySales, fetchTopProducts, fetchProfitLossReport, fetchTransactions, fetchProductsAndCategories, fetchCategories, isAuthenticated, userRole]);
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
@@ -692,7 +701,6 @@ function App() {
     try {
       const response = await authenticatedFetch('http://localhost:3001/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: newUserUsername, password: newUserPassword, role: newUserRole }),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -726,7 +734,6 @@ function App() {
     try {
       const response = await authenticatedFetch(`http://localhost:3001/users/${editingUser.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: newUserUsername, password: newUserPassword, role: newUserRole }),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -835,7 +842,9 @@ function App() {
             </Row>
 
             <div className="mt-5 mb-3 d-flex justify-content-start">
-              <Button variant="success" className="me-2" onClick={() => setActiveTab('product-management')}>Tambah Produk Baru</Button>
+              {userRole === 'admin' && (
+                <Button variant="success" className="me-2" onClick={() => setActiveTab('product-management')}>Tambah Produk Baru</Button>
+              )}
               <Button variant="info" onClick={() => setActiveTab('reports')}>Lihat Semua Transaksi</Button>
             </div>
 
@@ -1073,8 +1082,9 @@ function App() {
         );
       case 'product-management':
         return (
-          <div>
-            <h2 className="mt-3 mb-4 text-primary">Manajemen Produk</h2>
+          <ProtectedRoute requiredRole="admin">
+            <div>
+              <h2 className="mt-3 mb-4 text-primary">Manajemen Produk</h2>
             <Row className="mb-4">
               <Col>
                 <Card className="shadow-sm" ref={productFormRef}>
@@ -1185,7 +1195,8 @@ function App() {
                 </tbody>
               </table>
             )}
-          </div>
+            </div>
+          </ProtectedRoute>
         );
       case 'reports':
         return (
@@ -1408,8 +1419,9 @@ function App() {
         );
       case 'category-management':
         return (
-          <div>
-            <h2 className="mt-3 mb-4 text-primary">Manajemen Kategori</h2>
+          <ProtectedRoute requiredRole="admin">
+            <div>
+              <h2 className="mt-3 mb-4 text-primary">Manajemen Kategori</h2>
             <Row className="mb-4">
               <Col>
                 <Card className="shadow-sm" ref={categoryFormRef}>
@@ -1461,7 +1473,8 @@ function App() {
                 </tbody>
               </table>
             )}
-          </div>
+            </div>
+          </ProtectedRoute>
         );
       case 'settings':
         return (
@@ -1504,8 +1517,9 @@ function App() {
         );
       case 'user-management':
         return (
-          <div>
-            <h2 className="mt-3 mb-4 text-primary">Manajemen Pengguna</h2>
+          <ProtectedRoute requiredRole="admin">
+            <div>
+              <h2 className="mt-3 mb-4 text-primary">Manajemen Pengguna</h2>
             <Row className="mb-4">
               <Col>
                 <Card className="shadow-sm" ref={userFormRef}>
@@ -1566,7 +1580,8 @@ function App() {
                 </tbody>
               </table>
             )}
-          </div>
+            </div>
+          </ProtectedRoute>
         );
       default:
         return null;
@@ -1578,7 +1593,7 @@ function App() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {!isLoggedIn ? null : (
+      {!isAuthenticated ? null : (
         <>
           <Col md={12} className="main-content p-4">
             <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">

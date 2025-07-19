@@ -3,6 +3,8 @@ import { Container } from 'react-bootstrap';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import Sidebar from '../components/Sidebar';
+import { useAppSelector, useAppDispatch } from '../store/hooks';
+import { logout } from '../store/slices/authSlice';
 import ErrorBoundary from '../components/ErrorBoundary';
 import 'react-toastify/dist/ReactToastify.css';
 import { useDashboard } from '../context/DashboardContext';
@@ -12,6 +14,8 @@ const DashboardLayout: React.FC = () => {
     const savedTheme = localStorage.getItem('theme');
     return savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   });
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, role } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-bs-theme', theme);
@@ -22,7 +26,7 @@ const DashboardLayout: React.FC = () => {
   const { activeTab, setActiveTab } = useDashboard();
 
   const handleLogout = () => {
-    // Implement logout logic here
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -71,9 +75,9 @@ const DashboardLayout: React.FC = () => {
           onSelect={handleNavigation}
           theme={theme}
           toggleTheme={toggleTheme}
-          isLoggedIn={true}
+          isAuthenticated={isAuthenticated}
           handleLogout={handleLogout}
-          userRole="admin"
+          userRole={role || 'cashier'}
         />
         <div className="flex-grow-1">
           <Container fluid className="py-3">

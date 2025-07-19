@@ -10,23 +10,39 @@ interface RegisterCredentials extends LoginCredentials {
 }
 
 interface AuthResponse {
-  token: string;
+  accessToken: string;
   role: string;
+}
+
+interface BackendAuthResponse {
+  status: string;
+  message: string;
+  data: {
+    accessToken: string;
+    refreshToken: string;
+    role: string;
+  };
 }
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/login', credentials);
-    return response.data;
+    const response = await api.post<BackendAuthResponse>('/auth/login', credentials);
+    return {
+      accessToken: response.data.data.accessToken,
+      role: response.data.data.role
+    };
   },
 
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await api.post<AuthResponse>('/auth/register', credentials);
-    return response.data;
+    const response = await api.post<BackendAuthResponse>('/auth/register', credentials);
+    return {
+      accessToken: response.data.data.accessToken,
+      role: response.data.data.role
+    };
   },
 
   async logout(): Promise<void> {
-    await api.post('/logout');
+    await api.post('/auth/logout');
   },
 
   async checkAuth(): Promise<AuthResponse> {

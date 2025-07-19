@@ -1,12 +1,23 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const database_1 = require("./database");
+const helmet_1 = __importDefault(require("helmet"));
+const compression_1 = __importDefault(require("compression"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const database_1 = require("./database");
 const logger_1 = __importDefault(require("./logger"));
 const errorHandler_1 = require("./errorHandler");
 const requestLogger_1 = require("./middleware/requestLogger");
@@ -18,47 +29,149 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const product_routes_1 = __importDefault(require("./routes/product.routes"));
 const category_routes_1 = __importDefault(require("./routes/category.routes"));
 const transaction_routes_1 = __importDefault(require("./routes/transaction.routes"));
+const upload_routes_1 = __importDefault(require("./routes/upload.routes"));
+const report_routes_1 = __importDefault(require("./routes/report.routes"));
+const user_routes_1 = __importDefault(require("./routes/user.routes"));
+// Load environment variables
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3001;
-// Basic middleware
-app.use((0, cors_1.default)());
-app.use(express_1.default.json());
-app.use(express_1.default.urlencoded({ extended: true }));
+const nodeEnv = process.env.NODE_ENV || 'development';
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+// Security middleware
+if (process.env.ENABLE_HELMET !== 'false') {
+    app.use((0, helmet_1.default)({
+        crossOriginResourcePolicy: { policy: "cross-origin" },
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                scriptSrc: ["'self'"],
+                imgSrc: ["'self'", "data:", "https:"],
+            },
+        },
+    }));
+}
+// Compression middleware
+if (process.env.ENABLE_COMPRESSION !== 'false') {
+    app.use((0, compression_1.default)());
+}
+// CORS configuration
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, Postman, etc.)
+        if (!origin)
+            return callback(null, true);
+        const allowedOrigins = [
+            frontendUrl,
+            'http://localhost:3000',
+            'http://127.0.0.1:3000'
+        ];
+        // Add production frontend URLs from environment
+        if (process.env.PRODUCTION_FRONTEND_URLS) {
+            allowedOrigins.push(...process.env.PRODUCTION_FRONTEND_URLS.split(','));
+        }
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            logger_1.default.warn(`Blocked CORS request from origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
+    exposedHeaders: ['x-csrf-token']
+};
+app.use((0, cors_1.default)(corsOptions));
+// Response time and logging middleware
 app.use(responseTime_1.responseTime);
 app.use(requestLogger_1.requestLogger);
-// Security middleware
-// Security middleware
+// Body parsing middleware with conditional logic for uploads
+app.use((req, res, next) => {
+    if (req.path.startsWith('/upload/')) {
+        next();
+    }
+    else {
+        express_1.default.json({ limit: '10mb' })(req, res, next);
+    }
+});
+app.use((req, res, next) => {
+    if (req.path.startsWith('/upload/')) {
+        next();
+    }
+    else {
+        express_1.default.urlencoded({ extended: true, limit: '10mb' })(req, res, next);
+    }
+});
+// Security and rate limiting
 app.use('/api', rateLimiter_1.apiLimiter);
 // Serve static files
 app.use('/uploads', express_1.default.static('uploads'));
-// Serve Swagger UI
-app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.specs, {
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Dcashier API Documentation'
-}));
-// Routes
+// API documentation (only in development)
+if (nodeEnv === 'development') {
+    app.use('/api-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(swagger_1.specs, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Dcashier API Documentation'
+    }));
+}
+// API routes
 app.use('/auth', auth_routes_1.default);
 app.use('/products', product_routes_1.default);
 app.use('/categories', category_routes_1.default);
 app.use('/transactions', transaction_routes_1.default);
+app.use('/upload', upload_routes_1.default);
+app.use('/reports', report_routes_1.default);
+app.use('/users', user_routes_1.default);
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({
-        status: 'success',
+        status: 'OK',
         message: 'Server is running',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        environment: nodeEnv,
+        version: process.env.npm_package_version || '1.0.0'
     });
 });
-// Error handling middleware
+// 404 handler
+app.use('*', (req, res) => {
+    res.status(404).json({
+        error: 'Route not found',
+        path: req.originalUrl,
+        method: req.method
+    });
+});
+// Global error handler
 app.use(errorHandler_1.errorHandler);
 // Initialize database and start server
-(0, database_1.initializeDatabase)().then(() => {
-    app.listen(port, () => {
-        logger_1.default.info(`Server is running at http://localhost:${port}`);
-        logger_1.default.info(`API Documentation available at http://localhost:${port}/api-docs`);
+function startServer() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield (0, database_1.initializeDatabase)();
+            app.listen(port, () => {
+                logger_1.default.info(`🚀 Server running on port ${port}`);
+                logger_1.default.info(`📱 Environment: ${nodeEnv}`);
+                logger_1.default.info(`🔗 Health check: http://localhost:${port}/health`);
+                if (nodeEnv === 'development') {
+                    logger_1.default.info(`📚 API Documentation: http://localhost:${port}/api-docs`);
+                }
+            });
+        }
+        catch (error) {
+            logger_1.default.error('❌ Failed to start server:', error);
+            process.exit(1);
+        }
     });
-}).catch(err => {
-    logger_1.default.error('Failed to initialize database:', err);
+}
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+    logger_1.default.error('💥 Uncaught Exception:', error);
     process.exit(1);
 });
+process.on('unhandledRejection', (error) => {
+    logger_1.default.error('💥 Unhandled Rejection:', error);
+    process.exit(1);
+});
+startServer();
+exports.default = app;

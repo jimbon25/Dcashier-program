@@ -18,7 +18,7 @@ export interface SidebarProps {
   onSelect: (key: string | null) => void;
   theme: string;
   toggleTheme: () => void;
-  isLoggedIn: boolean;
+  isAuthenticated: boolean;
   handleLogout: () => void;
   userRole: string;
 }
@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onSelect,
   theme,
   toggleTheme,
-  isLoggedIn,
+  isAuthenticated,
   handleLogout,
   userRole
 }) => {
@@ -53,17 +53,21 @@ const Sidebar: React.FC<SidebarProps> = ({
         </Nav.Link>
       </Nav.Item>
 
-      <Nav.Item>
-        <Nav.Link eventKey="product-management" className="d-flex align-items-center">
-          <Box className="me-2" /> Products
-        </Nav.Link>
-      </Nav.Item>
+      {userRole === 'admin' && (
+        <Nav.Item>
+          <Nav.Link eventKey="product-management" className="d-flex align-items-center">
+            <Box className="me-2" /> Products
+          </Nav.Link>
+        </Nav.Item>
+      )}
 
-      <Nav.Item>
-        <Nav.Link eventKey="category-management" className="d-flex align-items-center">
-          <Tags className="me-2" /> Categories
-        </Nav.Link>
-      </Nav.Item>
+      {userRole === 'admin' && (
+        <Nav.Item>
+          <Nav.Link eventKey="category-management" className="d-flex align-items-center">
+            <Tags className="me-2" /> Categories
+          </Nav.Link>
+        </Nav.Item>
+      )}
 
       {userRole === 'admin' && (
         <Nav.Item>
@@ -75,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
       <Nav.Item>
         <Nav.Link eventKey="transactions" className="d-flex align-items-center">
-          <ClipboardData className="me-2" /> Transaction History
+          <ClipboardData className="me-2" /> History
         </Nav.Link>
       </Nav.Item>
 
@@ -96,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
         </Button>
 
-        {isLoggedIn && (
+        {isAuthenticated && (
           <Button
             variant="outline-danger"
             size="sm"

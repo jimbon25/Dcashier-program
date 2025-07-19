@@ -1,11 +1,15 @@
 import express, { Request, Response } from 'express';
 import { getDatabase, runAsync } from '../database';
 import { catchAsync, AppError } from '../errorHandler';
+import { authenticate, requireAuth, requireAdmin, AuthenticatedRequest } from '../middleware/auth.middleware';
 
 const router = express.Router();
 
-// Get all products
-router.get('/', catchAsync(async (req: Request, res: Response) => {
+// Middleware autentikasi untuk semua route produk
+router.use(authenticate);
+
+// Get all products - accessible by both admin and cashier
+router.get('/', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const products = await new Promise((resolve, reject) => {
     db.all("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id", [], (err, rows) => {
@@ -16,8 +20,8 @@ router.get('/', catchAsync(async (req: Request, res: Response) => {
   res.json(products);
 }));
 
-// Get product by ID
-router.get('/:id', catchAsync(async (req: Request, res: Response) => {
+// Get product by ID - accessible by both admin and cashier
+router.get('/:id', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const product = await new Promise((resolve, reject) => {
     db.get("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.id = ?", [req.params.id], (err, row) => {
@@ -33,8 +37,8 @@ router.get('/:id', catchAsync(async (req: Request, res: Response) => {
   res.json(product);
 }));
 
-// Get product by barcode
-router.get('/barcode/:barcode', catchAsync(async (req: Request, res: Response) => {
+// Get product by barcode - accessible by both admin and cashier
+router.get('/barcode/:barcode', requireAuth, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   const product = await new Promise((resolve, reject) => {
     db.get("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.barcode = ?", [req.params.barcode], (err, row) => {
@@ -50,8 +54,8 @@ router.get('/barcode/:barcode', catchAsync(async (req: Request, res: Response) =
   res.json(product);
 }));
 
-// Create new product
-router.post('/', catchAsync(async (req: Request, res: Response) => {
+// Create new product - only admin
+router.post('/', requireAdmin, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { id, name, price, cost_price, stock, barcode, category_id, image_url } = req.body;
   
   if (!id || !name || !price || stock === undefined) {
@@ -82,8 +86,8 @@ router.post('/', catchAsync(async (req: Request, res: Response) => {
   res.status(201).json({ message: 'Product created successfully', id });
 }));
 
-// Update product
-router.put('/:id', catchAsync(async (req: Request, res: Response) => {
+// Update product - only admin
+router.put('/:id', requireAdmin, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { name, price, cost_price, stock, barcode, category_id, image_url } = req.body;
   
   if (!name || !price || stock === undefined) {
@@ -114,8 +118,8 @@ router.put('/:id', catchAsync(async (req: Request, res: Response) => {
   res.json({ message: 'Product updated successfully' });
 }));
 
-// Delete product
-router.delete('/:id', catchAsync(async (req: Request, res: Response) => {
+// Delete product - only admin
+router.delete('/:id', requireAdmin, catchAsync(async (req: AuthenticatedRequest, res: Response) => {
   const db = getDatabase();
   
   // Check if product exists

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { store } from '../store/store';
+import { logout } from '../store/slices/authSlice';
 
 type RequestConfig = {
   headers?: Record<string, string>;
@@ -12,7 +13,9 @@ type ErrorType = {
   };
 };
 
-const baseURL = 'http://localhost:3001';
+const baseURL = process.env.NODE_ENV === 'production' 
+  ? 'https://dcashier-backend.railway.app'  // We'll update this after deployment
+  : 'http://localhost:3001';
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -20,6 +23,7 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000,
 });
 
 // Add request interceptor
@@ -40,9 +44,14 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response: { data: any }) => response,
   async (error: ErrorType) => {
-    if (error.response?.status === 401) {
-      // Handle token expiration
-      store.dispatch({ type: 'auth/logout' });
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Handle token expiration or unauthorized access
+      store.dispatch(logout());
+      
+      // Redirect to login if not already there
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
