@@ -38,8 +38,8 @@ Root Directory: backend
 ### Build Settings:
 ```
 Build Command: npm run build
-Output Directory: backend/dist
-Install Command: npm install
+Output Directory: (leave empty)
+Install Command: npm install --include=dev
 ```
 
 ### Deployment:

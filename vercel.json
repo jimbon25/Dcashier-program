@@ -2,15 +2,15 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/dist/index.js",
+      "src": "dist/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "backend/dist/index.js"
+      "dest": "dist/index.js"
     }
   ],
-  "installCommand": "cd backend && npm install --include=dev"
+  "installCommand": "npm install --include=dev"
 }
