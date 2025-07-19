@@ -72,7 +72,7 @@ router.get('/:id', requireAuth, catchAsync(async (req: AuthenticatedRequest, res
     });
   });
 
-  res.json({ ...transaction, items });
+  res.json(Object.assign({}, transaction, { items }));
 }));
 
 // Create new transaction
