@@ -4,9 +4,9 @@ const querystring = require('querystring');
 
 const port = parseInt(process.env.PORT) || 8000;
 
-// CORS headers
+// CORS headers - allow both possible Netlify URLs
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://dcashier.netlify.app',
+  'Access-Control-Allow-Origin': 'https://d-cashier.netlify.app',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-csrf-token',
   'Access-Control-Allow-Credentials': 'true'
