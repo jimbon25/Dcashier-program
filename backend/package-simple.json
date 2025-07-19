@@ -1,0 +1,14 @@
+{
+  "name": "dcashier-backend",
+  "version": "1.0.0",
+  "description": "DCashier Backend API",
+  "main": "simple-server.js",
+  "scripts": {
+    "start": "node simple-server.js",
+    "dev": "node simple-server.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {}
+}
