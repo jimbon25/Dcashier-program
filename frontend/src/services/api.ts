@@ -13,9 +13,10 @@ type ErrorType = {
   };
 };
 
-const baseURL = process.env.NODE_ENV === 'production' 
-  ? 'https://dcashier-backend.railway.app'  // We'll update this after deployment
-  : 'http://localhost:3001';
+const baseURL = process.env.REACT_APP_API_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://dcashier-program-kg12zt5vk-j1mbs-projects.vercel.app'
+    : 'http://localhost:3001');
 
 // Create axios instance
 const axiosInstance = axios.create({
