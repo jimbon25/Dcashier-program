@@ -58,27 +58,7 @@ if (process.env.ENABLE_COMPRESSION !== 'false') {
 }
 // CORS configuration
 const corsOptions = {
-    origin: function (origin, callback) {
-        // Allow requests with no origin (mobile apps, Postman, etc.)
-        if (!origin)
-            return callback(null, true);
-        const allowedOrigins = [
-            frontendUrl,
-            'http://localhost:3000',
-            'http://127.0.0.1:3000'
-        ];
-        // Add production frontend URLs from environment
-        if (process.env.PRODUCTION_FRONTEND_URLS) {
-            allowedOrigins.push(...process.env.PRODUCTION_FRONTEND_URLS.split(','));
-        }
-        if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        }
-        else {
-            logger_1.default.warn(`Blocked CORS request from origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: '*', // Allow all origins for now
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
@@ -117,13 +97,23 @@ if (nodeEnv === 'development') {
     }));
 }
 // API routes
-app.use('/auth', auth_routes_1.default);
-app.use('/products', product_routes_1.default);
-app.use('/categories', category_routes_1.default);
-app.use('/transactions', transaction_routes_1.default);
-app.use('/upload', upload_routes_1.default);
-app.use('/reports', report_routes_1.default);
-app.use('/users', user_routes_1.default);
+app.use('/api/auth', auth_routes_1.default);
+app.use('/api/products', product_routes_1.default);
+app.use('/api/categories', category_routes_1.default);
+app.use('/api/transactions', transaction_routes_1.default);
+app.use('/api/upload', upload_routes_1.default);
+app.use('/api/reports', report_routes_1.default);
+app.use('/api/users', user_routes_1.default);
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({
+        message: 'DCashier API Server',
+        version: '1.0.0',
+        health: '/health',
+        api: '/api',
+        documentation: nodeEnv === 'development' ? '/api-docs' : 'API documentation available in development mode'
+    });
+});
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({
@@ -144,7 +134,19 @@ app.use('*', (req, res) => {
 });
 // Global error handler
 app.use(errorHandler_1.errorHandler);
-// Initialize database and start server
+// Initialize database
+function initApp() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield (0, database_1.initializeDatabase)();
+            logger_1.default.info('✅ Database initialized successfully');
+        }
+        catch (error) {
+            logger_1.default.error('❌ Failed to initialize database:', error);
+        }
+    });
+}
+// Initialize database and start server (only if not in Vercel)
 function startServer() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -173,5 +175,10 @@ process.on('unhandledRejection', (error) => {
     logger_1.default.error('💥 Unhandled Rejection:', error);
     process.exit(1);
 });
-startServer();
+// Initialize database for Vercel
+initApp();
+// Only start server if not in Vercel (when there's no VERCEL env var)
+if (!process.env.VERCEL) {
+    startServer();
+}
 exports.default = app;

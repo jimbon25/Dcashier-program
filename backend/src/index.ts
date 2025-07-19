@@ -137,7 +137,17 @@ app.use('*', (req: Request, res: Response) => {
 // Global error handler
 app.use(errorHandler);
 
-// Initialize database and start server
+// Initialize database
+async function initApp() {
+  try {
+    await initializeDatabase();
+    logger.info('✅ Database initialized successfully');
+  } catch (error) {
+    logger.error('❌ Failed to initialize database:', error);
+  }
+}
+
+// Initialize database and start server (only if not in Vercel)
 async function startServer() {
   try {
     await initializeDatabase();
@@ -168,6 +178,12 @@ process.on('unhandledRejection', (error) => {
   process.exit(1);
 });
 
-startServer();
+// Initialize database for Vercel
+initApp();
+
+// Only start server if not in Vercel (when there's no VERCEL env var)
+if (!process.env.VERCEL) {
+  startServer();
+}
 
 export default app;
