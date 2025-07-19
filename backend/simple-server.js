@@ -228,6 +228,170 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // Top products report endpoint
+  if (path.startsWith('/api/reports/top-products') && method === 'GET') {
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      data: [
+        { id: 1, name: 'Product A', sales_count: 50, total_revenue: 500000 },
+        { id: 2, name: 'Product B', sales_count: 30, total_revenue: 300000 },
+        { id: 3, name: 'Product C', sales_count: 20, total_revenue: 200000 }
+      ]
+    }));
+    return;
+  }
+
+  // Barcode search endpoint
+  if (path.startsWith('/api/products/barcode/') && method === 'GET') {
+    const barcode = path.split('/').pop();
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      data: {
+        id: '1',
+        name: 'Product by Barcode',
+        price: 15000,
+        stock: 10,
+        barcode: barcode,
+        category_name: 'Test Category'
+      }
+    }));
+    return;
+  }
+
+  // Upload image endpoint
+  if (path === '/api/upload/image' && method === 'POST') {
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      data: {
+        imageUrl: '/uploads/images/mock-image.jpg'
+      }
+    }));
+    return;
+  }
+
+  // Update product endpoint
+  if (path.startsWith('/api/products/') && path !== '/api/products' && method === 'PUT') {
+    const productId = path.split('/').pop();
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      message: `Product ${productId} updated successfully`
+    }));
+    return;
+  }
+
+  // Update product stock endpoint
+  if (path.includes('/stock') && method === 'PUT') {
+    const productId = path.split('/')[3];
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      message: `Stock for product ${productId} updated successfully`
+    }));
+    return;
+  }
+
+  // Reset transactions endpoint
+  if (path === '/api/reset-transactions' && method === 'POST') {
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      message: 'All transactions have been reset'
+    }));
+    return;
+  }
+
+  // Update category endpoint
+  if (path.startsWith('/api/categories/') && path !== '/api/categories' && method === 'PUT') {
+    const categoryId = path.split('/').pop();
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      message: `Category ${categoryId} updated successfully`
+    }));
+    return;
+  }
+
+  // Delete transaction endpoint
+  if (path.startsWith('/api/transactions/') && method === 'DELETE') {
+    const transactionId = path.split('/').pop();
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      message: `Transaction ${transactionId} deleted successfully`
+    }));
+    return;
+  }
+
+  // POST transactions endpoint
+  if (path === '/api/transactions' && method === 'POST') {
+    parseBody(req, (error, body) => {
+      if (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ status: 'error', message: 'Invalid JSON' }));
+        return;
+      }
+
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        status: 'success',
+        data: {
+          transactionId: 'TXN-' + Date.now(),
+          timestamp: Date.now(),
+          message: 'Transaction saved successfully'
+        }
+      }));
+    });
+    return;
+  }
+
+  // POST products endpoint
+  if (path === '/api/products' && method === 'POST') {
+    parseBody(req, (error, body) => {
+      if (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ status: 'error', message: 'Invalid JSON' }));
+        return;
+      }
+
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        status: 'success',
+        data: {
+          id: Date.now(),
+          ...body,
+          message: 'Product created successfully'
+        }
+      }));
+    });
+    return;
+  }
+
+  // POST categories endpoint
+  if (path === '/api/categories' && method === 'POST') {
+    parseBody(req, (error, body) => {
+      if (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ status: 'error', message: 'Invalid JSON' }));
+        return;
+      }
+
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        status: 'success',
+        data: {
+          id: Date.now(),
+          ...body,
+          message: 'Category created successfully'
+        }
+      }));
+    });
+    return;
+  }
+
   // 404 handler
   res.writeHead(404);
   res.end(JSON.stringify({

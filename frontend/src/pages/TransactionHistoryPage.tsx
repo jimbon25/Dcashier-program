@@ -243,13 +243,13 @@ const TransactionHistoryPage: React.FC = () => {
                       Rp {(transaction.payment_amount || 0).toLocaleString()}
                     </td>
                     <td>
-                      Rp {transaction.change_amount.toLocaleString()}
+                      Rp {(transaction.change_amount || 0).toLocaleString()}
                     </td>
                     <td>
-                      <Badge bg="secondary">{transaction.payment_method}</Badge>
+                      <Badge bg="secondary">{transaction.payment_method || 'N/A'}</Badge>
                     </td>
                     <td>
-                      <Badge bg="info">{transaction.items.length} item(s)</Badge>
+                      <Badge bg="info">{Array.isArray(transaction.items) ? transaction.items.length : 0} item(s)</Badge>
                     </td>
                     <td>
                       <Button
@@ -313,14 +313,18 @@ const TransactionHistoryPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedTransaction.items.map((item, index) => (
+                  {Array.isArray(selectedTransaction.items) ? selectedTransaction.items.map((item, index) => (
                     <tr key={index}>
-                      <td>{item.product_name}</td>
-                      <td>Rp {item.price_at_sale.toLocaleString()}</td>
-                      <td>{item.quantity}</td>
-                      <td>Rp {(item.price_at_sale * item.quantity).toLocaleString()}</td>
+                      <td>{item.product_name || 'Unknown Product'}</td>
+                      <td>Rp {(item.price_at_sale || 0).toLocaleString()}</td>
+                      <td>{item.quantity || 0}</td>
+                      <td>Rp {((item.price_at_sale || 0) * (item.quantity || 0)).toLocaleString()}</td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={4} className="text-center">No items found</td>
+                    </tr>
+                  )}
                 </tbody>
               </Table>
 
@@ -335,7 +339,7 @@ const TransactionHistoryPage: React.FC = () => {
                 </Row>
                 <Row>
                   <Col md={6}>
-                    <strong>Kembalian:</strong> Rp {selectedTransaction.change_amount.toLocaleString()}
+                    <strong>Kembalian:</strong> Rp {(selectedTransaction.change_amount || 0).toLocaleString()}
                   </Col>
                 </Row>
               </div>
