@@ -4,6 +4,29 @@ const querystring = require('querystring');
 
 const port = parseInt(process.env.PORT) || 8000;
 
+// In-memory storage
+let categories = [
+  { id: 'CAT001', name: 'Makanan Pokok' },
+  { id: 'CAT002', name: 'Minuman' },
+  { id: 'CAT003', name: 'Snack & Permen' },
+  { id: 'CAT004', name: 'Kebutuhan Rumah' },
+  { id: 'CAT005', name: 'Bumbu Dapur' },
+  { id: 'CAT006', name: 'Perawatan Tubuh' }
+];
+
+let products = [
+  { id: 'P001', name: 'Beras Premium 5kg', price: 65000, stock: 80, cost_price: 58000, category_id: 'CAT001', barcode: 'B001', category_name: 'Makanan Pokok' },
+  { id: 'P002', name: 'Minyak Goreng Tropical 2L', price: 38000, stock: 60, cost_price: 33000, category_id: 'CAT001', barcode: 'B002', category_name: 'Makanan Pokok' },
+  { id: 'P003', name: 'Gula Pasir Gulaku 1kg', price: 16000, stock: 150, cost_price: 14000, category_id: 'CAT001', barcode: 'B003', category_name: 'Makanan Pokok' },
+  { id: 'P004', name: 'Telur Ayam Segar 1kg', price: 30000, stock: 90, cost_price: 27000, category_id: 'CAT001', barcode: 'B004', category_name: 'Makanan Pokok' },
+  { id: 'P005', name: 'Tepung Terigu Cakra 1kg', price: 13000, stock: 120, cost_price: 11000, category_id: 'CAT001', barcode: 'B005', category_name: 'Makanan Pokok' },
+  { id: 'P006', name: 'Teh Celup Sosro 25pcs', price: 9500, stock: 100, cost_price: 8000, category_id: 'CAT002', barcode: 'B006', category_name: 'Minuman' },
+  { id: 'P007', name: 'Kopi Kapal Api 200gr', price: 14000, stock: 85, cost_price: 12000, category_id: 'CAT002', barcode: 'B007', category_name: 'Minuman' },
+  { id: 'P008', name: 'Susu UHT Ultra 1L', price: 19000, stock: 75, cost_price: 17000, category_id: 'CAT002', barcode: 'B008', category_name: 'Minuman' },
+  { id: 'P009', name: 'Air Mineral Aqua 600ml', price: 3500, stock: 200, cost_price: 2800, category_id: 'CAT002', barcode: 'B009', category_name: 'Minuman' },
+  { id: 'P010', name: 'Jus Buah Sunquick 330ml', price: 7500, stock: 120, cost_price: 6200, category_id: 'CAT002', barcode: 'B010', category_name: 'Minuman' }
+];
+
 // CORS headers - allow both possible Netlify URLs
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://d-cashier.netlify.app',
@@ -145,18 +168,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200);
     res.end(JSON.stringify({
       status: 'success',
-      data: [
-        { id: 'P001', name: 'Beras Premium 5kg', price: 65000, stock: 80, cost_price: 58000, category_id: 'CAT001', barcode: 'B001', category_name: 'Makanan Pokok' },
-        { id: 'P002', name: 'Minyak Goreng Tropical 2L', price: 38000, stock: 60, cost_price: 33000, category_id: 'CAT001', barcode: 'B002', category_name: 'Makanan Pokok' },
-        { id: 'P003', name: 'Gula Pasir Gulaku 1kg', price: 16000, stock: 150, cost_price: 14000, category_id: 'CAT001', barcode: 'B003', category_name: 'Makanan Pokok' },
-        { id: 'P004', name: 'Telur Ayam Segar 1kg', price: 30000, stock: 90, cost_price: 27000, category_id: 'CAT001', barcode: 'B004', category_name: 'Makanan Pokok' },
-        { id: 'P005', name: 'Tepung Terigu Cakra 1kg', price: 13000, stock: 120, cost_price: 11000, category_id: 'CAT001', barcode: 'B005', category_name: 'Makanan Pokok' },
-        { id: 'P006', name: 'Teh Celup Sosro 25pcs', price: 9500, stock: 100, cost_price: 8000, category_id: 'CAT002', barcode: 'B006', category_name: 'Minuman' },
-        { id: 'P007', name: 'Kopi Kapal Api 200gr', price: 14000, stock: 85, cost_price: 12000, category_id: 'CAT002', barcode: 'B007', category_name: 'Minuman' },
-        { id: 'P008', name: 'Susu UHT Ultra 1L', price: 19000, stock: 75, cost_price: 17000, category_id: 'CAT002', barcode: 'B008', category_name: 'Minuman' },
-        { id: 'P009', name: 'Air Mineral Aqua 600ml', price: 3500, stock: 200, cost_price: 2800, category_id: 'CAT002', barcode: 'B009', category_name: 'Minuman' },
-        { id: 'P010', name: 'Jus Buah Sunquick 330ml', price: 7500, stock: 120, cost_price: 6200, category_id: 'CAT002', barcode: 'B010', category_name: 'Minuman' }
-      ]
+      data: products
     }));
     return;
   }
@@ -165,14 +177,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200);
     res.end(JSON.stringify({
       status: 'success',
-      data: [
-        { id: 'CAT001', name: 'Makanan Pokok' },
-        { id: 'CAT002', name: 'Minuman' },
-        { id: 'CAT003', name: 'Snack & Permen' },
-        { id: 'CAT004', name: 'Kebutuhan Rumah' },
-        { id: 'CAT005', name: 'Bumbu Dapur' },
-        { id: 'CAT006', name: 'Perawatan Tubuh' }
-      ]
+      data: categories
     }));
     return;
   }
@@ -371,14 +376,33 @@ const server = http.createServer((req, res) => {
         return;
       }
 
+      // Generate new product ID
+      const newId = 'P' + String(products.length + 1).padStart(3, '0');
+      
+      // Find category name
+      const category = categories.find(c => c.id === body.category_id);
+      const categoryName = category ? category.name : 'Unknown';
+
+      const newProduct = {
+        id: newId,
+        name: body.name,
+        price: parseInt(body.price),
+        stock: parseInt(body.stock || 0),
+        cost_price: parseInt(body.cost_price || 0),
+        category_id: body.category_id,
+        barcode: body.barcode || null,
+        image_url: body.image_url || null,
+        category_name: categoryName
+      };
+
+      // Add to products array
+      products.push(newProduct);
+
       res.writeHead(200);
       res.end(JSON.stringify({
         status: 'success',
-        data: {
-          id: Date.now(),
-          ...body,
-          message: 'Product created successfully'
-        }
+        data: newProduct,
+        message: 'Product created successfully'
       }));
     });
     return;
@@ -393,14 +417,21 @@ const server = http.createServer((req, res) => {
         return;
       }
 
+      // Generate new category ID
+      const newId = 'CAT' + String(categories.length + 1).padStart(3, '0');
+      const newCategory = {
+        id: newId,
+        name: body.name
+      };
+
+      // Add to categories array
+      categories.push(newCategory);
+
       res.writeHead(200);
       res.end(JSON.stringify({
         status: 'success',
-        data: {
-          id: Date.now(),
-          ...body,
-          message: 'Category created successfully'
-        }
+        data: newCategory,
+        message: 'Category created successfully'
       }));
     });
     return;
