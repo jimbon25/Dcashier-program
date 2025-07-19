@@ -36,7 +36,7 @@ const TransactionHistoryPage: React.FC = () => {
   const fetchTransactions = useCallback(async () => {
     try {
       setLoading(true);
-      let url = buildApiUrl('/transactions';
+      let url = buildApiUrl('/transactions');
       const params = new URLSearchParams();
       
       if (filterStartDate) {
@@ -108,7 +108,7 @@ const TransactionHistoryPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(buildApiUrl('/transactions/reset', {
+      const response = await fetch(buildApiUrl('/transactions/reset'), {
         method: 'POST'
       });
 

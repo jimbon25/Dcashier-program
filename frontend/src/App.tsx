@@ -210,7 +210,7 @@ function App() {
   const fetchProductsAndCategories = useCallback(async () => {
     console.log("Fetching products and categories...");
     try {
-      const productsResponse = await authenticatedFetch(buildApiUrl('/products');
+      const productsResponse = await authenticatedFetch(buildApiUrl('/products'));
 
       if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
 
@@ -231,7 +231,7 @@ function App() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await authenticatedFetch(buildApiUrl('/categories');
+      const response = await authenticatedFetch(buildApiUrl('/categories'));
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setCategories(data);
@@ -244,7 +244,7 @@ function App() {
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
-      let url = buildApiUrl('/transactions';
+      let url = buildApiUrl('/transactions');
       const params = new URLSearchParams();
       if (filterStartDate) params.append('startDate', String(new Date(filterStartDate).getTime()));
       if (filterEndDate) params.append('endDate', String(new Date(filterEndDate).getTime()));
@@ -265,7 +265,7 @@ function App() {
   const fetchDailySales = useCallback(async () => {
     setDailySalesLoading(true);
     try {
-      const response = await authenticatedFetch(`${buildApiUrl('/reports/daily-sales?date=${reportDate}`);
+      const response = await authenticatedFetch(buildApiUrl(`/reports/daily-sales?date=${reportDate}`));
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setDailySales(data);
@@ -280,7 +280,7 @@ function App() {
   const fetchTopProducts = useCallback(async () => {
     setTopProductsLoading(true);
     try {
-      const response = await authenticatedFetch(`${buildApiUrl('/reports/top-products?limit=${topProductsLimit}`);
+      const response = await authenticatedFetch(buildApiUrl(`/reports/top-products?limit=${topProductsLimit}`));
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setTopProducts(data);
@@ -293,7 +293,7 @@ function App() {
   const fetchProfitLossReport = useCallback(async () => {
     setProfitLossLoading(true);
     try {
-      let url = buildApiUrl('/reports/profit-loss';
+      let url = buildApiUrl('/reports/profit-loss');
       const params = new URLSearchParams();
       if (profitFilterStartDate) params.append('startDate', String(new Date(profitFilterStartDate).getTime()));
       if (profitFilterEndDate) params.append('endDate', String(new Date(profitFilterEndDate).getTime()));
@@ -315,7 +315,7 @@ function App() {
   const fetchUsers = useCallback(async () => {
     if (userRole !== 'admin') return;
     try {
-      const response = await authenticatedFetch(buildApiUrl('/users');
+      const response = await authenticatedFetch(buildApiUrl('/users'));
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setUsers(data);
@@ -424,7 +424,7 @@ function App() {
       const formData = new FormData();
       formData.append('image', newProductImage);
       try {
-        const uploadResponse = await authenticatedFetch(buildApiUrl('/upload/image', {
+        const uploadResponse = await authenticatedFetch(buildApiUrl('/upload/image'), {
           method: 'POST',
           body: formData,
         });
@@ -439,7 +439,7 @@ function App() {
     }
 
     try {
-      const response = await authenticatedFetch(buildApiUrl('/products', {
+      const response = await authenticatedFetch(buildApiUrl('/products'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -456,7 +456,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch(buildApiUrl('/products').then(res => res.json()).then(setProducts);
+      fetch(buildApiUrl('/products')).then(res => res.json()).then(setProducts);
       setNewProductId('');
       setNewProductName('');
       setNewProductPrice(0);
@@ -490,7 +490,7 @@ function App() {
       const formData = new FormData();
       formData.append('image', newProductImage);
       try {
-        const uploadResponse = await authenticatedFetch(buildApiUrl('/upload/image', {
+        const uploadResponse = await authenticatedFetch(buildApiUrl('/upload/image'), {
           method: 'POST',
           body: formData,
         });
@@ -505,7 +505,7 @@ function App() {
     }
 
     try {
-      const response = await authenticatedFetch(`${buildApiUrl('/products/${editingProduct.id}`, {
+      const response = await authenticatedFetch(buildApiUrl(`/products/${editingProduct.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -521,7 +521,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch(buildApiUrl('/products').then(res => res.json()).then(setProducts);
+      fetch(buildApiUrl('/products')).then(res => res.json()).then(setProducts);
       handleCancelEdit();
     } catch (error: any) {
       console.error("Error updating product:", error);
@@ -541,7 +541,7 @@ function App() {
     }
 
     try {
-      const transactionResponse = await authenticatedFetch(buildApiUrl('/transactions', {
+      const transactionResponse = await authenticatedFetch(buildApiUrl('/transactions'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -558,7 +558,7 @@ function App() {
       const transactionData = await transactionResponse.json();
 
       for (const item of cart) {
-        const stockUpdateResponse = await authenticatedFetch(`${buildApiUrl('/products/${item.id}/stock`, {
+        const stockUpdateResponse = await authenticatedFetch(buildApiUrl(`/products/${item.id}/stock`), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ quantity: item.quantity }),
@@ -592,7 +592,7 @@ function App() {
       });
       setShowReceiptModal(true);
 
-      fetch(buildApiUrl('/products').then(res => res.json()).then(setProducts);
+      fetch(buildApiUrl('/products')).then(res => res.json()).then(setProducts);
       fetchTransactions();
 
     } catch (error: any) {
@@ -604,7 +604,7 @@ function App() {
   const handleResetTransactions = async () => {
     if (window.confirm('Apakah Anda yakin ingin mereset semua data transaksi? Tindakan ini tidak dapat diurungkan.')) {
       try {
-        const response = await authenticatedFetch(buildApiUrl('/reset-transactions', { method: 'POST' });
+        const response = await authenticatedFetch(buildApiUrl('/reset-transactions'), { method: 'POST' });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         toast.info(data.message);
@@ -628,7 +628,7 @@ function App() {
       return;
     }
     try {
-      const response = await authenticatedFetch(buildApiUrl('/categories', {
+      const response = await authenticatedFetch(buildApiUrl('/categories'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: newCategoryId, name: newCategoryName }),
@@ -636,7 +636,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch(buildApiUrl('/categories').then(res => res.json()).then(setCategories);
+      fetch(buildApiUrl('/categories')).then(res => res.json()).then(setCategories);
       setNewCategoryId('');
       setNewCategoryName('');
     } catch (error: any) {
@@ -661,7 +661,7 @@ function App() {
       return;
     }
     try {
-      const response = await authenticatedFetch(`${buildApiUrl('/categories/${editingCategory.id}`, {
+      const response = await authenticatedFetch(buildApiUrl(`/categories/${editingCategory.id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newCategoryName }),
@@ -669,7 +669,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch(buildApiUrl('/categories').then(res => res.json()).then(setCategories);
+      fetch(buildApiUrl('/categories')).then(res => res.json()).then(setCategories);
       handleCancelEditCategory();
     } catch (error: any) {
       console.error("Error updating category:", error);
@@ -680,13 +680,13 @@ function App() {
   const handleDeleteCategory = async (categoryId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini? Produk yang terkait mungkin terpengaruh.')) {
       try {
-        const response = await authenticatedFetch(`${buildApiUrl('/categories/${categoryId}`, {
+        const response = await authenticatedFetch(buildApiUrl(`/categories/${categoryId}`), {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         toast.success(data.message);
-        fetch(buildApiUrl('/categories').then(res => res.json()).then(setCategories);
+        fetch(buildApiUrl('/categories')).then(res => res.json()).then(setCategories);
       } catch (error: any) {
         console.error("Error deleting category:", error);
         toast.error(`Failed to delete category: ${error.message}`);
@@ -700,7 +700,7 @@ function App() {
       return;
     }
     try {
-      const response = await authenticatedFetch(buildApiUrl('/users', {
+      const response = await authenticatedFetch(buildApiUrl('/users'), {
         method: 'POST',
         body: JSON.stringify({ username: newUserUsername, password: newUserPassword, role: newUserRole }),
       });
@@ -733,7 +733,7 @@ function App() {
       return;
     }
     try {
-      const response = await authenticatedFetch(`${buildApiUrl('/users/${editingUser.id}`, {
+      const response = await authenticatedFetch(buildApiUrl(`/users/${editingUser.id}`), {
         method: 'PUT',
         body: JSON.stringify({ username: newUserUsername, password: newUserPassword, role: newUserRole }),
       });
@@ -751,7 +751,7 @@ function App() {
   const handleDeleteUser = async (userId: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        const response = await authenticatedFetch(`${buildApiUrl('/users/${userId}`, {
+        const response = await authenticatedFetch(buildApiUrl(`/users/${userId}`), {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -782,7 +782,7 @@ function App() {
   const handleDeleteProduct = async (productId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
       try {
-        const response = await authenticatedFetch(`${buildApiUrl('/products/${productId}`, {
+        const response = await authenticatedFetch(buildApiUrl(`/products/${productId}`), {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
