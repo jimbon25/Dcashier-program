@@ -2,7 +2,7 @@ const http = require('http');
 const url = require('url');
 const querystring = require('querystring');
 
-const port = process.env.PORT || 10000;
+const port = process.env.PORT || 8000;
 
 // CORS headers
 const corsHeaders = {

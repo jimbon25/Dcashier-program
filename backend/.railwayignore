@@ -1,0 +1,10 @@
+*.db
+*.sqlite
+*.sqlite3
+database/
+uploads/
+dist/
+node_modules/
+logs/
+.env
+.env.local
