@@ -77,7 +77,7 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="d-flex">
+      <div className="d-flex flex-column flex-lg-row">
         <Sidebar
           activeKey={activeTab}
           onSelect={handleNavigation}
@@ -87,13 +87,24 @@ const DashboardLayout: React.FC = () => {
           handleLogout={handleLogout}
           userRole={role || 'cashier'}
         />
-        <div className="flex-grow-1">
-          <Container fluid className="py-3">
+        <div className="flex-grow-1 main-content-wrapper">
+          <Container fluid className="py-3 px-3 px-lg-4">
             <Outlet />
           </Container>
         </div>
       </div>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000} 
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        style={{ fontSize: '14px' }}
+      />
     </ErrorBoundary>
   );
 };

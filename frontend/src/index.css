@@ -1,5 +1,7 @@
 /* Import modern theme first */
 @import './styles/app-modern-clean.css';
+/* Import mobile responsive styles */
+@import './styles/mobile-responsive.css';
 
 body {
   margin: 0;
@@ -50,7 +52,7 @@ code {
   top: 20px;
 }
 
-/* Responsive adjustments */
+/* Mobile Responsive Styles */
 @media (max-width: 768px) {
   .sidebar {
     position: relative;
@@ -62,7 +64,12 @@ code {
   .main-content {
     height: auto;
     width: 100%;
-    padding: 1rem;
+    padding: 0.5rem;
+  }
+
+  .main-content-wrapper {
+    min-height: calc(100vh - 70px); /* Account for mobile top bar */
+    overflow-x: hidden;
   }
 
   .d-flex.flex-column.bg-secondary.vh-100 {
@@ -77,6 +84,186 @@ code {
   .sticky-cart-container {
     position: relative;
     top: 0;
+  }
+
+  /* Mobile Navigation */
+  .mobile-nav-link {
+    min-height: 56px;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  .mobile-nav-link:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+  }
+
+  /* Touch-friendly buttons */
+  .btn {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+
+  .btn-sm {
+    min-height: 40px;
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  /* Form elements */
+  .form-control, .form-select {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 12px 16px;
+  }
+
+  /* Tables responsive */
+  .table-responsive {
+    font-size: 14px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px 4px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  /* Cards */
+  .card {
+    margin-bottom: 1rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  /* Product Grid */
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .product-card {
+    min-height: 180px;
+  }
+
+  .product-card .card-img-top {
+    height: 80px;
+    object-fit: cover;
+  }
+
+  .product-card .card-title {
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  .product-card .card-text {
+    font-size: 12px;
+  }
+
+  /* Dashboard Cards */
+  .dashboard-card {
+    margin-bottom: 1rem;
+  }
+
+  .dashboard-card .card-body {
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .dashboard-card h5 {
+    font-size: 1.1rem;
+  }
+
+  .dashboard-card h3 {
+    font-size: 1.5rem;
+  }
+
+  /* Cart in mobile */
+  .cart-items-container {
+    max-height: 40vh;
+    overflow-y: auto;
+  }
+
+  /* Modal adjustments */
+  .modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  /* Toast notifications */
+  .Toastify__toast-container {
+    width: calc(100vw - 2rem);
+    left: 1rem;
+    right: 1rem;
+    margin: 0;
+  }
+
+  .Toastify__toast {
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  /* Input groups */
+  .input-group {
+    flex-wrap: nowrap;
+  }
+
+  .input-group .form-control {
+    min-width: 0;
+  }
+
+  /* Navbar in mobile */
+  .navbar {
+    padding: 0.5rem 1rem;
+  }
+
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+
+  /* Overflow handling */
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Text adjustments */
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  h4 { font-size: 1.1rem; }
+  h5 { font-size: 1rem; }
+
+  .small { font-size: 0.75rem; }
+  .text-muted { font-size: 0.875rem; }
+}
+
+/* Tablet responsive adjustments */
+@media (min-width: 769px) and (max-width: 991px) {
+  .sidebar {
+    width: 200px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  .btn {
+    min-height: 42px;
+    font-size: 15px;
+  }
+
+  .form-control, .form-select {
+    min-height: 42px;
+    font-size: 15px;
   }
 }
 

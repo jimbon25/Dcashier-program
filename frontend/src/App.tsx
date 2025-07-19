@@ -831,39 +831,41 @@ function App() {
     switch (activeTab) {
       case 'dashboard':
         return (
-          <div>
+          <div className="dashboard-container">
             <h2 className="mt-3 mb-4 text-primary">Dashboard</h2>
-            <p className="text-muted">Selamat datang di Dashboard! Bagian ini akan menampilkan ringkasan penjualan, stok, dan informasi penting lainnya.</p>
-            <Row className="g-4">
-              <Col md={3}>
-                <Card className="shadow-sm dashboard-card">
-                  <Card.Body>
-                    <Card.Title className="fw-bold">Total Pendapatan</Card.Title>
-                    <Card.Text className="fs-3 text-success">{currencySymbol}{Array.isArray(transactions) ? transactions.reduce((acc, trx) => acc + (trx.total_amount || 0), 0).toLocaleString() : '0'}</Card.Text>
+            <p className="text-muted mb-4">Selamat datang di Dashboard! Bagian ini akan menampilkan ringkasan penjualan, stok, dan informasi penting lainnya.</p>
+            
+            {/* Dashboard Cards - Mobile Responsive */}
+            <Row className="g-3 mb-4">
+              <Col xs={6} md={3}>
+                <Card className="shadow-sm dashboard-card h-100">
+                  <Card.Body className="text-center">
+                    <Card.Title className="fw-bold h6">Total Pendapatan</Card.Title>
+                    <Card.Text className="fs-4 text-success mb-0">{currencySymbol}{Array.isArray(transactions) ? transactions.reduce((acc, trx) => acc + (trx.total_amount || 0), 0).toLocaleString() : '0'}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={3}>
-                <Card className="shadow-sm dashboard-card">
-                  <Card.Body>
-                    <Card.Title className="fw-bold">Jumlah Produk</Card.Title>
-                    <Card.Text className="fs-3 text-info">{products.length}</Card.Text>
+              <Col xs={6} md={3}>
+                <Card className="shadow-sm dashboard-card h-100">
+                  <Card.Body className="text-center">
+                    <Card.Title className="fw-bold h6">Jumlah Produk</Card.Title>
+                    <Card.Text className="fs-4 text-info mb-0">{products.length}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={3}>
-                <Card className="shadow-sm dashboard-card">
-                  <Card.Body>
-                    <Card.Title className="fw-bold">Jumlah Transaksi</Card.Title>
-                    <Card.Text className="fs-3 text-warning">{transactions.length}</Card.Text>
+              <Col xs={6} md={3}>
+                <Card className="shadow-sm dashboard-card h-100">
+                  <Card.Body className="text-center">
+                    <Card.Title className="fw-bold h6">Jumlah Transaksi</Card.Title>
+                    <Card.Text className="fs-4 text-warning mb-0">{transactions.length}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
-              <Col md={3}>
-                <Card className="shadow-sm dashboard-card">
-                  <Card.Body>
-                    <Card.Title className="fw-bold">Total Penjualan Hari Ini</Card.Title>
-                    <Card.Text className="fs-3 text-primary">{currencySymbol}{Array.isArray(dailySales) ? (dailySales.reduce((acc, item) => acc + (item.total_revenue || 0), 0)).toLocaleString() : '0'}</Card.Text>
+              <Col xs={6} md={3}>
+                <Card className="shadow-sm dashboard-card h-100">
+                  <Card.Body className="text-center">
+                    <Card.Title className="fw-bold h6">Penjualan Hari Ini</Card.Title>
+                    <Card.Text className="fs-4 text-primary mb-0">{currencySymbol}{Array.isArray(dailySales) ? (dailySales.reduce((acc, item) => acc + (item.total_revenue || 0), 0)).toLocaleString() : '0'}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
@@ -970,62 +972,107 @@ function App() {
       case 'sales':
         console.log("Rendering sales tab. Current products:", products);
         return (
-          <Row>
-            <Col md={8}>
-              <div className="mb-4">
-                <InputGroup className="mb-3">
-                  <InputGroup.Text><Search /></InputGroup.Text>
-                  <FormControl
-                    type="text"
-                    placeholder="Scan Barcode atau masukkan barcode..."
-                    value={barcodeSearchTerm}
-                    onChange={(e) => setBarcodeSearchTerm(e.target.value)}
-                    onKeyDown={handleBarcodeScan}
-                  />
-                </InputGroup>
-                <InputGroup>
-                  <InputGroup.Text><Search /></InputGroup.Text>
-                  <FormControl
-                    type="text"
-                    placeholder="Cari produk berdasarkan nama..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </InputGroup>
-              </div>
-              <Row className="g-4 mb-5">
-                {loading ? (
-                  Array.from({ length: 9 }).map((_, index) => (
-                    <ProductSkeleton key={index} />
-                  ))
-                ) : (
-                  (Array.isArray(products) ? products : []).filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
-                    <Col key={product.id} sm={6} md={4} lg={4}>
-                      <Card className="product-card rounded" onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
+          <div className="sales-container">
+            <Row className="g-3">
+              <Col lg={8} md={7} sm={12}>
+                <div className="mb-3">
+                  <InputGroup className="mb-3">
+                    <InputGroup.Text><Search /></InputGroup.Text>
+                    <FormControl
+                      type="text"
+                      placeholder="Scan Barcode atau masukkan barcode..."
+                      value={barcodeSearchTerm}
+                      onChange={(e) => setBarcodeSearchTerm(e.target.value)}
+                      onKeyDown={handleBarcodeScan}
+                    />
+                  </InputGroup>
+                  <InputGroup>
+                    <InputGroup.Text><Search /></InputGroup.Text>
+                    <FormControl
+                      type="text"
+                      placeholder="Cari produk berdasarkan nama..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </InputGroup>
+                </div>
+                
+                {/* Mobile Product Grid */}
+                <div className="product-grid d-block d-md-none mb-4">
+                  {loading ? (
+                    Array.from({ length: 6 }).map((_, index) => (
+                      <div key={index} className="skeleton-card" style={{ height: '180px', marginBottom: '0.5rem' }}>
+                        <div className="skeleton-line" style={{ height: '70px', marginBottom: '0.5rem' }}></div>
+                        <div className="skeleton-line short" style={{ height: '16px', marginBottom: '0.25rem' }}></div>
+                        <div className="skeleton-line medium" style={{ height: '14px', marginBottom: '0.25rem' }}></div>
+                        <div className="skeleton-line short" style={{ height: '14px' }}></div>
+                      </div>
+                    ))
+                  ) : (
+                    (Array.isArray(products) ? products : []).filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
+                      <Card key={product.id} className="product-card" onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
                         {product.image_url && (
-                          <Card.Img variant="top" src={`${API_BASE_URL}${product.image_url}`} alt={product.name} style={{ height: '150px', objectFit: 'contain', padding: '10px' }} />
+                          <Card.Img variant="top" src={`${API_BASE_URL}${product.image_url}`} alt={product.name} className="card-img-top" />
                         )}
-                        <Card.Body className="d-flex justify-content-between align-items-center">
-                          <div>
-                            <Card.Title>{product.name}</Card.Title>
-                            <Card.Text>{currencySymbol}{product.price.toLocaleString()}</Card.Text>
-                            <Card.Text className="text-muted">Stok: {product.stock}</Card.Text>
+                        <Card.Body>
+                          <Card.Title className="card-title">{product.name}</Card.Title>
+                          <Card.Text className="card-text">
+                            <div className="fw-bold text-primary">{currencySymbol}{product.price.toLocaleString()}</div>
+                            <div className="text-muted small">Stok: {product.stock}</div>
+                          </Card.Text>
+                          <div className="d-flex justify-content-between align-items-center">
+                            <Button variant="primary" size="sm" className="flex-grow-1">
+                              <CartPlus size={16} className="me-1" /> Tambah
+                            </Button>
                           </div>
-                          <CartPlus size={24} className="text-primary" />
                         </Card.Body>
                       </Card>
-                    </Col>
-                  ))
-                )}
-              </Row>
-            </Col>
-            <Col md={4}>
-              <div className="sticky-cart-container">
-                <div className={`p-3 border rounded shadow-lg ${cartAnimationTrigger ? 'animate-cart' : ''}`}>
-                  <h4 className="mb-3 text-primary">Keranjang Belanja</h4>
-                  {cart.length === 0 ? (
-                    <p className="text-muted small">Keranjang kosong.</p>
+                    ))
+                  )}
+                </div>
+
+                {/* Desktop Product Grid */}
+                <Row className="g-3 d-none d-md-flex mb-5">
+                  {loading ? (
+                    Array.from({ length: 9 }).map((_, index) => (
+                      <ProductSkeleton key={index} />
+                    ))
                   ) : (
+                    (Array.isArray(products) ? products : []).filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
+                      <Col key={product.id} sm={6} md={6} lg={4}>
+                        <Card className="product-card rounded" onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
+                          {product.image_url && (
+                            <Card.Img variant="top" src={`${API_BASE_URL}${product.image_url}`} alt={product.name} style={{ height: '150px', objectFit: 'contain', padding: '10px' }} />
+                          )}
+                          <Card.Body className="d-flex justify-content-between align-items-center">
+                            <div>
+                              <Card.Title>{product.name}</Card.Title>
+                              <Card.Text>{currencySymbol}{product.price.toLocaleString()}</Card.Text>
+                              <Card.Text className="text-muted">Stok: {product.stock}</Card.Text>
+                            </div>
+                            <CartPlus size={24} className="text-primary" />
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    ))
+                  )}
+                </Row>
+              </Col>
+              
+              <Col lg={4} md={5} sm={12}>
+                <div className="sticky-cart-container">
+                  <div className={`cart-container p-3 border rounded shadow-lg ${cartAnimationTrigger ? 'animate-cart' : ''}`}>
+                    <h4 className="mb-3 text-primary d-flex align-items-center">
+                      <CartPlus size={24} className="me-2" />
+                      Keranjang ({cart.length})
+                    </h4>
+                    {cart.length === 0 ? (
+                      <div className="text-center py-4">
+                        <CartPlus size={48} className="text-muted mb-2" />
+                        <p className="text-muted">Keranjang kosong</p>
+                        <small className="text-muted">Tap produk untuk menambahkan</small>
+                      </div>
+                    ) : (
                     <>
                       <div className="cart-items-container">
                         <table className="table table-sm align-middle">
@@ -1115,6 +1162,7 @@ function App() {
               </div>
             </Col>
           </Row>
+          </div>
         );
       case 'product-management':
         return (
