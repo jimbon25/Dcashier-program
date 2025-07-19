@@ -634,20 +634,21 @@ function App() {
   };
 
   const handleAddCategory = async () => {
-    if (!newCategoryId.trim() || !newCategoryName.trim()) {
-      toast.error('ID Kategori dan Nama Kategori tidak boleh kosong.');
+    if (!newCategoryName.trim()) {
+      toast.error('Nama Kategori tidak boleh kosong.');
       return;
     }
     try {
       const response = await authenticatedFetch(buildApiUrl('/categories'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: newCategoryId, name: newCategoryName }),
+        body: JSON.stringify({ name: newCategoryName }),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch(buildApiUrl('/categories')).then(res => res.json()).then(setCategories);
+      // Refresh categories list
+      fetchCategories();
       setNewCategoryId('');
       setNewCategoryName('');
     } catch (error: any) {
@@ -680,7 +681,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch(buildApiUrl('/categories')).then(res => res.json()).then(setCategories);
+      fetchCategories();
       handleCancelEditCategory();
     } catch (error: any) {
       console.error("Error updating category:", error);
@@ -697,7 +698,7 @@ function App() {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         toast.success(data.message);
-        fetch(buildApiUrl('/categories')).then(res => res.json()).then(setCategories);
+        fetchCategories();
       } catch (error: any) {
         console.error("Error deleting category:", error);
         toast.error(`Failed to delete category: ${error.message}`);
@@ -1453,10 +1454,12 @@ function App() {
                 <Card className="shadow-sm" ref={categoryFormRef}>
                   <Card.Body>
                     <Card.Title className="mb-4 fw-bold">Tambah/Edit Kategori</Card.Title>
-                    <div className="mb-3">
-                      <label htmlFor="categoryId" className="form-label fw-semibold">ID Kategori</label>
-                      <input type="text" className="form-control" id="categoryId" value={newCategoryId} onChange={(e) => setNewCategoryId(e.target.value)} placeholder="Contoh: CAT005" disabled={!!editingCategory} />
-                    </div>
+                    {editingCategory && (
+                      <div className="mb-3">
+                        <label htmlFor="categoryId" className="form-label fw-semibold">ID Kategori</label>
+                        <input type="text" className="form-control" id="categoryId" value={newCategoryId} onChange={(e) => setNewCategoryId(e.target.value)} placeholder="Contoh: CAT005" disabled={!!editingCategory} />
+                      </div>
+                    )}
                     <div className="mb-3">
                       <label htmlFor="categoryName" className="form-label fw-semibold">Nama Kategori</label>
                       <input type="text" className="form-control" id="categoryName" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Contoh: Kebersihan" />

@@ -437,6 +437,57 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // PUT categories endpoint
+  if (path.startsWith('/api/categories/') && method === 'PUT') {
+    const categoryId = path.split('/').pop();
+    parseBody(req, (error, body) => {
+      if (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ status: 'error', message: 'Invalid JSON' }));
+        return;
+      }
+
+      const categoryIndex = categories.findIndex(c => c.id === categoryId);
+      if (categoryIndex === -1) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ status: 'error', message: 'Category not found' }));
+        return;
+      }
+
+      // Update category
+      categories[categoryIndex].name = body.name;
+
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        status: 'success',
+        message: 'Category updated successfully'
+      }));
+    });
+    return;
+  }
+
+  // DELETE categories endpoint
+  if (path.startsWith('/api/categories/') && method === 'DELETE') {
+    const categoryId = path.split('/').pop();
+    const categoryIndex = categories.findIndex(c => c.id === categoryId);
+    
+    if (categoryIndex === -1) {
+      res.writeHead(404);
+      res.end(JSON.stringify({ status: 'error', message: 'Category not found' }));
+      return;
+    }
+
+    // Remove category
+    categories.splice(categoryIndex, 1);
+
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      message: 'Category deleted successfully'
+    }));
+    return;
+  }
+
   // 404 handler
   res.writeHead(404);
   res.end(JSON.stringify({

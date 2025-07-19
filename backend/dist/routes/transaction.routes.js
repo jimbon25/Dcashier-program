@@ -84,7 +84,7 @@ router.get('/:id', auth_middleware_1.requireAuth, (0, errorHandler_1.catchAsync)
                 resolve(rows);
         });
     });
-    res.json(Object.assign(Object.assign({}, transaction), { items }));
+    res.json(Object.assign({}, transaction, { items }));
 })));
 // Create new transaction
 router.post('/', auth_middleware_1.requireAuth, (0, errorHandler_1.catchAsync)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
