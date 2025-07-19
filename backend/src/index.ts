@@ -50,28 +50,7 @@ if (process.env.ENABLE_COMPRESSION !== 'false') {
 
 // CORS configuration
 const corsOptions = {
-  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      frontendUrl,
-      'http://localhost:3000',
-      'http://127.0.0.1:3000'
-    ];
-    
-    // Add production frontend URLs from environment
-    if (process.env.PRODUCTION_FRONTEND_URLS) {
-      allowedOrigins.push(...process.env.PRODUCTION_FRONTEND_URLS.split(','));
-    }
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.warn(`Blocked CORS request from origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: '*', // Allow all origins for now
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
@@ -116,13 +95,24 @@ if (nodeEnv === 'development') {
 }
 
 // API routes
-app.use('/auth', authRoutes);
-app.use('/products', productRoutes);
-app.use('/categories', categoryRoutes);
-app.use('/transactions', transactionRoutes);
-app.use('/upload', uploadRoutes);
-app.use('/reports', reportRoutes);
-app.use('/users', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/users', userRoutes);
+
+// Root endpoint
+app.get('/', (req: Request, res: Response) => {
+  res.json({ 
+    message: 'DCashier API Server',
+    version: '1.0.0',
+    health: '/health',
+    api: '/api',
+    documentation: nodeEnv === 'development' ? '/api-docs' : 'API documentation available in development mode'
+  });
+});
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
