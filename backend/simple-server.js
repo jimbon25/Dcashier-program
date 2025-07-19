@@ -55,7 +55,7 @@ const server = http.createServer((req, res) => {
   if (path === '/' && method === 'GET') {
     res.writeHead(200);
     res.end(JSON.stringify({
-      message: 'DCashier API Server - Render.com',
+      message: 'DCashier API Server - Railway',
       version: '1.0.0',
       health: '/health',
       api: '/api',
@@ -69,7 +69,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200);
     res.end(JSON.stringify({
       status: 'OK',
-      message: 'Server is running on Render.com',
+      message: 'Server is running on Railway',
       timestamp: new Date().toISOString(),
       environment: 'production',
       version: '1.0.0'
