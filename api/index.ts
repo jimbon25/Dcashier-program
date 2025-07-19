@@ -1,6 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default function handler(req: any, res: any) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -8,35 +6,36 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
-  const { url } = req;
+  const { url, method } = req;
 
   // Health endpoint
-  if (url === '/health') {
+  if (url === '/health' || url?.includes('/health')) {
     return res.status(200).json({
       status: 'OK',
       message: 'DCashier API Server is running',
       timestamp: new Date().toISOString(),
-      environment: 'production'
+      environment: 'production',
+      vercel: true
     });
   }
 
   // Root endpoint
-  if (url === '/') {
+  if (url === '/' || !url || url === '') {
     return res.status(200).json({
       message: 'DCashier API Server',
       version: '1.0.0',
       health: '/health',
       api: '/api',
-      status: 'running'
+      status: 'running',
+      vercel: true
     });
   }
 
-  // API login endpoint (temporary)
-  if (url === '/api/auth/login' && req.method === 'POST') {
+  // API login endpoint
+  if ((url === '/api/auth/login' || url?.includes('/api/auth/login')) && method === 'POST') {
     const { username, password } = req.body || {};
     
     if (username === 'admin' && password === 'admin123') {
@@ -58,10 +57,12 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  // Default 404
-  res.status(404).json({
-    error: 'Not Found',
-    message: `Cannot ${req.method} ${url}`,
-    timestamp: new Date().toISOString()
+  // Default response
+  return res.status(200).json({
+    message: 'DCashier API - Vercel Function',
+    url: url,
+    method: method,
+    timestamp: new Date().toISOString(),
+    status: 'working'
   });
 }
