@@ -1,12 +1,15 @@
 {
   "version": 2,
-  "name": "dcashier-api",
-  "functions": {
-    "api/*.ts": {
-      "runtime": "@vercel/node@3"
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
     }
-  },
+  ],
   "routes": [
-    { "src": "/(.*)", "dest": "/api/index.ts" }
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.ts"
+    }
   ]
 }
