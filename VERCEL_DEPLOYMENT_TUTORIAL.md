@@ -38,7 +38,7 @@ Root Directory: backend
 ### Build Settings:
 ```
 Build Command: npm run build
-Output Directory: (leave empty)
+Output Directory: dist
 Install Command: npm install --include=dev
 ```
 
