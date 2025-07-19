@@ -472,15 +472,15 @@ const CashierPage: React.FC = () => {
               <div className="border-top pt-2">
                 <div className="d-flex justify-content-between">
                   <span>Total:</span>
-                  <span>Rp {currentTransaction.total_amount.toLocaleString()}</span>
+                  <span>Rp {(currentTransaction.total_amount || 0).toLocaleString()}</span>
                 </div>
                 <div className="d-flex justify-content-between">
                   <span>Bayar:</span>
-                  <span>Rp {currentTransaction.payment_amount.toLocaleString()}</span>
+                  <span>Rp {(currentTransaction.payment_amount || 0).toLocaleString()}</span>
                 </div>
                 <div className="d-flex justify-content-between fw-bold">
                   <span>Kembalian:</span>
-                  <span>Rp {currentTransaction.change_amount.toLocaleString()}</span>
+                  <span>Rp {(currentTransaction.change_amount || 0).toLocaleString()}</span>
                 </div>
                 <div className="d-flex justify-content-between">
                   <span>Metode:</span>

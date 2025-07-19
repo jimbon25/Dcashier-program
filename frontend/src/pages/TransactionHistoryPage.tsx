@@ -123,7 +123,7 @@ const TransactionHistoryPage: React.FC = () => {
     }
   };
 
-  const totalRevenue = Array.isArray(transactions) ? transactions.reduce((sum, trx) => sum + trx.total_amount, 0) : 0;
+  const totalRevenue = Array.isArray(transactions) ? transactions.reduce((sum, trx) => sum + (trx.total_amount || 0), 0) : 0;
   const totalTransactions = Array.isArray(transactions) ? transactions.length : 0;
 
   return (
@@ -237,10 +237,10 @@ const TransactionHistoryPage: React.FC = () => {
                       })}
                     </td>
                     <td>
-                      <strong>Rp {transaction.total_amount.toLocaleString()}</strong>
+                      <strong>Rp {(transaction.total_amount || 0).toLocaleString()}</strong>
                     </td>
                     <td>
-                      Rp {transaction.payment_amount.toLocaleString()}
+                      Rp {(transaction.payment_amount || 0).toLocaleString()}
                     </td>
                     <td>
                       Rp {transaction.change_amount.toLocaleString()}
@@ -327,10 +327,10 @@ const TransactionHistoryPage: React.FC = () => {
               <div className="border-top pt-3">
                 <Row>
                   <Col md={6}>
-                    <strong>Total:</strong> Rp {selectedTransaction.total_amount.toLocaleString()}
+                    <strong>Total:</strong> Rp {(selectedTransaction.total_amount || 0).toLocaleString()}
                   </Col>
                   <Col md={6}>
-                    <strong>Pembayaran:</strong> Rp {selectedTransaction.payment_amount.toLocaleString()}
+                    <strong>Pembayaran:</strong> Rp {(selectedTransaction.payment_amount || 0).toLocaleString()}
                   </Col>
                 </Row>
                 <Row>

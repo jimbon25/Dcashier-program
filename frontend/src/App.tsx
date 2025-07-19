@@ -820,7 +820,7 @@ function App() {
                 <Card className="shadow-sm dashboard-card">
                   <Card.Body>
                     <Card.Title className="fw-bold">Total Pendapatan</Card.Title>
-                    <Card.Text className="fs-3 text-success">{currencySymbol}{Array.isArray(transactions) ? transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString() : '0'}</Card.Text>
+                    <Card.Text className="fs-3 text-success">{currencySymbol}{Array.isArray(transactions) ? transactions.reduce((acc, trx) => acc + (trx.total_amount || 0), 0).toLocaleString() : '0'}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
@@ -934,7 +934,7 @@ function App() {
                       <tr key={transaction.id}>
                         <td>{transaction.id}</td>
                         <td>{new Date(transaction.timestamp).toLocaleString()}</td>
-                        <td>{currencySymbol}{transaction.total_amount.toLocaleString()}</td>
+                        <td>{currencySymbol}{(transaction.total_amount || 0).toLocaleString()}</td>
                         <td>{transaction.payment_method}</td>
                       </tr>
                     )) : (
@@ -1337,9 +1337,9 @@ function App() {
                       <tr key={transaction.id}>
                         <td>{transaction.id}</td>
                         <td>{new Date(transaction.timestamp).toLocaleString()}</td>
-                        <td>{currencySymbol}{transaction.total_amount.toLocaleString()}</td>
-                        <td>{currencySymbol}{transaction.payment_amount.toLocaleString()}</td>
-                        <td>{currencySymbol}{transaction.change_amount.toLocaleString()}</td>
+                        <td>{currencySymbol}{(transaction.total_amount || 0).toLocaleString()}</td>
+                        <td>{currencySymbol}{(transaction.payment_amount || 0).toLocaleString()}</td>
+                        <td>{currencySymbol}{(transaction.change_amount || 0).toLocaleString()}</td>
                         <td>{transaction.payment_method}</td>
                         <td>
                           <ul>

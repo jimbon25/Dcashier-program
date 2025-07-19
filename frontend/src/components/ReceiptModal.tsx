@@ -53,15 +53,15 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ show, onHide, transaction }
         <div className="mt-3">
           <div className="d-flex justify-content-between">
             <strong>Total:</strong>
-            <span>${transaction.total_amount.toFixed(2)}</span>
+            <span>${(transaction.total_amount || 0).toFixed(2)}</span>
           </div>
           <div className="d-flex justify-content-between">
             <strong>Payment:</strong>
-            <span>${transaction.payment_amount.toFixed(2)}</span>
+            <span>${(transaction.payment_amount || 0).toFixed(2)}</span>
           </div>
           <div className="d-flex justify-content-between">
             <strong>Change:</strong>
-            <span>${transaction.change_amount.toFixed(2)}</span>
+            <span>${(transaction.change_amount || 0).toFixed(2)}</span>
           </div>
         </div>
       </Modal.Body>
