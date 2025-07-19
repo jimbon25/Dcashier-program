@@ -1,8 +1,8 @@
 // API Configuration
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 
   (process.env.NODE_ENV === 'production' 
-    ? 'https://dcashier-backend.onrender.com'
-    : 'http://localhost:3001');
+    ? 'https://dcashier-backend-production.up.railway.app'
+    : 'http://localhost:8000');
 
 // Helper function to build API URLs
 export const buildApiUrl = (endpoint: string): string => {

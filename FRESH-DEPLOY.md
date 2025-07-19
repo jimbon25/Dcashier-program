@@ -20,8 +20,8 @@
    ```
    NODE_ENV = production
    JWT_SECRET = dcashier-secret-2025
-   PORT = (leave empty - Railway auto-sets)
    ```
+   **JANGAN set PORT** - Railway akan set otomatis!
 
 2. **Settings** → **Deploy**:
    ```

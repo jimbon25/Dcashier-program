@@ -15,8 +15,8 @@ type ErrorType = {
 
 const baseURL = process.env.REACT_APP_API_URL || 
   (process.env.NODE_ENV === 'production' 
-    ? 'https://dcashier-program-kg12zt5vk-j1mbs-projects.vercel.app'
-    : 'http://localhost:3001');
+    ? 'https://dcashier-backend-production.up.railway.app'
+    : 'http://localhost:8000');
 
 // Create axios instance
 const axiosInstance = axios.create({
