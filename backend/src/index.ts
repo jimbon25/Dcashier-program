@@ -48,16 +48,35 @@ if (process.env.ENABLE_COMPRESSION !== 'false') {
   app.use(compression());
 }
 
-// CORS configuration
+// CORS configuration - SANGAT PENTING untuk frontend-backend komunikasi
 const corsOptions = {
-  origin: '*', // Allow all origins for now
+  origin: [
+    'https://dcashier.netlify.app',
+    'http://localhost:3000',
+    'https://localhost:3000'
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'x-csrf-token',
+    'X-Requested-With',
+    'Accept',
+    'Accept-Version',
+    'Content-Length',
+    'Content-MD5',
+    'Date',
+    'X-Api-Version'
+  ],
   exposedHeaders: ['x-csrf-token']
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests untuk semua routes
+app.options('*', cors(corsOptions));
 
 // Response time and logging middleware
 app.use(responseTime);
@@ -142,8 +161,10 @@ async function initApp() {
   try {
     await initializeDatabase();
     logger.info('✅ Database initialized successfully');
+    return true;
   } catch (error) {
     logger.error('❌ Failed to initialize database:', error);
+    return false;
   }
 }
 
@@ -170,19 +191,23 @@ async function startServer() {
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
   logger.error('💥 Uncaught Exception:', error);
-  process.exit(1);
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 });
 
 process.on('unhandledRejection', (error) => {
   logger.error('💥 Unhandled Rejection:', error);
-  process.exit(1);
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 });
 
-// Initialize database for Vercel
-initApp();
-
-// Only start server if not in Vercel (when there's no VERCEL env var)
-if (!process.env.VERCEL) {
+// Initialize database untuk Vercel (async)
+if (process.env.VERCEL) {
+  initApp();
+} else {
+  // Only start server if not in Vercel
   startServer();
 }
 

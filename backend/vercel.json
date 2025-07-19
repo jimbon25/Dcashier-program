@@ -3,17 +3,37 @@
   "builds": [
     {
       "src": "src/index.ts",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["src/**", "uploads/**", "*.db"]
+      }
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
+      "dest": "/src/index.ts"
+    },
+    {
+      "src": "/health",
+      "dest": "/src/index.ts"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "/src/index.ts"
+    },
+    {
+      "src": "/",
       "dest": "/src/index.ts"
     }
   ],
   "env": {
     "NODE_ENV": "production",
     "VERCEL": "1"
+  },
+  "functions": {
+    "src/index.ts": {
+      "maxDuration": 30
+    }
   }
 }
