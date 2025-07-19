@@ -12,5 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "concurrently": "^9.2.0"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.3.6"
   }
 }
