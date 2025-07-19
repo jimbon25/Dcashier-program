@@ -26,19 +26,41 @@ interface BackendAuthResponse {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post<BackendAuthResponse>('/api/auth/login', credentials);
-    return {
-      accessToken: response.data.data.accessToken,
-      role: response.data.data.role
-    };
+    try {
+      const response = await api.post<BackendAuthResponse>('/api/auth/login', credentials);
+      
+      // Check if response has the expected structure
+      if (!response.data || !response.data.data) {
+        throw new Error('Invalid response structure from server');
+      }
+      
+      return {
+        accessToken: response.data.data.accessToken,
+        role: response.data.data.role
+      };
+    } catch (error: any) {
+      console.error('Login error:', error);
+      throw error;
+    }
   },
 
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await api.post<BackendAuthResponse>('/api/auth/register', credentials);
-    return {
-      accessToken: response.data.data.accessToken,
-      role: response.data.data.role
-    };
+    try {
+      const response = await api.post<BackendAuthResponse>('/api/auth/register', credentials);
+      
+      // Check if response has the expected structure
+      if (!response.data || !response.data.data) {
+        throw new Error('Invalid response structure from server');
+      }
+      
+      return {
+        accessToken: response.data.data.accessToken,
+        role: response.data.data.role
+      };
+    } catch (error: any) {
+      console.error('Register error:', error);
+      throw error;
+    }
   },
 
   async logout(): Promise<void> {

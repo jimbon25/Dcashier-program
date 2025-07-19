@@ -75,6 +75,10 @@ const api = {
   async get<T>(url: string, config?: RequestConfig): Promise<{ data: T }> {
     try {
       const response = await axiosInstance.get(url, config);
+      // For auth endpoints, keep original structure
+      if (url.includes('/auth/') || url.includes('/check-auth')) {
+        return response;
+      }
       // Extract data from response.data.data if it exists
       const data = response.data?.data || response.data || [];
       return { data: data as T };
@@ -86,6 +90,10 @@ const api = {
   async post<T>(url: string, data?: any, config?: RequestConfig): Promise<{ data: T }> {
     try {
       const response = await axiosInstance.post(url, data, config);
+      // For auth endpoints, keep original structure
+      if (url.includes('/auth/') || url.includes('/check-auth')) {
+        return response;
+      }
       return { data: response.data?.data || response.data };
     } catch (error) {
       console.error(`POST ${url} failed:`, error);
