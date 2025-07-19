@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node simple-server.js",
+    "start": "node database-server.js",
+    "start:simple": "node simple-server.js",
     "dev": "npx ts-node src/index.ts",
     "build": "npx tsc",
     "copy-assets": "cp -r uploads dist/ 2>/dev/null || true",
     "build:watch": "npx tsc --watch",
     "clean": "rm -rf dist",
-    "prestart": "echo 'Using simple server for production reliability'",
+    "prestart": "echo 'Using SQLite database server for production'",
     "railway:deploy": "npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
