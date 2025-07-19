@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node simple-server.js",
-    "dev": "node simple-server.js",
-    "build": "echo 'No build needed for simple server'",
+    "start": "npm run build && node dist/index.js",
+    "dev": "npx ts-node src/index.ts",
+    "build": "npx tsc",
     "copy-assets": "cp -r uploads dist/ 2>/dev/null || true",
     "build:watch": "npx tsc --watch",
     "clean": "rm -rf dist",
-    "prestart": "npm run build",
+    "prestart": "npm run clean",
     "railway:deploy": "npm run build && npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
