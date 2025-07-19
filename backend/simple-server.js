@@ -170,10 +170,18 @@ const server = http.createServer((req, res) => {
       status: 'success',
       data: [
         { 
-          id: 1, 
-          date: new Date().toISOString(),
-          total: 25000,
-          items: [{ name: 'Test Product', price: 25000, quantity: 1 }]
+          id: '1', 
+          timestamp: Date.now(),
+          total_amount: 25000,
+          payment_amount: 30000,
+          change_amount: 5000,
+          payment_method: 'Cash',
+          items: [{ 
+            product_id: '1',
+            product_name: 'Test Product', 
+            price_at_sale: 25000, 
+            quantity: 1 
+          }]
         }
       ]
     }));
