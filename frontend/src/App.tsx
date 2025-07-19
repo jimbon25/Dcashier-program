@@ -467,11 +467,15 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch(buildApiUrl('/products')).then(res => res.json()).then(setProducts);
+      // Refresh products list properly
+      fetchProductsAndCategories();
       setNewProductId('');
       setNewProductName('');
       setNewProductPrice(0);
+      setNewProductCostPrice(0);
       setNewProductStock(0);
+      setNewProductBarcode('');
+      setNewProductCategory('');
       setNewProductImage(null);
       setNewProductImagePreview(null);
     } catch (error: any) {
@@ -532,7 +536,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch(buildApiUrl('/products')).then(res => res.json()).then(setProducts);
+      fetchProductsAndCategories();
       handleCancelEdit();
     } catch (error: any) {
       console.error("Error updating product:", error);
@@ -603,7 +607,8 @@ function App() {
       });
       setShowReceiptModal(true);
 
-      fetch(buildApiUrl('/products')).then(res => res.json()).then(setProducts);
+      // Refresh data after transaction
+      fetchProductsAndCategories();
       fetchTransactions();
 
     } catch (error: any) {

@@ -27,6 +27,9 @@ let products = [
   { id: 'P010', name: 'Jus Buah Sunquick 330ml', price: 7500, stock: 120, cost_price: 6200, category_id: 'CAT002', barcode: 'B010', category_name: 'Minuman' }
 ];
 
+// Transaction storage
+let transactions = [];
+
 // CORS headers - allow both possible Netlify URLs
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://d-cashier.netlify.app',
@@ -187,48 +190,73 @@ const server = http.createServer((req, res) => {
     res.writeHead(200);
     res.end(JSON.stringify({
       status: 'success',
-      data: [
-        { 
-          id: '1', 
-          timestamp: Date.now(),
-          total_amount: 25000,
-          payment_amount: 30000,
-          change_amount: 5000,
-          payment_method: 'Cash',
-          items: [{ 
-            product_id: '1',
-            product_name: 'Test Product', 
-            price_at_sale: 25000, 
-            quantity: 1 
-          }]
-        }
-      ]
+      data: transactions
     }));
     return;
   }
 
   // Reports endpoints
   if (path === '/api/reports/daily-sales' && method === 'GET') {
+    const parsedUrl = url.parse(req.url, true);
+    const targetDate = parsedUrl.query.date || new Date().toISOString().split('T')[0];
+    
+    // Filter transactions by date
+    const targetTimestamp = new Date(targetDate).getTime();
+    const nextDayTimestamp = targetTimestamp + (24 * 60 * 60 * 1000);
+    
+    const dailyTransactions = transactions.filter(t => 
+      t.timestamp >= targetTimestamp && t.timestamp < nextDayTimestamp
+    );
+    
+    // Calculate daily sales
+    const dailySales = [];
+    const productSales = {};
+    
+    dailyTransactions.forEach(transaction => {
+      transaction.items.forEach(item => {
+        if (!productSales[item.product_id]) {
+          productSales[item.product_id] = {
+            product_name: item.product_name,
+            total_quantity_sold: 0,
+            total_revenue: 0
+          };
+        }
+        productSales[item.product_id].total_quantity_sold += item.quantity;
+        productSales[item.product_id].total_revenue += item.price_at_sale * item.quantity;
+      });
+    });
+    
+    Object.values(productSales).forEach(item => dailySales.push(item));
+    
     res.writeHead(200);
     res.end(JSON.stringify({
       status: 'success',
-      data: {
-        total: 100000,
-        count: 5,
-        date: new Date().toISOString().split('T')[0]
-      }
+      data: dailySales
     }));
     return;
   }
 
   if (path === '/api/reports/profit-loss' && method === 'GET') {
+    // Calculate profit/loss from transactions
+    let totalRevenue = 0;
+    let totalCost = 0;
+    
+    transactions.forEach(transaction => {
+      totalRevenue += transaction.total_amount;
+      transaction.items.forEach(item => {
+        totalCost += (item.cost_price_at_sale || 0) * item.quantity;
+      });
+    });
+    
     res.writeHead(200);
     res.end(JSON.stringify({
       status: 'success',
       data: {
-        profit: 50000,
-        loss: 10000,
-        net: 40000
+        profit: totalRevenue - totalCost,
+        loss: 0,
+        net: totalRevenue - totalCost,
+        total_revenue: totalRevenue,
+        total_cost: totalCost
       }
     }));
     return;
@@ -249,14 +277,35 @@ const server = http.createServer((req, res) => {
 
   // Top products report endpoint
   if (path.startsWith('/api/reports/top-products') && method === 'GET') {
+    const parsedUrl = url.parse(req.url, true);
+    const limit = parseInt(parsedUrl.query.limit) || 10;
+    
+    // Calculate top products from transactions
+    const productSales = {};
+    
+    transactions.forEach(transaction => {
+      transaction.items.forEach(item => {
+        if (!productSales[item.product_id]) {
+          productSales[item.product_id] = {
+            product_name: item.product_name,
+            total_quantity_sold: 0,
+            total_revenue: 0
+          };
+        }
+        productSales[item.product_id].total_quantity_sold += item.quantity;
+        productSales[item.product_id].total_revenue += item.price_at_sale * item.quantity;
+      });
+    });
+    
+    // Sort by quantity sold and take top N
+    const topProducts = Object.values(productSales)
+      .sort((a, b) => b.total_quantity_sold - a.total_quantity_sold)
+      .slice(0, limit);
+    
     res.writeHead(200);
     res.end(JSON.stringify({
       status: 'success',
-      data: [
-        { id: 1, name: 'Product A', sales_count: 50, total_revenue: 500000 },
-        { id: 2, name: 'Product B', sales_count: 30, total_revenue: 300000 },
-        { id: 3, name: 'Product C', sales_count: 20, total_revenue: 200000 }
-      ]
+      data: topProducts
     }));
     return;
   }
@@ -294,22 +343,75 @@ const server = http.createServer((req, res) => {
   // Update product endpoint
   if (path.startsWith('/api/products/') && path !== '/api/products' && method === 'PUT') {
     const productId = path.split('/').pop();
-    res.writeHead(200);
-    res.end(JSON.stringify({
-      status: 'success',
-      message: `Product ${productId} updated successfully`
-    }));
+    parseBody(req, (error, body) => {
+      if (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ status: 'error', message: 'Invalid JSON' }));
+        return;
+      }
+
+      const productIndex = products.findIndex(p => p.id === productId);
+      if (productIndex === -1) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ status: 'error', message: 'Product not found' }));
+        return;
+      }
+
+      // Find category name if category_id provided
+      let categoryName = products[productIndex].category_name;
+      if (body.category_id) {
+        const category = categories.find(c => c.id === body.category_id);
+        categoryName = category ? category.name : 'Unknown';
+      }
+
+      // Update product
+      products[productIndex] = {
+        ...products[productIndex],
+        name: body.name || products[productIndex].name,
+        price: body.price !== undefined ? parseInt(body.price) : products[productIndex].price,
+        cost_price: body.cost_price !== undefined ? parseInt(body.cost_price) : products[productIndex].cost_price,
+        stock: body.stock !== undefined ? parseInt(body.stock) : products[productIndex].stock,
+        barcode: body.barcode !== undefined ? body.barcode : products[productIndex].barcode,
+        category_id: body.category_id || products[productIndex].category_id,
+        category_name: categoryName,
+        image_url: body.image_url !== undefined ? body.image_url : products[productIndex].image_url
+      };
+
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        status: 'success',
+        message: `Product ${productId} updated successfully`
+      }));
+    });
     return;
   }
 
   // Update product stock endpoint
   if (path.includes('/stock') && method === 'PUT') {
     const productId = path.split('/')[3];
-    res.writeHead(200);
-    res.end(JSON.stringify({
-      status: 'success',
-      message: `Stock for product ${productId} updated successfully`
-    }));
+    parseBody(req, (error, body) => {
+      if (error) {
+        res.writeHead(400);
+        res.end(JSON.stringify({ status: 'error', message: 'Invalid JSON' }));
+        return;
+      }
+
+      const productIndex = products.findIndex(p => p.id === productId);
+      if (productIndex === -1) {
+        res.writeHead(404);
+        res.end(JSON.stringify({ status: 'error', message: 'Product not found' }));
+        return;
+      }
+
+      // Update stock
+      products[productIndex].stock = Math.max(0, products[productIndex].stock - (body.quantity || 0));
+
+      res.writeHead(200);
+      res.end(JSON.stringify({
+        status: 'success',
+        message: `Stock for product ${productId} updated successfully`
+      }));
+    });
     return;
   }
 
@@ -354,11 +456,39 @@ const server = http.createServer((req, res) => {
         return;
       }
 
+      // Generate transaction ID
+      const transactionId = 'TXN-' + Date.now();
+      
+      // Create transaction object
+      const newTransaction = {
+        id: transactionId,
+        timestamp: Date.now(),
+        total_amount: parseInt(body.total_amount),
+        payment_amount: parseInt(body.payment_amount),
+        change_amount: parseInt(body.change_amount),
+        discount: parseInt(body.discount || 0),
+        payment_method: body.payment_method,
+        items: body.items || []
+      };
+
+      // Store transaction
+      transactions.push(newTransaction);
+
+      // Update product stock
+      if (Array.isArray(body.items)) {
+        body.items.forEach(item => {
+          const product = products.find(p => p.id === item.product_id);
+          if (product) {
+            product.stock = Math.max(0, product.stock - item.quantity);
+          }
+        });
+      }
+
       res.writeHead(200);
       res.end(JSON.stringify({
         status: 'success',
         data: {
-          transactionId: 'TXN-' + Date.now(),
+          transactionId: transactionId,
           timestamp: Date.now(),
           message: 'Transaction saved successfully'
         }
