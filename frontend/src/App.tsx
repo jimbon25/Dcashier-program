@@ -901,13 +901,13 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {dailySales.map((item, index) => (
+                    {Array.isArray(dailySales) ? dailySales.map((item, index) => (
                       <tr key={index}>
                         <td>{item.product_name}</td>
                         <td>{item.total_quantity_sold}</td>
                         <td>{currencySymbol}{(item.total_revenue || 0).toLocaleString()}</td>
                       </tr>
-                    ))}
+                    )) : null}
                   </tbody>
                 </table>
               ) : (
@@ -1011,7 +1011,7 @@ function App() {
                       <div className="cart-items-container">
                         <table className="table table-sm align-middle">
                           <tbody>
-                            {cart.map(item => (
+                            {Array.isArray(cart) ? cart.map(item => (
                               <tr key={item.id}>
                                 <td>
                                   <div className="small lh-sm">{item.name}</div>
@@ -1025,7 +1025,11 @@ function App() {
                                   </div>
                                 </td>
                               </tr>
-                            ))}
+                            )) : (
+                              <tr>
+                                <td colSpan={2} className="text-center">Cart is empty</td>
+                              </tr>
+                            )}
                           </tbody>
                         </table>
                       </div>
@@ -1149,9 +1153,9 @@ function App() {
                         onChange={(e) => setNewProductCategory(e.target.value)}
                       >
                         <option value="">Pilih Kategori</option>
-                        {categories.map(category => (
+                        {Array.isArray(categories) ? categories.map(category => (
                           <option key={category.id} value={category.id}>{category.name}</option>
-                        ))}
+                        )) : null}
                       </select>
                     </div>
                     {editingProduct ? (
@@ -1185,7 +1189,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.map(product => (
+                  {Array.isArray(products) ? products.map(product => (
                     <tr key={product.id}>
                       <td>{product.id}</td>
                       <td>{product.name}</td>
@@ -1204,7 +1208,11 @@ function App() {
                         <Button variant="danger" size="sm" onClick={() => handleDeleteProduct(product.id)}><TrashFill /></Button>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan={8} className="text-center">No products available</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             )}
@@ -1279,12 +1287,14 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {topProducts.map((item, index) => (
+                    {Array.isArray(topProducts) ? topProducts.map((item, index) => (
                       <tr key={index}>
                         <td>{item.product_name}</td>
                         <td>{item.total_quantity_sold}</td>
                       </tr>
-                    ))}
+                    )) : (
+                      <tr><td colSpan={2}>Tidak ada data produk terlaris</td></tr>
+                    )}
                   </tbody>
                 </table>
               ) : (
@@ -1333,7 +1343,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.map(transaction => (
+                    {Array.isArray(transactions) ? transactions.map(transaction => (
                       <tr key={transaction.id}>
                         <td>{transaction.id}</td>
                         <td>{new Date(transaction.timestamp).toLocaleString()}</td>
@@ -1343,13 +1353,13 @@ function App() {
                         <td>{transaction.payment_method}</td>
                         <td>
                           <ul>
-                            {transaction.items.map((item, idx) => (
+                            {Array.isArray(transaction.items) ? transaction.items.map((item, idx) => (
                               <li key={idx}>{item.product_name} ({item.quantity} x {currencySymbol}{item.price_at_sale.toLocaleString()})</li>
-                            ))}
+                            )) : null}
                           </ul>
                         </td>
                       </tr>
-                    ))}
+                    )) : null}
                   </tbody>
                 </table>
               ) : (
@@ -1389,9 +1399,9 @@ function App() {
                   onChange={(e) => setProfitFilterCategory(e.target.value)}
                 >
                   <option value="">Semua Kategori</option>
-                  {categories.map(category => (
+                  {Array.isArray(categories) ? categories.map(category => (
                     <option key={category.id} value={category.id}>{category.name}</option>
-                  ))}
+                  )) : null}
                 </select>
               </div>
               <Button variant="primary" onClick={fetchProfitLossReport}>Filter Laba Rugi</Button>
@@ -1412,7 +1422,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {profitLossReport.map((item, index) => (
+                    {Array.isArray(profitLossReport) ? profitLossReport.map((item, index) => (
                       <tr key={index}>
                         <td>{item.product_name}</td>
                         <td>{item.category_name || '-'}</td>
@@ -1421,7 +1431,7 @@ function App() {
                         <td>{currencySymbol}{item.total_cost.toLocaleString()}</td>
                         <td>{currencySymbol}{item.total_profit.toLocaleString()}</td>
                       </tr>
-                    ))}
+                    )) : null}
                   </tbody>
                 </table>
               ) : (
@@ -1473,7 +1483,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {categories.map(category => (
+                  {Array.isArray(categories) ? categories.map(category => (
                     <tr key={category.id}>
                       <td>{category.id}</td>
                       <td>{category.name}</td>
@@ -1482,7 +1492,9 @@ function App() {
                         <Button variant="danger" size="sm" onClick={() => handleDeleteCategory(category.id)}><TrashFill /></Button>
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr><td colSpan={3}>Tidak ada data kategori</td></tr>
+                  )}
                 </tbody>
               </table>
             )}
