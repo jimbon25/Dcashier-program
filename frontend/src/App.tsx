@@ -215,17 +215,23 @@ function App() {
       if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
 
       const productsData = await productsResponse.json();
-
-      setProducts(productsData);
+      
+      // Ensure data is array and handle API response format
+      const productsList = Array.isArray(productsData?.data) ? productsData.data : 
+                          Array.isArray(productsData) ? productsData : [];
+      
+      setProducts(productsList);
       setLoading(false);
-      console.log("Products data received:", productsData);
+      console.log("Products data received:", productsList);
 
-      const lowStock = productsData.filter((p: Product) => p.stock <= lowStockThreshold);
+      const lowStock = Array.isArray(productsList) ? productsList.filter((p: Product) => p.stock <= lowStockThreshold) : [];
       setLowStockProducts(lowStock);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       setError(error.message);
       setLoading(false);
+      setProducts([]);
+      setLowStockProducts([]);
     }
   }, [lowStockThreshold, authenticatedFetch]);
 
@@ -253,10 +259,12 @@ function App() {
       const response = await authenticatedFetch(url);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
-      setTransactions(data);
+      const transactionsList = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      setTransactions(transactionsList);
     } catch (error: any) {
       console.error("Error fetching transactions:", error);
       setError(error.message);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -864,13 +872,15 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {lowStockProducts.map(product => (
+                      {Array.isArray(lowStockProducts) ? lowStockProducts.map(product => (
                         <tr key={product.id}>
                           <td>{product.id}</td>
                           <td>{product.name}</td>
                           <td>{product.stock}</td>
                         </tr>
-                      ))}
+                      )) : (
+                        <tr><td colSpan={3}>Tidak ada data</td></tr>
+                      )}
                     </tbody>
                   </table>
                 </Col>
@@ -920,14 +930,16 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {transactions.slice(0, 5).map(transaction => (
+                    {Array.isArray(transactions) ? transactions.slice(0, 5).map(transaction => (
                       <tr key={transaction.id}>
                         <td>{transaction.id}</td>
                         <td>{new Date(transaction.timestamp).toLocaleString()}</td>
                         <td>{currencySymbol}{transaction.total_amount.toLocaleString()}</td>
                         <td>{transaction.payment_method}</td>
                       </tr>
-                    ))}
+                    )) : (
+                      <tr><td colSpan={4}>Tidak ada data</td></tr>
+                    )}
                   </tbody>
                 </table>
               ) : (
@@ -968,7 +980,7 @@ function App() {
                     <ProductSkeleton key={index} />
                   ))
                 ) : (
-                  products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
+                  (Array.isArray(products) ? products : []).filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase())).map(product => (
                     <Col key={product.id} sm={6} md={4} lg={4}>
                       <Card className="product-card rounded" onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
                         {product.image_url && (

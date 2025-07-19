@@ -43,8 +43,20 @@ axiosInstance.interceptors.request.use(
 
 // Add response interceptor
 axiosInstance.interceptors.response.use(
-  (response: { data: any }) => response,
+  (response: { data: any }) => {
+    // Ensure data is always an array for list endpoints
+    if (response.data?.status === 'success' && response.data?.data) {
+      if (Array.isArray(response.data.data)) {
+        return response;
+      }
+      // For non-array responses, keep as is
+      return response;
+    }
+    return response;
+  },
   async (error: ErrorType) => {
+    console.error('API Error:', error);
+    
     if (error.response?.status === 401 || error.response?.status === 403) {
       // Handle token expiration or unauthorized access
       store.dispatch(logout());
@@ -58,23 +70,45 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-// Create typed API wrapper
+// Create typed API wrapper with error handling
 const api = {
   async get<T>(url: string, config?: RequestConfig): Promise<{ data: T }> {
-    const response = await axiosInstance.get(url, config);
-    return { data: response.data };
+    try {
+      const response = await axiosInstance.get(url, config);
+      // Extract data from response.data.data if it exists
+      const data = response.data?.data || response.data || [];
+      return { data: data as T };
+    } catch (error) {
+      console.error(`GET ${url} failed:`, error);
+      return { data: [] as unknown as T };
+    }
   },
   async post<T>(url: string, data?: any, config?: RequestConfig): Promise<{ data: T }> {
-    const response = await axiosInstance.post(url, data, config);
-    return { data: response.data };
+    try {
+      const response = await axiosInstance.post(url, data, config);
+      return { data: response.data?.data || response.data };
+    } catch (error) {
+      console.error(`POST ${url} failed:`, error);
+      throw error;
+    }
   },
   async put<T>(url: string, data?: any, config?: RequestConfig): Promise<{ data: T }> {
-    const response = await axiosInstance.put(url, data, config);
-    return { data: response.data };
+    try {
+      const response = await axiosInstance.put(url, data, config);
+      return { data: response.data?.data || response.data };
+    } catch (error) {
+      console.error(`PUT ${url} failed:`, error);
+      throw error;
+    }
   },
   async delete<T>(url: string, config?: RequestConfig): Promise<{ data: T }> {
-    const response = await axiosInstance.delete(url, config);
-    return { data: response.data };
+    try {
+      const response = await axiosInstance.delete(url, config);
+      return { data: response.data?.data || response.data };
+    } catch (error) {
+      console.error(`DELETE ${url} failed:`, error);
+      throw error;
+    }
   }
 };
 

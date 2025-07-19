@@ -6,7 +6,7 @@ const port = parseInt(process.env.PORT) || 8000;
 
 // CORS headers
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': 'https://dcashier.netlify.app',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-csrf-token',
   'Access-Control-Allow-Credentials': 'true'
@@ -158,6 +158,63 @@ const server = http.createServer((req, res) => {
       status: 'success',
       data: [
         { id: 1, name: 'Test Category' }
+      ]
+    }));
+    return;
+  }
+
+  // Transactions endpoint
+  if (path === '/api/transactions' && method === 'GET') {
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      data: [
+        { 
+          id: 1, 
+          date: new Date().toISOString(),
+          total: 25000,
+          items: [{ name: 'Test Product', price: 25000, quantity: 1 }]
+        }
+      ]
+    }));
+    return;
+  }
+
+  // Reports endpoints
+  if (path === '/api/reports/daily-sales' && method === 'GET') {
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      data: {
+        total: 100000,
+        count: 5,
+        date: new Date().toISOString().split('T')[0]
+      }
+    }));
+    return;
+  }
+
+  if (path === '/api/reports/profit-loss' && method === 'GET') {
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      data: {
+        profit: 50000,
+        loss: 10000,
+        net: 40000
+      }
+    }));
+    return;
+  }
+
+  // Users endpoint
+  if (path === '/api/users' && method === 'GET') {
+    res.writeHead(200);
+    res.end(JSON.stringify({
+      status: 'success',
+      data: [
+        { id: 1, username: 'admin', role: 'admin' },
+        { id: 2, username: 'cashier1', role: 'cashier' }
       ]
     }));
     return;

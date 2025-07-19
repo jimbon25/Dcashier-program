@@ -59,12 +59,14 @@ const CashierPage: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:3001/products');
+      const response = await fetch(buildApiUrl('/products'));
       if (!response.ok) throw new Error('Failed to fetch products');
       const data = await response.json();
-      setProducts(data);
+      const productsList = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      setProducts(productsList);
     } catch (error: any) {
       toast.error('Gagal memuat produk: ' + error.message);
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -164,7 +166,7 @@ const CashierPage: React.FC = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:3001/transactions', {
+      const response = await fetch(buildApiUrl('/transactions'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(transactionData)
@@ -205,10 +207,10 @@ const CashierPage: React.FC = () => {
     }
   };
 
-  const filteredProducts = products.filter(product =>
+  const filteredProducts = Array.isArray(products) ? products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.barcode?.includes(searchTerm)
-  );
+  ) : [];
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discountAmount = (subtotal * discount) / 100;

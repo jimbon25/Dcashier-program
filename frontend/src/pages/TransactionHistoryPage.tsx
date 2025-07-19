@@ -54,9 +54,11 @@ const TransactionHistoryPage: React.FC = () => {
       if (!response.ok) throw new Error('Failed to fetch transactions');
       
       const data = await response.json();
-      setTransactions(data);
+      const transactionsList = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      setTransactions(transactionsList);
     } catch (error: any) {
       toast.error('Gagal memuat riwayat transaksi: ' + error.message);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,7 @@ const TransactionHistoryPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/transactions/${transactionId}`, {
+      const response = await fetch(buildApiUrl(`/transactions/${transactionId}`), {
         method: 'DELETE'
       });
 
