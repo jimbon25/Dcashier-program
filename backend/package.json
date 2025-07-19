@@ -5,9 +5,9 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "build": "tsc && npm run copy-assets",
+    "build": "npx tsc && npm run copy-assets",
     "copy-assets": "cp -r uploads dist/ 2>/dev/null || true",
-    "build:watch": "tsc --watch",
+    "build:watch": "npx tsc --watch",
     "clean": "rm -rf dist",
     "prestart": "npm run build",
     "railway:deploy": "npm run build && npm start",
