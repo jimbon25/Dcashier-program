@@ -29,7 +29,7 @@ const AuthPage: React.FC = () => {
 
     try {
       if (isRegister) {
-        const _response = await authService.register({ username, password, confirmPassword });
+        await authService.register({ username, password, confirmPassword });
         toast.success('Registration successful! Please log in.');
         setIsRegister(false);
       } else {
