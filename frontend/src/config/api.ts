@@ -1,7 +1,7 @@
 // API Configuration
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 
   (process.env.NODE_ENV === 'production' 
-    ? 'https://dcashier-program-kg12zt5vk-j1mbs-projects.vercel.app'
+    ? 'https://dcashier-backend.onrender.com'
     : 'http://localhost:3001');
 
 // Helper function to build API URLs
