@@ -48,19 +48,21 @@ export function initializeDatabase(): Promise<sqlite3.Database> {
           `);
           console.log('Categories table created or already exists.');
 
-          // Insert dummy categories if table is empty
+          // Insert categories if table is empty
           const categoryCount: { count: number }[] = await allAsync(db, "SELECT COUNT(*) AS count FROM categories");
           if (categoryCount[0].count === 0) {
-            const dummyCategories = [
+            const categories = [
               { id: 'CAT001', name: 'Makanan Pokok' },
               { id: 'CAT002', name: 'Minuman' },
               { id: 'CAT003', name: 'Kebutuhan Rumah Tangga' },
-              { id: 'CAT004', name: 'Snack' },
+              { id: 'CAT004', name: 'Snack & Cemilan' },
+              { id: 'CAT005', name: 'Bumbu Dapur' },
+              { id: 'CAT006', name: 'Perawatan Tubuh' },
             ];
-            for (const c of dummyCategories) {
+            for (const c of categories) {
               await runAsync(db, "INSERT INTO categories (id, name) VALUES (?, ?)", [c.id, c.name]);
             }
-            console.log('Dummy categories inserted.');
+            console.log('Categories inserted.');
           }
 
           // Create products table
@@ -79,20 +81,28 @@ export function initializeDatabase(): Promise<sqlite3.Database> {
           `);
           console.log('Products table created or already exists.');
 
-          // Insert dummy products if products table is empty
+          // Insert real products if products table is empty
           const productCount: { count: number }[] = await allAsync(db, "SELECT COUNT(*) AS count FROM products");
           if (productCount[0].count === 0) {
-            const dummyProducts = [
-              { id: 'P001', name: 'Beras 5kg', price: 60000, stock: 100, cost_price: 55000, category_id: 'CAT001', image_url: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=Beras' },
-              { id: 'P002', name: 'Minyak Goreng 2L', price: 35000, stock: 50, cost_price: 30000, category_id: 'CAT001', image_url: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Minyak' },
-              { id: 'P003', name: 'Gula Pasir 1kg', price: 15000, stock: 200, cost_price: 13000, category_id: 'CAT001', image_url: 'https://via.placeholder.com/150/FFFF00/000000?text=Gula' },
-              { id: 'P004', name: 'Telur Ayam 1kg', price: 28000, stock: 75, cost_price: 25000, category_id: 'CAT001', image_url: 'https://via.placeholder.com/150/FF00FF/FFFFFF?text=Telur' },
-              { id: 'P005', name: 'Kopi Bubuk 200gr', price: 12000, stock: 150, cost_price: 10000, category_id: 'CAT002', image_url: 'https://via.placeholder.com/150/00FFFF/000000?text=Kopi' },
+            const realProducts = [
+              // Makanan Pokok (CAT001)
+              { id: 'P001', name: 'Beras Premium 5kg', price: 65000, stock: 80, cost_price: 58000, category_id: 'CAT001', barcode: 'B001', image_url: '/uploads/images/beras-premium.jpg' },
+              { id: 'P002', name: 'Minyak Goreng Tropical 2L', price: 38000, stock: 60, cost_price: 33000, category_id: 'CAT001', barcode: 'B002', image_url: '/uploads/images/minyak-tropical.jpg' },
+              { id: 'P003', name: 'Gula Pasir Gulaku 1kg', price: 16000, stock: 150, cost_price: 14000, category_id: 'CAT001', barcode: 'B003', image_url: '/uploads/images/gula-gulaku.jpg' },
+              { id: 'P004', name: 'Telur Ayam Segar 1kg', price: 30000, stock: 90, cost_price: 27000, category_id: 'CAT001', barcode: 'B004', image_url: '/uploads/images/telur-segar.jpg' },
+              { id: 'P005', name: 'Tepung Terigu Cakra 1kg', price: 13000, stock: 120, cost_price: 11000, category_id: 'CAT001', barcode: 'B005', image_url: '/uploads/images/tepung-cakra.jpg' },
+              
+              // Minuman (CAT002)
+              { id: 'P006', name: 'Teh Celup Sosro 25pcs', price: 9500, stock: 100, cost_price: 8000, category_id: 'CAT002', barcode: 'B006', image_url: '/uploads/images/teh-sosro.jpg' },
+              { id: 'P007', name: 'Kopi Kapal Api 200gr', price: 14000, stock: 85, cost_price: 12000, category_id: 'CAT002', barcode: 'B007', image_url: '/uploads/images/kopi-kapal-api.jpg' },
+              { id: 'P008', name: 'Susu UHT Ultra 1L', price: 19000, stock: 75, cost_price: 17000, category_id: 'CAT002', barcode: 'B008', image_url: '/uploads/images/susu-ultra.jpg' },
+              { id: 'P009', name: 'Air Mineral Aqua 600ml', price: 3500, stock: 200, cost_price: 2800, category_id: 'CAT002', barcode: 'B009', image_url: '/uploads/images/aqua-600ml.jpg' },
+              { id: 'P010', name: 'Jus Buah Sunquick 330ml', price: 7500, stock: 120, cost_price: 6200, category_id: 'CAT002', barcode: 'B010', image_url: '/uploads/images/sunquick.jpg' }
             ];
-            for (const p of dummyProducts) {
-              await runAsync(db, "INSERT INTO products (id, name, price, stock, category_id, cost_price, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)", [p.id, p.name, p.price, p.stock, p.category_id, p.cost_price, p.image_url]);
+            for (const p of realProducts) {
+              await runAsync(db, "INSERT INTO products (id, name, price, stock, category_id, cost_price, barcode, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [p.id, p.name, p.price, p.stock, p.category_id, p.cost_price, p.barcode, p.image_url]);
             }
-            console.log('Dummy products inserted.');
+            console.log('Real products inserted.');
           }
 
           // Create transactions table

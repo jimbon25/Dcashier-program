@@ -295,6 +295,9 @@ function App() {
     } catch (error: any) {
       console.error("Error fetching top products:", error);
       toast.error(`Failed to fetch top products: ${error.message}`);
+      setTopProducts([]);
+    } finally {
+      setTopProductsLoading(false);
     }
   }, [topProductsLimit, authenticatedFetch]);
 

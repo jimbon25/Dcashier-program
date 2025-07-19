@@ -17,6 +17,14 @@ const DashboardLayout: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isAuthenticated, role } = useAppSelector((state) => state.auth);
 
+  // Initialize theme on first load
+  useEffect(() => {
+    const initialTheme = localStorage.getItem('theme') || 
+      (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    setTheme(initialTheme);
+    document.documentElement.setAttribute('data-bs-theme', initialTheme);
+  }, []);
+
   useEffect(() => {
     document.documentElement.setAttribute('data-bs-theme', theme);
     localStorage.setItem('theme', theme);

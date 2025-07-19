@@ -589,9 +589,23 @@ body {
   }
 }
 
-/* Dark mode support */
+/* Dark mode support with data-bs-theme attribute */
+[data-bs-theme="dark"] {
+  --bg-primary: var(--gray-800);
+  --bg-secondary: var(--gray-900);
+  --bg-tertiary: var(--gray-700);
+  --text-primary: var(--gray-100);
+  --text-secondary: var(--gray-300);
+  --text-muted: var(--gray-400);
+  --border-color: var(--gray-600);
+  
+  /* Update sidebar for dark mode */
+  --bg-sidebar: var(--gray-800);
+}
+
+/* Fallback for system preference */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-bs-theme]) {
     --bg-primary: var(--gray-800);
     --bg-secondary: var(--gray-900);
     --bg-tertiary: var(--gray-700);
