@@ -228,6 +228,17 @@ Solutions:
 4. Monitor function execution time
 ```
 
+### ❌ TypeScript Build Error:
+```
+Error: "sh: line 1: tsc: command not found"
+
+Solution:
+1. Use 'npx tsc' instead of 'tsc' in build script
+2. Add installCommand in vercel.json: "npm install --include=dev"
+3. Ensure TypeScript is in devDependencies
+4. Verify package.json build script uses npx
+```
+
 ### ❌ Vercel Configuration Error:
 ```
 Error: "The `functions` property cannot be used in conjunction with the `builds` property"
