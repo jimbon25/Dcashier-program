@@ -38,7 +38,7 @@ Root Directory: backend
 ### Build Settings:
 ```
 Build Command: npm run build
-Output Directory: dist
+Output Directory: backend/dist
 Install Command: npm install
 ```
 
@@ -226,6 +226,17 @@ Solutions:
 2. Check file write permissions
 3. Consider using Vercel KV untuk production
 4. Monitor function execution time
+```
+
+### ❌ Vercel Configuration Error:
+```
+Error: "The `functions` property cannot be used in conjunction with the `builds` property"
+
+Solution:
+1. Use only `builds` property (not `functions`)
+2. Point to compiled JS file (backend/dist/index.js)
+3. Ensure Output Directory = "backend/dist"
+4. Make sure build command compiles TypeScript properly
 ```
 
 ---

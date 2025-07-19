@@ -2,25 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "backend/src/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["backend/dist/**", "backend/uploads/**", "backend/sembako-pos.db"]
-      }
+      "src": "backend/dist/index.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "backend/src/index.ts"
+      "dest": "backend/dist/index.js"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "backend/src/index.ts": {
-      "maxDuration": 10
-    }
-  }
+  ]
 }
