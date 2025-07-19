@@ -10,6 +10,7 @@ import { useDashboard } from './context/DashboardContext';
 import { useAppSelector, useAppDispatch } from './store/hooks';
 import { logout } from './store/slices/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
+import { buildApiUrl, API_BASE_URL } from './config/api';
 
 
 interface Product {
@@ -191,7 +192,7 @@ function App() {
   const handleBarcodeScan = useCallback(async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && barcodeSearchTerm.trim() !== '') {
       try {
-        const response = await authenticatedFetch(`http://localhost:3001/products/barcode/${barcodeSearchTerm}`);
+        const response = await authenticatedFetch(buildApiUrl(`/products/barcode/${barcodeSearchTerm}`));
         if (!response.ok) {
           toast.error('Produk dengan barcode tersebut tidak ditemukan.');
           return;
@@ -209,7 +210,7 @@ function App() {
   const fetchProductsAndCategories = useCallback(async () => {
     console.log("Fetching products and categories...");
     try {
-      const productsResponse = await authenticatedFetch('http://localhost:3001/products');
+      const productsResponse = await authenticatedFetch(buildApiUrl('/products');
 
       if (!productsResponse.ok) throw new Error(`HTTP error! status: ${productsResponse.status}`);
 
@@ -230,7 +231,7 @@ function App() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await authenticatedFetch('http://localhost:3001/categories');
+      const response = await authenticatedFetch(buildApiUrl('/categories');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setCategories(data);
@@ -243,7 +244,7 @@ function App() {
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
-      let url = 'http://localhost:3001/transactions';
+      let url = buildApiUrl('/transactions';
       const params = new URLSearchParams();
       if (filterStartDate) params.append('startDate', String(new Date(filterStartDate).getTime()));
       if (filterEndDate) params.append('endDate', String(new Date(filterEndDate).getTime()));
@@ -264,7 +265,7 @@ function App() {
   const fetchDailySales = useCallback(async () => {
     setDailySalesLoading(true);
     try {
-      const response = await authenticatedFetch(`http://localhost:3001/reports/daily-sales?date=${reportDate}`);
+      const response = await authenticatedFetch(`${buildApiUrl('/reports/daily-sales?date=${reportDate}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setDailySales(data);
@@ -279,7 +280,7 @@ function App() {
   const fetchTopProducts = useCallback(async () => {
     setTopProductsLoading(true);
     try {
-      const response = await authenticatedFetch(`http://localhost:3001/reports/top-products?limit=${topProductsLimit}`);
+      const response = await authenticatedFetch(`${buildApiUrl('/reports/top-products?limit=${topProductsLimit}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setTopProducts(data);
@@ -292,7 +293,7 @@ function App() {
   const fetchProfitLossReport = useCallback(async () => {
     setProfitLossLoading(true);
     try {
-      let url = 'http://localhost:3001/reports/profit-loss';
+      let url = buildApiUrl('/reports/profit-loss';
       const params = new URLSearchParams();
       if (profitFilterStartDate) params.append('startDate', String(new Date(profitFilterStartDate).getTime()));
       if (profitFilterEndDate) params.append('endDate', String(new Date(profitFilterEndDate).getTime()));
@@ -314,7 +315,7 @@ function App() {
   const fetchUsers = useCallback(async () => {
     if (userRole !== 'admin') return;
     try {
-      const response = await authenticatedFetch('http://localhost:3001/users');
+      const response = await authenticatedFetch(buildApiUrl('/users');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       setUsers(data);
@@ -374,7 +375,7 @@ function App() {
     setNewProductStock(product.stock);
     setNewProductBarcode(product.barcode || '');
     setNewProductCategory(product.category_id || '');
-    setNewProductImagePreview(product.image_url ? `http://localhost:3001${product.image_url}` : null);
+    setNewProductImagePreview(product.image_url ? `${API_BASE_URL}${product.image_url}` : null);
     if (productFormRef.current) {
       productFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -423,7 +424,7 @@ function App() {
       const formData = new FormData();
       formData.append('image', newProductImage);
       try {
-        const uploadResponse = await authenticatedFetch('http://localhost:3001/upload/image', {
+        const uploadResponse = await authenticatedFetch(buildApiUrl('/upload/image', {
           method: 'POST',
           body: formData,
         });
@@ -438,7 +439,7 @@ function App() {
     }
 
     try {
-      const response = await authenticatedFetch('http://localhost:3001/products', {
+      const response = await authenticatedFetch(buildApiUrl('/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -455,7 +456,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch('http://localhost:3001/products').then(res => res.json()).then(setProducts);
+      fetch(buildApiUrl('/products').then(res => res.json()).then(setProducts);
       setNewProductId('');
       setNewProductName('');
       setNewProductPrice(0);
@@ -489,7 +490,7 @@ function App() {
       const formData = new FormData();
       formData.append('image', newProductImage);
       try {
-        const uploadResponse = await authenticatedFetch('http://localhost:3001/upload/image', {
+        const uploadResponse = await authenticatedFetch(buildApiUrl('/upload/image', {
           method: 'POST',
           body: formData,
         });
@@ -504,7 +505,7 @@ function App() {
     }
 
     try {
-      const response = await authenticatedFetch(`http://localhost:3001/products/${editingProduct.id}`, {
+      const response = await authenticatedFetch(`${buildApiUrl('/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -520,7 +521,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch('http://localhost:3001/products').then(res => res.json()).then(setProducts);
+      fetch(buildApiUrl('/products').then(res => res.json()).then(setProducts);
       handleCancelEdit();
     } catch (error: any) {
       console.error("Error updating product:", error);
@@ -540,7 +541,7 @@ function App() {
     }
 
     try {
-      const transactionResponse = await authenticatedFetch('http://localhost:3001/transactions', {
+      const transactionResponse = await authenticatedFetch(buildApiUrl('/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -557,7 +558,7 @@ function App() {
       const transactionData = await transactionResponse.json();
 
       for (const item of cart) {
-        const stockUpdateResponse = await authenticatedFetch(`http://localhost:3001/products/${item.id}/stock`, {
+        const stockUpdateResponse = await authenticatedFetch(`${buildApiUrl('/products/${item.id}/stock`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ quantity: item.quantity }),
@@ -591,7 +592,7 @@ function App() {
       });
       setShowReceiptModal(true);
 
-      fetch('http://localhost:3001/products').then(res => res.json()).then(setProducts);
+      fetch(buildApiUrl('/products').then(res => res.json()).then(setProducts);
       fetchTransactions();
 
     } catch (error: any) {
@@ -603,7 +604,7 @@ function App() {
   const handleResetTransactions = async () => {
     if (window.confirm('Apakah Anda yakin ingin mereset semua data transaksi? Tindakan ini tidak dapat diurungkan.')) {
       try {
-        const response = await authenticatedFetch('http://localhost:3001/reset-transactions', { method: 'POST' });
+        const response = await authenticatedFetch(buildApiUrl('/reset-transactions', { method: 'POST' });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         toast.info(data.message);
@@ -627,7 +628,7 @@ function App() {
       return;
     }
     try {
-      const response = await authenticatedFetch('http://localhost:3001/categories', {
+      const response = await authenticatedFetch(buildApiUrl('/categories', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: newCategoryId, name: newCategoryName }),
@@ -635,7 +636,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch('http://localhost:3001/categories').then(res => res.json()).then(setCategories);
+      fetch(buildApiUrl('/categories').then(res => res.json()).then(setCategories);
       setNewCategoryId('');
       setNewCategoryName('');
     } catch (error: any) {
@@ -660,7 +661,7 @@ function App() {
       return;
     }
     try {
-      const response = await authenticatedFetch(`http://localhost:3001/categories/${editingCategory.id}`, {
+      const response = await authenticatedFetch(`${buildApiUrl('/categories/${editingCategory.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newCategoryName }),
@@ -668,7 +669,7 @@ function App() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       toast.success(data.message);
-      fetch('http://localhost:3001/categories').then(res => res.json()).then(setCategories);
+      fetch(buildApiUrl('/categories').then(res => res.json()).then(setCategories);
       handleCancelEditCategory();
     } catch (error: any) {
       console.error("Error updating category:", error);
@@ -679,13 +680,13 @@ function App() {
   const handleDeleteCategory = async (categoryId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus kategori ini? Produk yang terkait mungkin terpengaruh.')) {
       try {
-        const response = await authenticatedFetch(`http://localhost:3001/categories/${categoryId}`, {
+        const response = await authenticatedFetch(`${buildApiUrl('/categories/${categoryId}`, {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         toast.success(data.message);
-        fetch('http://localhost:3001/categories').then(res => res.json()).then(setCategories);
+        fetch(buildApiUrl('/categories').then(res => res.json()).then(setCategories);
       } catch (error: any) {
         console.error("Error deleting category:", error);
         toast.error(`Failed to delete category: ${error.message}`);
@@ -699,7 +700,7 @@ function App() {
       return;
     }
     try {
-      const response = await authenticatedFetch('http://localhost:3001/users', {
+      const response = await authenticatedFetch(buildApiUrl('/users', {
         method: 'POST',
         body: JSON.stringify({ username: newUserUsername, password: newUserPassword, role: newUserRole }),
       });
@@ -732,7 +733,7 @@ function App() {
       return;
     }
     try {
-      const response = await authenticatedFetch(`http://localhost:3001/users/${editingUser.id}`, {
+      const response = await authenticatedFetch(`${buildApiUrl('/users/${editingUser.id}`, {
         method: 'PUT',
         body: JSON.stringify({ username: newUserUsername, password: newUserPassword, role: newUserRole }),
       });
@@ -750,7 +751,7 @@ function App() {
   const handleDeleteUser = async (userId: number) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        const response = await authenticatedFetch(`http://localhost:3001/users/${userId}`, {
+        const response = await authenticatedFetch(`${buildApiUrl('/users/${userId}`, {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -781,7 +782,7 @@ function App() {
   const handleDeleteProduct = async (productId: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
       try {
-        const response = await authenticatedFetch(`http://localhost:3001/products/${productId}`, {
+        const response = await authenticatedFetch(`${buildApiUrl('/products/${productId}`, {
           method: 'DELETE',
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -971,7 +972,7 @@ function App() {
                     <Col key={product.id} sm={6} md={4} lg={4}>
                       <Card className="product-card rounded" onClick={() => addToCart(product)} style={{ cursor: 'pointer' }}>
                         {product.image_url && (
-                          <Card.Img variant="top" src={`http://localhost:3001${product.image_url}`} alt={product.name} style={{ height: '150px', objectFit: 'contain', padding: '10px' }} />
+                          <Card.Img variant="top" src={`${API_BASE_URL}${product.image_url}`} alt={product.name} style={{ height: '150px', objectFit: 'contain', padding: '10px' }} />
                         )}
                         <Card.Body className="d-flex justify-content-between align-items-center">
                           <div>
@@ -1183,7 +1184,7 @@ function App() {
                       <td>{product.category_name || '-'}</td>
                       <td>
                         {product.image_url && (
-                          <img src={`http://localhost:3001${product.image_url}`} alt={product.name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
+                          <img src={`${API_BASE_URL}${product.image_url}`} alt={product.name} style={{ width: '50px', height: '50px', objectFit: 'cover' }} />
                         )}
                       </td>
                       <td>

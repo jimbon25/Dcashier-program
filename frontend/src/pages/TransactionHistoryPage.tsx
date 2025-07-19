@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Card, Table, Badge, Button, Row, Col, Form, Alert, Modal } from 'react-bootstrap';
 import { Eye, Calendar, Receipt, Trash } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { buildApiUrl } from '../config/api';
 
 interface TransactionItem {
   id: number;
@@ -35,7 +36,7 @@ const TransactionHistoryPage: React.FC = () => {
   const fetchTransactions = useCallback(async () => {
     try {
       setLoading(true);
-      let url = 'http://localhost:3001/transactions';
+      let url = buildApiUrl('/transactions';
       const params = new URLSearchParams();
       
       if (filterStartDate) {
@@ -107,7 +108,7 @@ const TransactionHistoryPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/transactions/reset', {
+      const response = await fetch(buildApiUrl('/transactions/reset', {
         method: 'POST'
       });
 

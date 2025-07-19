@@ -26,7 +26,7 @@ interface BackendAuthResponse {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post<BackendAuthResponse>('/auth/login', credentials);
+    const response = await api.post<BackendAuthResponse>('/api/auth/login', credentials);
     return {
       accessToken: response.data.data.accessToken,
       role: response.data.data.role
@@ -34,7 +34,7 @@ export const authService = {
   },
 
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    const response = await api.post<BackendAuthResponse>('/auth/register', credentials);
+    const response = await api.post<BackendAuthResponse>('/api/auth/register', credentials);
     return {
       accessToken: response.data.data.accessToken,
       role: response.data.data.role
@@ -42,11 +42,11 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    await api.post('/auth/logout');
+    await api.post('/api/auth/logout');
   },
 
   async checkAuth(): Promise<AuthResponse> {
-    const response = await api.get<AuthResponse>('/check-auth');
+    const response = await api.get<AuthResponse>('/api/check-auth');
     return response.data;
   }
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, Alert, Modal, Table, InputGroup } from 'react-bootstrap';
 import { CartPlus, Trash, Search, Calculator, CreditCard } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
+import { buildApiUrl } from '../config/api';
 
 interface Product {
   id: string;
@@ -122,7 +123,7 @@ const CashierPage: React.FC = () => {
   const handleBarcodeSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && barcodeInput.trim()) {
       try {
-        const response = await fetch(`http://localhost:3001/products/barcode/${barcodeInput}`);
+        const response = await fetch(buildApiUrl(`/products/barcode/${barcodeInput}`));
         if (!response.ok) throw new Error('Produk tidak ditemukan');
         const product = await response.json();
         addToCart(product);
