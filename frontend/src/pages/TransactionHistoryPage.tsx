@@ -123,8 +123,8 @@ const TransactionHistoryPage: React.FC = () => {
     }
   };
 
-  const totalRevenue = transactions.reduce((sum, trx) => sum + trx.total_amount, 0);
-  const totalTransactions = transactions.length;
+  const totalRevenue = Array.isArray(transactions) ? transactions.reduce((sum, trx) => sum + trx.total_amount, 0) : 0;
+  const totalTransactions = Array.isArray(transactions) ? transactions.length : 0;
 
   return (
     <Container fluid className="p-4">

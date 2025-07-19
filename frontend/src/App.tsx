@@ -804,7 +804,7 @@ function App() {
     }
   };
 
-  const totalBeforeDiscount = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const totalBeforeDiscount = Array.isArray(cart) ? cart.reduce((acc, item) => acc + item.price * item.quantity, 0) : 0;
   const calculatedDiscount = discountType === 'percentage' ? (totalBeforeDiscount * discount) / 100 : discount;
   const total = Math.max(0, totalBeforeDiscount - calculatedDiscount);
 
@@ -820,7 +820,7 @@ function App() {
                 <Card className="shadow-sm dashboard-card">
                   <Card.Body>
                     <Card.Title className="fw-bold">Total Pendapatan</Card.Title>
-                    <Card.Text className="fs-3 text-success">{currencySymbol}{transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString()}</Card.Text>
+                    <Card.Text className="fs-3 text-success">{currencySymbol}{Array.isArray(transactions) ? transactions.reduce((acc, trx) => acc + trx.total_amount, 0).toLocaleString() : '0'}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
@@ -844,7 +844,7 @@ function App() {
                 <Card className="shadow-sm dashboard-card">
                   <Card.Body>
                     <Card.Title className="fw-bold">Total Penjualan Hari Ini</Card.Title>
-                    <Card.Text className="fs-3 text-primary">{currencySymbol}{(dailySales.reduce((acc, item) => acc + (item.total_revenue || 0), 0)).toLocaleString()}</Card.Text>
+                    <Card.Text className="fs-3 text-primary">{currencySymbol}{Array.isArray(dailySales) ? (dailySales.reduce((acc, item) => acc + (item.total_revenue || 0), 0)).toLocaleString() : '0'}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>

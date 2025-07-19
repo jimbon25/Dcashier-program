@@ -80,7 +80,18 @@ const api = {
         return response;
       }
       // Extract data from response.data.data if it exists
-      const data = response.data?.data || response.data || [];
+      let data = response.data?.data || response.data;
+      
+      // Ensure array endpoints return arrays
+      if (url.includes('/products') || url.includes('/categories') || 
+          url.includes('/transactions') || url.includes('/users') ||
+          url.includes('/reports')) {
+        if (!Array.isArray(data)) {
+          console.warn(`Expected array for ${url} but got:`, typeof data);
+          data = [];
+        }
+      }
+      
       return { data: data as T };
     } catch (error) {
       console.error(`GET ${url} failed:`, error);

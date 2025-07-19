@@ -137,7 +137,7 @@ const CashierPage: React.FC = () => {
   };
 
   const calculateTotal = () => {
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = Array.isArray(cart) ? cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) : 0;
     const discountAmount = (subtotal * discount) / 100;
     return subtotal - discountAmount;
   };
@@ -212,7 +212,7 @@ const CashierPage: React.FC = () => {
     product.barcode?.includes(searchTerm)
   ) : [];
 
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = Array.isArray(cart) ? cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) : 0;
   const discountAmount = (subtotal * discount) / 100;
   const total = subtotal - discountAmount;
 
