@@ -1,88 +1,62 @@
-# Dcashier-program
+# D'Cashier
 
-Dcashier-program is a modern and intuitive cashier application designed to streamline product management, sales processes, and transaction reporting. This project is currently in its **beta phase** and **under active testing and development**. It features barcode scanning, stock tracking, and daily sales reports, aiming to enhance operational efficiency for retail businesses.
+D'Cashier is a modern and intuitive cashier application designed to streamline product management, sales processes, and transaction reporting. This project was created for educational and portfolio purposes, demonstrating the application of best practices in modern software development.
 
-## Features
+## Key Features
 
-*   Enhanced User Interface (UI) and User Experience (UX) for intuitive navigation and modern look.
-*   Product Management (Add, Edit, Delete, Inline Editing)
-*   Cashier System (Sales, Cart, Payment, Barcode Scanning)
-*   Comprehensive Sales Reports (Daily Sales, Top Products, Transaction History)
-*   Dark Mode Toggle for comfortable viewing.
-*   Tabbed navigation for easy access to different functionalities.
+- **Product Management**: Easily add, edit, delete, and manage products, including images and barcodes.
+- **Cashier System**: Fast sales processing with a user-friendly interface, including support for discounts and various payment methods.
+- **Stock Management**: Track product stock in real-time to avoid running out of items.
+- **Comprehensive Reports**: Gain deep insights with daily sales reports, top-selling products, and profit/loss statements.
+- **User Management**: Role-based system with secure authentication for admins and cashiers.
+- **Modern Interface**: A clean, responsive UI/UX, complete with a dark mode for visual comfort.
 
 ## Technologies Used
 
-*   **Frontend:**
-    *   React.js
-    *   TypeScript
-    *   React-Bootstrap
-    *   React-Bootstrap-Icons
-    *   React-Toastify
-*   **Backend:**
-    *   Node.js
-    *   Express.js
-    *   TypeScript
-    *   SQLite3
+- **Frontend**:
+  - React.js & TypeScript
+  - Redux Toolkit for state management
+  - React Bootstrap for UI components
+  - Axios for HTTP requests
+- **Backend**:
+  - Node.js & Express.js with TypeScript
+  - SQLite3 for a lightweight database
+  - JSON Web Tokens (JWT) for authentication
+  - Multer for file uploads
 
-## Installation
-
-Follow these steps to run the project locally:
+## Installation and Running
 
 ### Prerequisites
 
-Make sure you have Node.js and npm installed on your system.
-
-*   [Node.js](https://nodejs.org/) (LTS version recommended)
+- [Node.js](https://nodejs.org/) (LTS version recommended)
+- [Git](https://git-scm.com/)
 
 ### Steps
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/jimbon25/Dcashier-program.git
+    git clone https://github.com/jimbon21/Dcashier-program.git
     cd Dcashier-program
     ```
 
-2.  **Install Backend dependencies:**
+2.  **Install dependencies for both projects (backend & frontend):**
     ```bash
-    cd backend
     npm install
     ```
 
-3.  **Run Backend:**
+3.  **Run the application (backend & frontend concurrently):**
     ```bash
     npm start
     ```
-    The backend will run on `http://localhost:3001`.
-
-4.  **Install Frontend dependencies:**
-    Open a new terminal, then:
-    ```bash
-    cd ../frontend
-    npm install
-    ```
-
-5.  **Run Frontend:**
-    ```bash
-    npm start
-    ```
-    The frontend application will open in your browser, usually at `http://localhost:3000`.
+    - The backend will run on `http://localhost:8000`.
+    - The frontend will run on `http://localhost:3000`.
 
 ## Usage
 
-*   **Sales:** Use the "Sales" tab to view product listings, add to cart, and process payments.
-*   **Product Management:** Use the "Product Management" tab to add, edit, or delete products.
-*   **Reports:** Use the "Reports" tab to view sales summaries, daily reports, top products, and transaction history.
-*   **Dark Mode:** Click the moon/sun icon in the top right corner to switch between light and dark modes.
-
-## Contributing
-
-Contributions are highly appreciated! If you'd like to contribute, please fork this repository and create a Pull Request with your features or bug fixes.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
-## Contact
-
-*   **GitHub:** [jimbon25](https://github.com/jimbon25)
+- **Login**: Use the following credentials to try the application:
+  - **Admin**: `admin` / `admin123`
+  - **Cashier**: `cashier` / `cashier123`
+- **Dashboard**: View sales summaries and other important metrics.
+- **Cashier**: Perform sales transactions, scan barcodes, and manage the shopping cart.
+- **Management**: (Admin only) Manage products, categories, and users.
+- **Reports**: Analyze business performance with various available reports.
