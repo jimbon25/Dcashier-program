@@ -51,6 +51,7 @@ D'Cashier is a modern and intuitive cashier application designed to streamline p
     - The backend will run on `http://localhost:8000`.
     - The frontend will run on `http://localhost:3000`.
 
+
 ## Usage
 
 - **Login**: Use the following credentials to try the application:
@@ -60,3 +61,9 @@ D'Cashier is a modern and intuitive cashier application designed to streamline p
 - **Cashier**: Perform sales transactions, scan barcodes, and manage the shopping cart.
 - **Management**: (Admin only) Manage products, categories, and users.
 - **Reports**: Analyze business performance with various available reports.
+
+## Connect with Me
+
+- Instagram: [dimasladty](https://www.instagram.com/dimasladty)
+- Facebook: [iv.dimas](https://www.facebook.com/iv.dimas)
+- GitHub: [dashboard](https://github.com/dashboard)
