@@ -26,7 +26,7 @@ interface BackendAuthResponse {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post<BackendAuthResponse>('/auth/login', credentials);
+    const response = await api.post<BackendAuthResponse>('/api/auth/login', credentials);
     return {
       accessToken: response.data.data.accessToken,
       role: response.data.data.role
