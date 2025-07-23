@@ -498,6 +498,67 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Reports endpoints
+[newline]
+    // Profit/Loss Report endpoint
+    if (path === '/api/reports/profit-loss' && method === 'GET') {
+      try {
+        let result = [];
+        if (useSQLite) {
+          // SQLite: ambil data per produk
+          result = await dbAll(`
+            SELECT 
+              ti.product_id,
+              ti.product_name,
+              COALESCE(c.name, 'Tanpa Kategori') as category_name,
+              SUM(ti.quantity) as total_quantity_sold,
+              SUM(ti.price_at_sale * ti.quantity) as total_revenue,
+              SUM(ti.cost_price_at_sale * ti.quantity) as total_cost,
+              (SUM(ti.price_at_sale * ti.quantity) - SUM(ti.cost_price_at_sale * ti.quantity)) as total_profit
+            FROM transaction_items ti
+            LEFT JOIN products p ON ti.product_id = p.id
+            LEFT JOIN categories c ON p.category_id = c.id
+            GROUP BY ti.product_id, ti.product_name, c.name
+            ORDER BY total_profit DESC
+          `);
+        } else {
+          // In-memory: hitung manual dari transactions
+          const profitMap = {};
+          transactions.forEach(trx => {
+            if (trx.items) {
+              trx.items.forEach(item => {
+                const prod = products.find(p => p.id === item.product_id);
+                const catName = prod ? prod.category_name : 'Tanpa Kategori';
+                if (!profitMap[item.product_id]) {
+                  profitMap[item.product_id] = {
+                    product_id: item.product_id,
+                    product_name: item.product_name,
+                    category_name: catName,
+                    total_quantity_sold: 0,
+                    total_revenue: 0,
+                    total_cost: 0,
+                    total_profit: 0
+                  };
+                }
+                profitMap[item.product_id].total_quantity_sold += item.quantity;
+                profitMap[item.product_id].total_revenue += item.price_at_sale * item.quantity;
+                profitMap[item.product_id].total_cost += (item.cost_price_at_sale || 0) * item.quantity;
+                profitMap[item.product_id].total_profit = profitMap[item.product_id].total_revenue - profitMap[item.product_id].total_cost;
+              });
+            }
+          });
+          result = Object.values(profitMap).sort((a, b) => b.total_profit - a.total_profit);
+        }
+        res.writeHead(200);
+        res.end(JSON.stringify({
+          status: 'success',
+          data: result
+        }));
+      } catch (err) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ status: 'error', message: 'Database error' }));
+      }
+      return;
+    }
     if (path === '/api/reports/daily-sales' && method === 'GET') {
       try {
         const today = new Date();
